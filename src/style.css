@@ -12,3 +12,18 @@ html,body{
   padding: 0;
   margin: 0;
 }
+::-webkit-scrollbar {
+  width: 18px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  transition: 0.2s;
+  border-radius: 10px;
+  border: 6px solid rgba(0, 0, 0, 0);
+  box-shadow: 6px 0 0 #a9abaf inset;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: 8px 0 0 #888888 inset;
+}
