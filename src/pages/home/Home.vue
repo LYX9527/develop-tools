@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {ImageEdit16Regular, DocumentSearch16Regular} from "@vicons/fluent"
-import {NIcon, NEllipsis, NTag, NSwitch, NInput} from "naive-ui"
+import {NIcon, NEllipsis, NSwitch, NInput,NEl} from "naive-ui"
 import {LogoGithub, ShareSocialOutline} from "@vicons/ionicons5"
 import themeSwitchStyle from "@/pages/home/ThemeSwitchStyle.ts";
-import {ref} from "vue";
+import {ref, watch} from "vue";
+import {ThemeMode} from "@/models/Constant.ts";
 
+const emit = defineEmits(['changeTheme']);
 const tags = ["图片", "加密", "其他", "批量处理", "http"]
 const themeIsDark = ref<boolean>(false)
 const toolQuery = ref<string>("")
@@ -16,6 +18,10 @@ function randomTag(): string {
 function randomTagSize(): number {
   return Math.floor(Math.random() * 8)
 }
+
+watch(themeIsDark, (newValue) => {
+  emit("changeTheme", newValue ? ThemeMode.Dark : ThemeMode.Light)
+})
 </script>
 <template>
   <div class="head">
@@ -71,9 +77,9 @@ function randomTagSize(): number {
         通过简洁直观的界面，开发者能够轻松访问常用工具，减少在不同环境间切换的时间。
       </n-ellipsis>
       <div class="tags">
-        <n-tag v-for="item in randomTagSize()" :bordered="false" size="small">
+        <div v-for="item in randomTagSize()" class="tag">
           {{ randomTag() }}
-        </n-tag>
+        </div>
       </div>
     </div>
   </div>
@@ -126,7 +132,6 @@ function randomTagSize(): number {
   overflow-y: auto;
   column-count: 5;
   column-gap: 20px;
-  row-gap: 20px;
   padding: 20px 34px;
   @media (max-width: 1199px) {
     column-count: 4;
@@ -145,11 +150,12 @@ function randomTagSize(): number {
 
 
   .tool-card {
+    overflow: hidden;
     margin-bottom: 20px;
     box-sizing: border-box;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(152, 152, 152, 0.18) ;
     transition: all 0.3s ease;
     position: relative;
     cursor: pointer;
@@ -177,6 +183,12 @@ function randomTagSize(): number {
       display: flex;
       gap: 7px;
       flex-wrap: wrap;
+      .tag{
+        border-radius: 5px;
+        border: 1px solid #007BFF;
+        padding: 2px 7px;
+        font-size: 11px;
+      }
     }
   }
 }
@@ -187,7 +199,7 @@ function randomTagSize(): number {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 5px;
   height: 100%;
   background: #007BFF;
   opacity: 0;
