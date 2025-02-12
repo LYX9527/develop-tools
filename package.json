@@ -19,6 +19,7 @@
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.1",
     "@vicons/fluent": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "naive-ui": "^2.41.0",
