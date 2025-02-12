@@ -27,7 +27,7 @@ watch(themeIsDark, (newValue) => {
   <div class="head">
     <div class="left-box">
       <div class="logo">
-        <img src="@/assets/logo.svg" alt="logo">
+        <img src="@/assets/logo.png" alt="logo">
       </div>
       <div class="title">开发工具集</div>
       <div class="query-tool-input">
