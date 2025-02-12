@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时间工具</title>
+  <link rel="shortcut icon" href="./favicon.ico">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 10px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .tab.active {
+      background: #007BFF;
+      color: white;
+    }
+
+    .content-section {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .current-time {
+      font-family: monospace;
+      font-size: 2em;
+      text-align: center;
+      margin: 20px 0;
+      color: #2c3e50;
+    }
+
+    .time-formats {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .format-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .format-label {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+
+    .format-value {
+      font-family: monospace;
+      margin-right: 10px;
+    }
+
+    .copy-button {
+      padding: 4px 8px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .copy-button:hover {
+      background: #0056b3;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+
+    .input-group input {
+      padding: 8px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .convert-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #007BFF;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .convert-button:hover {
+      background: #0056b3;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>时间工具</h1>
+  
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('current')">当前时间</div>
+    <div class="tab" onclick="switchTab('convert')">时间戳转换</div>
+  </div>
+
+  <div id="current" class="content-section">
+    <div class="current-time" id="currentTime"></div>
+    <div class="time-formats" id="timeFormats"></div>
+  </div>
+
+  <div id="convert" class="content-section" style="display: none;">
+    <div class="input-group">
+      <label>时间戳:</label>
+      <input type="text" id="timestampInput" placeholder="输入秒级或毫秒级时间戳">
+    </div>
+    <div class="convert-button" onclick="convertTimestamp()">转换</div>
+    <div class="time-formats" id="convertResult"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+  function switchTab(tabName) {
+    document.querySelectorAll('.content-section').forEach(section => {
+      section.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    document.getElementById(tabName).style.display = 'block';
+    event.target.classList.add('active');
+  }
+
+  function updateCurrentTime() {
+    const now = new Date();
+    const formats = {
+      '标准时间': now.toISOString(),
+      '本地时间': now.toLocaleString(),
+      'UTC时间': now.toUTCString(),
+      '秒级时间戳': Math.floor(now.getTime() / 1000),
+      '毫秒级时间戳': now.getTime(),
+      '日期格式': now.toLocaleDateString(),
+      '时间格式': now.toLocaleTimeString(),
+      '自定义格式': formatDate(now, 'YYYY-MM-DD HH:mm:ss')
+    };
+
+    document.getElementById('currentTime').textContent = formats['自定义格式'];
+    
+    const formatContainer = document.getElementById('timeFormats');
+    formatContainer.innerHTML = '';
+    
+    for (const [label, value] of Object.entries(formats)) {
+      const item = createFormatItem(label, value);
+      formatContainer.appendChild(item);
+    }
+  }
+
+  function convertTimestamp() {
+    const input = document.getElementById('timestampInput').value.trim();
+    if (!input) {
+      showToast('请输入时间戳');
+      return;
+    }
+
+    let timestamp = parseInt(input);
+    if (isNaN(timestamp)) {
+      showToast('请输入有效的时间戳');
+      return;
+    }
+
+    // 如果是秒级时间戳，转换为毫秒级
+    if (timestamp < 10000000000) {
+      timestamp *= 1000;
+    }
+
+    const date = new Date(timestamp);
+    if (date.toString() === 'Invalid Date') {
+      showToast('无效的时间戳');
+      return;
+    }
+
+    const formats = {
+      '标准时间': date.toISOString(),
+      '本地时间': date.toLocaleString(),
+      'UTC时间': date.toUTCString(),
+      '秒级时间戳': Math.floor(date.getTime() / 1000),
+      '毫秒级时间戳': date.getTime(),
+      '日期格式': date.toLocaleDateString(),
+      '时间格式': date.toLocaleTimeString(),
+      '自定义格式': formatDate(date, 'YYYY-MM-DD HH:mm:ss')
+    };
+
+    const resultContainer = document.getElementById('convertResult');
+    resultContainer.innerHTML = '';
+    
+    for (const [label, value] of Object.entries(formats)) {
+      const item = createFormatItem(label, value);
+      resultContainer.appendChild(item);
+    }
+  }
+
+  function formatDate(date, format) {
+    const pad = (n) => n.toString().padStart(2, '0');
+    
+    return format
+      .replace('YYYY', date.getFullYear())
+      .replace('MM', pad(date.getMonth() + 1))
+      .replace('DD', pad(date.getDate()))
+      .replace('HH', pad(date.getHours()))
+      .replace('mm', pad(date.getMinutes()))
+      .replace('ss', pad(date.getSeconds()));
+  }
+
+  function createFormatItem(label, value) {
+    const div = document.createElement('div');
+    div.className = 'format-item';
+    
+    const content = document.createElement('div');
+    content.style.flex = '1';
+    
+    const labelSpan = document.createElement('div');
+    labelSpan.className = 'format-label';
+    labelSpan.textContent = label;
+    
+    const valueSpan = document.createElement('div');
+    valueSpan.className = 'format-value';
+    valueSpan.textContent = value;
+    
+    content.appendChild(labelSpan);
+    content.appendChild(valueSpan);
+    
+    const copyButton = document.createElement('button');
+    copyButton.className = 'copy-button';
+    copyButton.textContent = '复制';
+    copyButton.onclick = () => copyToClipboard(value.toString());
+    
+    div.appendChild(content);
+    div.appendChild(copyButton);
+    return div;
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('已复制到剪贴板');
+    }, () => {
+      showToast('复制失败，请手动复制');
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  // 初始化
+  updateCurrentTime();
+  setInterval(updateCurrentTime, 1000);
+</script>
+</body>
+</html> 
