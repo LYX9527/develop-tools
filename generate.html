@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生成工具</title>
+  <link rel="shortcut icon" href="./favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 10px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .tab.active {
+      background: #007BFF;
+      color: white;
+    }
+
+    .content-section {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .setting-item {
+      margin-bottom: 20px;
+    }
+
+    .setting-item label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+
+    .setting-item input[type="number"],
+    .setting-item input[type="text"] {
+      padding: 8px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .setting-item input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    .generate-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #007BFF;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .generate-button:hover {
+      background: #0056b3;
+    }
+
+    .output-section {
+      margin-top: 20px;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-family: monospace;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .result-text {
+      margin-right: 10px;
+      word-break: break-all;
+    }
+
+    .copy-button {
+      padding: 4px 8px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .copy-button:hover {
+      background: #0056b3;
+    }
+
+    .qr-output {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    #qrCanvas {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>生成工具</h1>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('uuid')">UUID</div>
+    <div class="tab" onclick="switchTab('hash')">哈希计算</div>
+    <div class="tab" onclick="switchTab('qrcode')">二维码</div>
+  </div>
+
+  <div id="uuid" class="content-section">
+    <div class="setting-item">
+      <label>生成数量:</label>
+      <input type="number" id="uuidCount" value="5" min="1" max="50">
+    </div>
+    <div class="setting-item">
+      <label>选项:</label>
+      <div>
+        <input type="checkbox" id="useHyphens" checked> 包含连接符
+        <input type="checkbox" id="upperCase"> 全大写
+      </div>
+    </div>
+    <div class="generate-button" onclick="generateUUID()">生成 UUID</div>
+    <div id="uuidOutput" class="output-section"></div>
+  </div>
+
+  <div id="hash" class="content-section" style="display: none;">
+    <div class="setting-item">
+      <label>输入文本:</label>
+      <input type="text" id="hashInput">
+    </div>
+    <div class="generate-button" onclick="generateHash()">计算哈希</div>
+    <div id="hashOutput" class="output-section"></div>
+  </div>
+
+  <div id="qrcode" class="content-section" style="display: none;">
+    <div class="setting-item">
+      <label>输入文本:</label>
+      <input type="text" id="qrInput">
+    </div>
+    <div class="generate-button" onclick="generateQRCode()">生成二维码</div>
+    <div class="qr-output">
+      <div id="qrCanvas"></div>
+      <div class="generate-button" onclick="downloadQRCode()">下载二维码</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+  function switchTab(tabName) {
+    document.querySelectorAll('.content-section').forEach(section => {
+      section.style.display = 'none';
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+
+    document.getElementById(tabName).style.display = 'block';
+    event.target.classList.add('active');
+  }
+
+  function generateUUID() {
+    const count = parseInt(document.getElementById('uuidCount').value);
+    const useHyphens = document.getElementById('useHyphens').checked;
+    const upperCase = document.getElementById('upperCase').checked;
+
+    const output = document.getElementById('uuidOutput');
+    output.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+
+      if (!useHyphens) {
+        uuid = uuid.replace(/-/g, '');
+      }
+      if (upperCase) {
+        uuid = uuid.toUpperCase();
+      }
+
+      const resultItem = createResultItem(uuid);
+      output.appendChild(resultItem);
+    }
+  }
+
+  function generateHash() {
+    const input = document.getElementById('hashInput').value;
+    const output = document.getElementById('hashOutput');
+    output.innerHTML = '';
+
+    const hashes = {
+      'MD5': CryptoJS.MD5(input).toString(),
+      'SHA1': CryptoJS.SHA1(input).toString(),
+      'SHA256': CryptoJS.SHA256(input).toString(),
+      'SHA512': CryptoJS.SHA512(input).toString()
+    };
+
+    for (const [type, hash] of Object.entries(hashes)) {
+      const resultItem = createResultItem(hash, type);
+      output.appendChild(resultItem);
+    }
+  }
+
+  function generateQRCode() {
+    const input = document.getElementById('qrInput').value;
+    const container = document.getElementById('qrCanvas');
+    container.innerHTML = ''; // 清除之前的二维码
+
+    new QRCode(container, {
+      text: input,
+      width: 256,
+      height: 256,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    const newContainer = document.getElementById('qrCanvas');
+    newContainer.style.visibility = "visible"
+  }
+
+  function downloadQRCode() {
+    const canvas = document.querySelector('#qrCanvas canvas');
+    if (!canvas) {
+      showToast('请先生成二维码');
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
+  function createResultItem(text, prefix = '') {
+    const div = document.createElement('div');
+    div.className = 'result-item';
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'result-text';
+    textSpan.textContent = prefix ? `${prefix}: ${text}` : text;
+
+    const copyButton = document.createElement('button');
+    copyButton.className = 'copy-button';
+    copyButton.textContent = '复制';
+    copyButton.onclick = () => copyToClipboard(text);
+
+    div.appendChild(textSpan);
+    div.appendChild(copyButton);
+    return div;
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('已复制到剪贴板');
+    }, () => {
+      showToast('复制失败，请手动复制');
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  // 初始化滚轮控制
+  document.addEventListener('DOMContentLoaded', function() {
+    const uuidCount = document.getElementById('uuidCount');
+    uuidCount.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      let value = parseInt(this.value);
+      if (e.deltaY < 0) {
+        value = Math.min(value + 1, parseInt(this.max));
+      } else {
+        value = Math.max(value - 1, parseInt(this.min));
+      }
+      this.value = value;
+    });
+  });
+</script>
+</body>
+</html>
