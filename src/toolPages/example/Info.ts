@@ -1,9 +1,9 @@
 import type {ToolBaseInfo} from "@/models/ToolInfo.ts";
 import Icon from './Icon.vue'
 const toolInfo:ToolBaseInfo = {
-    name: 'Example Tool',
-    description: 'This is an example tool.',
+    name: '示例工具',
+    description: '用来做开发例子的示例工具',
     icon:Icon,
-    tags:['example'],
+    tags:['工具','示例'],
 }
 export default toolInfo;
