@@ -9,5 +9,5 @@ export interface ToolBaseInfo {
 
 
 export interface ToolLoadedInfo extends ToolBaseInfo {
-    path: string;
+    toolTag?: string;
 }
