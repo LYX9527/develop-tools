@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { Toolbox16Regular} from "@vicons/fluent"
+import {Toolbox16Regular} from "@vicons/fluent"
 import {NIcon, NEllipsis, NSpin} from "naive-ui"
-import {markRaw, onMounted, ref, shallowRef} from "vue";
+import {onMounted, ref, shallowRef} from "vue";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {useRouter} from "vue-router";
-import getToolLoadedInfos from "@/utils/getToolLoadedInfos.ts";
+import {getToolLoadedInfos} from "@/utils/getToolLoadedInfos.ts";
 
 const toolList = shallowRef<ToolLoadedInfo[]>([])
-const tags = ["图片", "加密", "其他", "批量处理", "http"]
 const router = useRouter()
 const loadingShow = ref<boolean>(false)
+
 function selectTool(item: ToolLoadedInfo) {
-  router.push({path: item.path})
+  router.push({path: `/tool/${item.toolTag}`})
 }
 
 onMounted(() => {
-  console.log("加载ToolList")
+  loadingShow.value = true
   getToolLoadedInfos().then((list) => {
-    console.log(list)
     toolList.value = list
   }).catch((e) => {
-    console.log("ToolList加载失败",e)
+    console.log("ToolList加载失败", e)
+  }).finally(() => {
+    loadingShow.value = false
   })
 })
 </script>
@@ -66,7 +67,7 @@ onMounted(() => {
 .tool-list {
   column-count: 5;
   column-gap: 20px;
-  padding: 20px 34px;
+  padding: 20px 40px;
   @media (max-width: 1199px) {
     column-count: 4;
   }
