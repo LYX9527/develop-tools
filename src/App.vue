@@ -1,34 +1,43 @@
 <script setup lang="ts">
 
-import Home from "@/pages/home/Home.vue";
-import {darkTheme, NConfigProvider, zhCN, dateZhCN,NEl} from 'naive-ui'
-import {ref} from "vue";
+import {darkTheme, NConfigProvider, zhCN, dateZhCN, NEl} from 'naive-ui'
+import TopBar from "@/components/topBar/TopBar.vue";
+import {useAppStatusStore} from "@/stores";
+import {onMounted, ref} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
+const appStatus = useAppStatusStore()
+const contentRef = ref<HTMLElement | null>(null)
+let scrollBeforeIsTop = true
 
-const theme = ref<any | null>(null)
-
-function changeTheme(themeMode: ThemeMode) {
-  switch (themeMode) {
-    case ThemeMode.Light:
-      theme.value = null
-      break;
-    case ThemeMode.Dark:
-      theme.value = darkTheme
-      break;
+function contentScroll(e: any) {
+  const nowScrollY = contentRef.value?.scrollTop ?? 0
+  if (!scrollBeforeIsTop && nowScrollY == 0) {
+    scrollBeforeIsTop = true
+    appStatus.changeScrollAtTopStatus(true)
+  }
+  if (scrollBeforeIsTop && nowScrollY != 0){
+    scrollBeforeIsTop=false
+    appStatus.changeScrollAtTopStatus(false)
   }
 }
+onMounted(()=>{
+})
 </script>
 
 <template>
-  <n-config-provider style="height: 100%" :theme="theme" :locale="zhCN" :date-locale="dateZhCN">
+  <n-config-provider style="height: 100%" :theme="appStatus.getThemeMode==ThemeMode.Light?null:darkTheme"
+                     :locale="zhCN" :date-locale="dateZhCN">
     <n-el class="app-view">
-      <Home @changeTheme="changeTheme"/>
+      <TopBar></TopBar>
+      <div ref="contentRef" class="content" @scroll="contentScroll">
+        <router-view></router-view>
+      </div>
     </n-el>
   </n-config-provider>
 
 </template>
 
-<style  lang="scss">
+<style lang="scss">
 .app-view {
   background-color: var(--card-color);
   flex-direction: column;
@@ -38,4 +47,7 @@ function changeTheme(themeMode: ThemeMode) {
   color: var(--text-color-1);
 }
 
+.content {
+  overflow-y: auto;
+}
 </style>
