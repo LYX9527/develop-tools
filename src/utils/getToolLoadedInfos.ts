@@ -1,31 +1,38 @@
 import type {ToolBaseInfo, ToolLoadedInfo} from "@/models/ToolInfo.ts";
 
-let toolPagesCache: ToolLoadedInfo[] | null = null;
+let toolInfosCache: ToolLoadedInfo[] | null = null;
 
-const getToolLoadedInfos = async (): Promise<ToolLoadedInfo[]> => {
-    if (toolPagesCache) {
-        return toolPagesCache;
+export const getToolLoadedInfos = async (): Promise<ToolLoadedInfo[]> => {
+    if (!toolInfosCache) {
+        await initToolLoadedInfos()
     }
-    console.log("加载第一次");
-
-    const files = import.meta.glob('@/toolPages/*/Info.ts');
-    const toolInfos: ToolLoadedInfo[] = await Promise.all(
-        Object.keys(files).map(async (path) => {
-            const module = await files[path]() as { default: ToolBaseInfo };
-            const routerTag = path.split('toolPages/').pop()?.split('/Info.ts')[0];
-            const toolLoadedInfo: ToolLoadedInfo = {
-                ...module.default,
-                path: `/${routerTag}`,
-            };
-            console.log("加载工具信息", toolLoadedInfo);
-            return toolLoadedInfo;
-        })
-    );
-
-    toolPagesCache = toolInfos;
-    console.log("工具信息初始化完成", toolInfos);
-    return toolPagesCache;
+    return toolInfosCache!!;
+};
+export const getToolLoadedInfoByToolTag = async (toolTag: string): Promise<ToolLoadedInfo> => {
+    if (!toolInfosCache) {
+        await initToolLoadedInfos()
+    }
+    const toolInfo=toolInfosCache!!.find((tool) => tool.toolTag === toolTag)
+    if (toolInfo){
+        return toolInfo
+    }
+    throw new Error(`找不到${toolTag}`);
 };
 
 
-export default getToolLoadedInfos;
+async function initToolLoadedInfos() {
+    const files = import.meta.glob('@/toolPages/*/Info.ts');
+    const toolInfosTemp: ToolLoadedInfo[] = []
+    for (const filePath in files) {
+        const module = await files[filePath]() as { default: ToolBaseInfo };
+        const toolTag = filePath.split('toolPages/').pop()?.split('/Info.ts')[0];
+        if (toolTag) {
+            const toolLoadedInfo: ToolLoadedInfo = {
+                ...module.default,
+                toolTag,
+            };
+            toolInfosTemp.push(toolLoadedInfo)
+        }
+    }
+    toolInfosCache = toolInfosTemp
+}
