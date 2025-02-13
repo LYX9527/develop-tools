@@ -4,7 +4,7 @@ import {ThemeMode} from "@/models/Constant.ts";
 
 export const useAppStatusStore = defineStore('appStatus', () => {
     const themeMode = ref(ThemeMode.Light)
-    const scrollAtTop = ref<boolean>(false)
+    const scrollAtTop = ref<boolean>(true)
     const getThemeMode = computed(() => themeMode.value)
     const getScrollAtTopStatus = computed(() => scrollAtTop.value)
     const changeThemeMode = (newMode: ThemeMode) => {
