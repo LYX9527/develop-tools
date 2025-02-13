@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进制转换</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .conversion-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .input-field {
+            flex: 1;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #007BFF;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .scale-select {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .custom-scale {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .custom-scale input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .copy-button {
+            padding: 4px 8px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #0056b3;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            gap: 15px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #2c3e50;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .result-value {
+            font-family: monospace;
+            width: 300px;
+            flex-shrink: 0;
+            word-break: break-all;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .result-desc {
+            color: #6c757d;
+            font-size: 12px;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .copy-button {
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        @media (max-width: 768px) {
+            .result-value {
+                width: 200px;
+            }
+            .result-desc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>进制转换</h1>
+
+    <div class="conversion-section">
+        <div class="setting-item">
+            <div class="input-field">
+                <label>输入值:</label>
+                <input type="text" id="inputValue" placeholder="输入需要转换的数值">
+                <div class="error" id="inputError"></div>
+            </div>
+            <div class="input-field" style="max-width: 150px;">
+                <label>输入进制:</label>
+                <select class="scale-select" id="inputScale">
+                    <option value="2">二进制</option>
+                    <option value="8">八进制</option>
+                    <option value="10" selected>十进制</option>
+                    <option value="16">十六进制</option>
+                    <option value="26">26进制</option>
+                    <option value="32">32进制</option>
+                    <option value="36">36进制</option>
+                    <option value="52">52进制</option>
+                    <option value="58">58进制</option>
+                    <option value="62">62进制</option>
+                    <option value="64">64进制</option>
+                    <option value="custom">自定义</option>
+                </select>
+                <div class="custom-scale" id="inputCustomScale" style="display: none;">
+                    <input type="number" min="2" max="64" value="2" id="inputCustomValue">
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section" id="results">
+            <!-- 结果将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+</div>
+
+<script>
+    // 定义进制转换字符集
+    const DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
+    // 转换为指定进制
+    function toBase(num, base) {
+        if (base <= 36) {
+            return num.toString(base).toUpperCase();
+        }
+
+        let result = '';
+        let value = num;
+
+        while (value > 0) {
+            result = DIGITS[value % base] + result;
+            value = Math.floor(value / base);
+        }
+
+        return result || '0';
+    }
+
+    // 处理进制转换
+    function convertScale() {
+        const inputValue = document.getElementById('inputValue').value.trim();
+        const inputScale = getSelectedScale('input');
+        const resultsContainer = document.getElementById('results');
+        const errorElement = document.getElementById('inputError');
+
+        if (!inputValue) {
+            errorElement.style.display = 'none';
+            resultsContainer.innerHTML = '';
+            return;
+        }
+
+        try {
+            // 先转换为十进制
+            const decimalValue = parseInt(inputValue, inputScale);
+
+            if (isNaN(decimalValue)) {
+                throw new Error('无效的输入值');
+            }
+
+            // 清空结果容器
+            resultsContainer.innerHTML = '';
+
+            // 生成所有进制的结果
+            let bases = [2, 8, 10, 16, 26, 32, 36, 52, 58, 62, 64];
+
+            // 如果选择了自定义进制，添加到结果列表
+            const customBase = getSelectedScale('input');
+            if (document.getElementById('inputScale').value === 'custom' &&
+                !bases.includes(customBase)) {
+                bases.push(customBase);
+            }
+
+            // 对进制数组排序
+            bases.sort((a, b) => a - b);
+
+            bases.forEach(base => {
+                const result = toBase(decimalValue, base);
+                const description = getBaseDescription(base);
+                addResultItem(base, result, description);
+            });
+
+            errorElement.style.display = 'none';
+        } catch (err) {
+            errorElement.textContent = '无效的输入值';
+            errorElement.style.display = 'block';
+            resultsContainer.innerHTML = '';
+        }
+    }
+
+    // 获取选择的进制值
+    function getSelectedScale(type) {
+        const select = document.getElementById(`${type}Scale`);
+        if (select.value === 'custom') {
+            const customValue = parseInt(document.getElementById(`${type}CustomValue`).value);
+            return customValue >= 2 && customValue <= 64 ? customValue : 10;
+        }
+        return parseInt(select.value);
+    }
+
+    // 获取进制的描述信息
+    function getBaseDescription(base) {
+        // 如果是自定义进制且不在预定义列表中，返回自定义说明
+        if (document.getElementById('inputScale').value === 'custom' &&
+            ![2, 8, 10, 16, 26, 32, 36, 52, 58, 62, 64].includes(base)) {
+            return '自定义进制';
+        }
+
+        switch(base) {
+            case 26: return '小写字母';
+            case 32: return '数字 + 大写字母，不包含 ILOU 字符';
+            case 36: return '数字 + 小写字母';
+            case 52: return '大小写字母';
+            case 58: return '数字 + 大小写字母，不包含 OOIl 字符';
+            case 62: return '数字 + 大小写字母';
+            case 64: return '数字 + 大小写字母 + -_';
+            default: return '';
+        }
+    }
+
+    // 添加结果项
+    function addResultItem(base, value, description) {
+        const resultsContainer = document.getElementById('results');
+        const item = document.createElement('div');
+        item.className = 'result-item';
+
+        const label = document.createElement('div');
+        label.className = 'result-label';
+        label.textContent = `${base}进制`;
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'result-value';
+        valueDiv.textContent = value;
+
+        const desc = document.createElement('div');
+        desc.className = 'result-desc';
+        desc.textContent = description;
+
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.textContent = '复制';
+        copyButton.onclick = () => copyToClipboard(value);
+
+        item.appendChild(label);
+        item.appendChild(valueDiv);
+        if (description) {
+            item.appendChild(desc);
+        }
+        item.appendChild(copyButton);
+
+        resultsContainer.appendChild(item);
+    }
+
+    // 复制到剪贴板
+    function copyToClipboard(text) {
+        if (!text) {
+            showToast('没有可复制的内容');
+            return;
+        }
+
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    // 显示提示信息
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // 处理自定义进制显示
+    function handleCustomScale(type) {
+        const select = document.getElementById(`${type}Scale`);
+        const customDiv = document.getElementById(`${type}CustomScale`);
+        customDiv.style.display = select.value === 'custom' ? 'flex' : 'none';
+    }
+
+    // 添加事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+        // 输入值变化时自动转换
+        document.getElementById('inputValue').addEventListener('input', convertScale);
+
+        // 进制选择变化时自动转换
+        document.getElementById('inputScale').addEventListener('change', function() {
+            handleCustomScale('input');
+            convertScale();
+        });
+
+        document.getElementById('inputCustomValue').addEventListener('input', convertScale);
+    });
+</script>
+</body>
+</html>
