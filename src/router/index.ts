@@ -1,13 +1,17 @@
 import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router'
 import type {RouteRecordRaw} from 'vue-router'
-import ToolList from "@/pages/toolList/ToolList.vue";
 
 let isInitRouter = false
 const routes: RouteRecordRaw[] = [
     {
         path: '/',
-        name: '工具集合',
-        component: ToolList,
+        name: 'toolList',
+        component: () => import('@/pages/toolList/ToolList.vue'),
+    },
+    {
+        path:'/tool/',
+        name:"tool",
+        component: () => import('@/pages/toolFrame/ToolFrame.vue'),
     },
     {
         path: '/index.html',
@@ -26,11 +30,11 @@ async function initRouter() {
         await toolModulePromise.then((module) => {
             const routerTag = toolPath.split('toolPages/').pop()?.split('/index.vue')[0];
             const route: RouteRecordRaw = {
-                path: `/${routerTag}`,
+                path: `/tool/${routerTag}`,
                 name: `${routerTag}`,
                 component: module.default,
             };
-            router.addRoute(route)
+            router.addRoute("tool",route)
             console.log("路由注册", route.name)
         }).catch((error) => {
             console.error(`工具加载失败:${toolPath}`, error);
