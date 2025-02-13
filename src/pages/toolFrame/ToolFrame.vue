@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
 import {NIcon, NEllipsis, NSpin} from "naive-ui"
-import {onMounted, ref} from "vue";
+import {onMounted, shallowRef} from "vue";
 import {getToolLoadedInfoByToolTag} from "@/utils/getToolLoadedInfos.ts";
 import {Toolbox16Regular} from "@vicons/fluent";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 
 const route = useRoute()
-const toolInfo = ref<ToolLoadedInfo>()
+const toolInfo = shallowRef<ToolLoadedInfo>()
 onMounted(() => {
   const toolTag = route.fullPath.split("/tool/")[1]
   getToolLoadedInfoByToolTag(toolTag).then((info) => {
@@ -50,8 +50,6 @@ onMounted(() => {
 <style scoped lang="scss">
 .tool-frame {
   padding: 20px 40px;
-  height: 100%;
-
   .tool-introduce {
     margin-bottom: 15px;
     border-bottom: 2px solid rgba(136, 136, 136, 0.3);
