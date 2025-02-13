@@ -77,17 +77,33 @@
         }
 
         .setting-item input[type="number"],
-        .setting-item input[type="text"] {
+        .setting-item input[type="text"],
+        .setting-item select {
+            width: 100%;
             padding: 8px 12px;
             border: 1px solid #dee2e6;
             border-radius: 4px;
             font-size: 14px;
-            width: 100%;
-            max-width: 300px;
+            background: white;
         }
 
         .setting-item input[type="checkbox"] {
             margin-right: 10px;
+        }
+
+        .setting-item select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            padding-right: 32px;
+        }
+
+        .setting-item select:focus {
+            outline: none;
+            border-color: #007BFF;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
         }
 
         .generate-button {
@@ -262,6 +278,44 @@
             color: #999;
             font-size: 12px;
         }
+
+        .verify-input {
+            transition: background-color 0.3s ease;
+        }
+
+        .verify-input.success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .verify-input.error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .file-details {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .cancel-button {
+            padding: 4px 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .cancel-button:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -271,6 +325,7 @@
     <div class="tabs">
         <div class="tab active" onclick="switchTab('uuid')">UUID</div>
         <div class="tab" onclick="switchTab('hash')">哈希计算</div>
+        <div class="tab" onclick="switchTab('fileHash')">文件校验</div>
         <div class="tab" onclick="switchTab('qrcode')">二维码</div>
     </div>
 
@@ -297,6 +352,57 @@
         </div>
         <div class="generate-button" onclick="generateHash()">计算哈希</div>
         <div id="hashOutput" class="output-section"></div>
+    </div>
+
+    <div id="fileHash" class="content-section" style="display: none;">
+        <div class="setting-item">
+            <label>选择文件:</label>
+            <div style="position: relative;">
+                <div class="upload-area" onclick="document.getElementById('fileHashInput').click()">
+                    <input type="file" id="fileHashInput" style="display: none;">
+                    <div class="upload-text">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        <span>点击或拖放文件到此处</span>
+                    </div>
+                </div>
+                <div id="fileHashInfo" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <div class="file-details" style="flex: 1; margin: 0;"></div>
+                        <button class="cancel-button" onclick="cancelFileHash()" style="margin: 0 0 0 10px;">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fileHashResult" style="display: none;">
+            <div class="setting-item">
+                <label>选择算法:</label>
+                <div style="width: 100%;">
+                    <select id="fileHashAlgorithm" onchange="calculateFileHash()" style="width: 100%; padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px;">
+                        <option value="MD5">MD5</option>
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-256">SHA-256</option>
+                        <option value="SHA-384">SHA-384</option>
+                        <option value="SHA-512">SHA-512</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>哈希值:</label>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" id="fileHashValue" readonly style="flex: 1;">
+                    <button class="copy-button" onclick="copyToClipboard(document.getElementById('fileHashValue').value)">复制</button>
+                </div>
+            </div>
+            <div class="verify-section">
+                <div class="setting-item">
+                    <label>验证哈希值:</label>
+                    <input type="text" id="verifyFileHash" class="verify-input" placeholder="输入要验证的哈希值" oninput="verifyFileHash()" style="width: 100%;">
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="qrcode" class="content-section" style="display: none;">
@@ -344,6 +450,11 @@
 
         document.getElementById(tabName).style.display = 'block';
         event.target.classList.add('active');
+
+        // 如果切换到其他标签页，重置文件校验状态
+        if (tabName !== 'fileHash') {
+            cancelFileHash();
+        }
     }
 
     function generateUUID() {
@@ -598,6 +709,127 @@
 
         // 清除文件选择
         document.getElementById('qrScanInput').value = '';
+    }
+
+    // 文件哈希相关变量
+    let currentHashFile = null;
+    let currentHashValue = null;
+
+    // 初始化文件哈希上传区域
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileHashArea = document.querySelector('#fileHash .upload-area');
+        const fileHashInput = document.getElementById('fileHashInput');
+
+        fileHashArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileHashArea.classList.add('drag-over');
+        });
+
+        fileHashArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileHashArea.classList.remove('drag-over');
+        });
+
+        fileHashArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileHashArea.classList.remove('drag-over');
+            handleHashFiles(e.dataTransfer.files);
+        });
+
+        fileHashInput.addEventListener('change', (e) => {
+            handleHashFiles(e.target.files);
+        });
+    });
+
+    function handleHashFiles(files) {
+        if (files.length > 0) {
+            currentHashFile = files[0];
+            document.querySelector('#fileHash .upload-area').style.display = 'block';
+            const fileInfo = document.getElementById('fileHashInfo');
+            fileInfo.style.display = 'block';
+            fileInfo.querySelector('.file-details').innerHTML = `
+                文件名: ${currentHashFile.name}<br>
+                大小: ${formatFileSize(currentHashFile.size)}<br>
+                类型: ${currentHashFile.type || '未知'}
+            `;
+            document.getElementById('fileHashResult').style.display = 'block';
+            calculateFileHash();
+        }
+    }
+
+    function cancelFileHash() {
+        currentHashFile = null;
+        currentHashValue = null;
+        document.getElementById('fileHashInput').value = '';
+        document.querySelector('#fileHash .upload-area').style.display = 'block';
+        document.getElementById('fileHashInfo').style.display = 'none';
+        document.getElementById('fileHashResult').style.display = 'none';
+        document.getElementById('fileHashValue').value = '';
+        document.getElementById('verifyFileHash').value = '';
+        document.getElementById('verifyFileHash').classList.remove('success', 'error');
+        // 重置算法选择
+        document.getElementById('fileHashAlgorithm').selectedIndex = 0;
+    }
+
+    function calculateFileHash() {
+        if (!currentHashFile) return;
+
+        const reader = new FileReader();
+        const algorithm = document.getElementById('fileHashAlgorithm').value;
+
+        reader.onload = function(e) {
+            const wordArray = CryptoJS.lib.WordArray.create(e.target.result);
+            let hash;
+
+            switch(algorithm) {
+                case 'MD5': hash = CryptoJS.MD5(wordArray); break;
+                case 'SHA-1': hash = CryptoJS.SHA1(wordArray); break;
+                case 'SHA-256': hash = CryptoJS.SHA256(wordArray); break;
+                case 'SHA-384': hash = CryptoJS.SHA384(wordArray); break;
+                case 'SHA-512': hash = CryptoJS.SHA512(wordArray); break;
+            }
+
+            currentHashValue = hash.toString();
+            document.getElementById('fileHashValue').value = currentHashValue;
+            document.getElementById('verifyFileHash').value = '';
+            document.getElementById('verifyFileHash').classList.remove('success', 'error');
+        };
+
+        reader.readAsArrayBuffer(currentHashFile);
+    }
+
+    function verifyFileHash() {
+        const inputHash = document.getElementById('verifyFileHash');
+        const verifyValue = inputHash.value.toLowerCase();
+
+        if (!verifyValue) {
+            inputHash.classList.remove('success', 'error');
+            return;
+        }
+
+        if (currentHashValue && currentHashValue.toLowerCase() === verifyValue) {
+            inputHash.classList.remove('error');
+            inputHash.classList.add('success');
+        } else {
+            inputHash.classList.remove('success');
+            inputHash.classList.add('error');
+        }
+    }
+
+    function formatFileSize(bytes) {
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let size = bytes;
+        let unitIndex = 0;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return `${size.toFixed(2)} ${units[unitIndex]}`;
     }
 </script>
 </body>
