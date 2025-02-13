@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON工具</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .editor-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            min-height: 500px;
+        }
+
+        .editor-section {
+            flex: 1;
+            min-width: 0;
+            width: 50%;
+        }
+
+        .editor-label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .editor {
+            width: 100%;
+            height: 500px;
+            font-family: monospace;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            background: #f8f9fa;
+            overflow-x: auto;
+            white-space: pre;
+            word-wrap: normal;
+        }
+
+        .editor.compressed {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 8px 16px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #0056b3;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* JSON树形结构样式 */
+        .json-tree {
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .json-tree .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .json-tree .collapsible::before {
+            content: '▼';
+            display: inline-block;
+            margin-right: 5px;
+            transition: transform 0.3s;
+            font-size: 10px;
+            width: 10px;
+        }
+
+        .json-tree .collapsed::before {
+            transform: rotate(-90deg);
+        }
+
+        .json-tree .hidden {
+            display: none;
+        }
+
+        .json-tree .indent {
+            margin-left: 20px;
+            position: relative;
+        }
+
+        .json-tree .indent::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #e0e0e0;
+        }
+
+        .json-key {
+            color: #881391;
+        }
+
+        .json-string {
+            color: #268bd2;
+        }
+
+        .json-number {
+            color: #b58900;
+        }
+
+        .json-boolean {
+            color: #859900;
+        }
+
+        .json-null {
+            color: #dc322f;
+        }
+
+        /* 添加全屏按钮样式 */
+        .fullscreen-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            padding: 5px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+
+        .fullscreen-button:hover {
+            background: #0056b3;
+        }
+
+        /* 全屏模式样式 */
+        .container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            max-width: none;
+            margin: 0;
+            border-radius: 0;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .container.fullscreen .editor-container {
+            height: calc(100vh - 180px);
+        }
+
+        .container.fullscreen .editor {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <button class="fullscreen-button" onclick="toggleFullscreen()" title="全屏">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+    </button>
+    <h1>JSON工具</h1>
+    <div class="button-group">
+        <button class="action-button" onclick="formatJSON()">格式化</button>
+        <button class="action-button" onclick="compressJSON()">压缩</button>
+        <button class="action-button" onclick="escapeJSON()">转义</button>
+        <button class="action-button" onclick="unescapeJSON()">去除转义</button>
+        <button class="action-button" onclick="copyResult()">复制结果</button>
+        <button class="action-button" onclick="clearAll()">清空</button>
+    </div>
+    <div class="editor-container">
+        <div class="editor-section">
+            <div class="editor-label">输入:</div>
+            <textarea id="inputJSON" class="editor" placeholder="请输入JSON内容..."></textarea>
+        </div>
+        <div class="editor-section">
+            <div class="editor-label">输出:</div>
+            <div id="outputJSON" class="editor json-tree" style="overflow: auto;"></div>
+        </div>
+    </div>
+    <div id="errorMsg" class="error"></div>
+    <div id="toast" class="toast"></div>
+</div>
+
+<script>
+    function formatJSON() {
+        try {
+            const input = document.getElementById('inputJSON').value;
+            if (!input.trim()) {
+                showError('请输入JSON内容');
+                return;
+            }
+            const jsonObj = JSON.parse(input);
+            const formatted = JSON.stringify(jsonObj, null, 4);
+            displayJSONTree(jsonObj);
+            document.getElementById('outputJSON').className = 'editor json-tree';
+            showError('');
+        } catch (e) {
+            showError('无效的JSON格式: ' + e.message);
+        }
+    }
+
+    function compressJSON() {
+        try {
+            const input = document.getElementById('inputJSON').value;
+            if (!input.trim()) {
+                showError('请输入JSON内容');
+                return;
+            }
+            const jsonObj = JSON.parse(input);
+            const compressed = JSON.stringify(jsonObj);
+            const outputEl = document.getElementById('outputJSON');
+            outputEl.textContent = compressed;
+            outputEl.className = 'editor json-tree compressed';
+            showError('');
+        } catch (e) {
+            showError('无效的JSON格式: ' + e.message);
+        }
+    }
+
+    function escapeJSON() {
+        const input = document.getElementById('inputJSON').value;
+        if (!input.trim()) {
+            showError('请输入内容');
+            return;
+        }
+        const escaped = input.replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+        document.getElementById('outputJSON').textContent = escaped;
+        showError('');
+    }
+
+    function unescapeJSON() {
+        const input = document.getElementById('inputJSON').value;
+        if (!input.trim()) {
+            showError('请输入内容');
+            return;
+        }
+        try {
+            const unescaped = JSON.parse(`"${input}"`);
+            document.getElementById('outputJSON').textContent = unescaped;
+            showError('');
+        } catch (e) {
+            showError('解析转义字符时出错: ' + e.message);
+        }
+    }
+
+    function displayJSONTree(obj) {
+        const output = document.getElementById('outputJSON');
+        output.innerHTML = '';
+        output.appendChild(createJSONTree(obj, null, 0, true));
+    }
+
+    function createJSONTree(value, key = null, level = 0, isLast = true) {
+        const container = document.createElement('div');
+        container.style.marginLeft = level > 0 ? '20px' : '0';
+
+        if (key !== null) {
+            const keySpan = document.createElement('span');
+            keySpan.className = 'json-key';
+            keySpan.textContent = `"${key}": `;
+            container.appendChild(keySpan);
+        }
+
+        if (value === null) {
+            const nullSpan = document.createElement('span');
+            nullSpan.className = 'json-null';
+            nullSpan.textContent = 'null';
+            container.appendChild(nullSpan);
+            if (!isLast) {
+                const comma = document.createElement('span');
+                comma.textContent = ',';
+                container.appendChild(comma);
+            }
+            return container;
+        }
+
+        switch (typeof value) {
+            case 'object':
+                const isArray = Array.isArray(value);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'collapsible';
+                const bracketSpan = document.createElement('span');
+                bracketSpan.textContent = isArray ? '[' : '{';
+                wrapper.appendChild(bracketSpan);
+
+                if (Object.keys(value).length > 0) {
+                    const lengthSpan = document.createElement('span');
+                    lengthSpan.style.color = '#999';
+                    lengthSpan.style.fontSize = '12px';
+                    lengthSpan.style.marginLeft = '5px';
+                    lengthSpan.className = 'item-count';
+                    lengthSpan.textContent = `${Object.keys(value).length} 项`;
+                    wrapper.appendChild(lengthSpan);
+                }
+
+                wrapper.onclick = function(e) {
+                    e.stopPropagation();
+                    if (Object.keys(value).length > 0) {
+                        this.classList.toggle('collapsed');
+                        this.nextElementSibling.classList.toggle('hidden');
+                    }
+                };
+                container.appendChild(wrapper);
+
+                const content = document.createElement('div');
+                content.className = 'indent';
+
+                if (Object.keys(value).length === 0) {
+                    const closing = document.createElement('span');
+                    closing.textContent = isArray ? ']' : '}';
+                    wrapper.appendChild(closing);
+                    break;
+                }
+
+                const entries = Object.entries(value);
+                entries.forEach(([k, v], i) => {
+                    const item = createJSONTree(v, isArray ? null : k, level + 1, i === entries.length - 1);
+                    content.appendChild(item);
+                });
+                container.appendChild(content);
+
+                const closingWrapper = document.createElement('div');
+                closingWrapper.style.marginLeft = level > 0 ? '20px' : '0';
+                const closingBracket = document.createElement('span');
+                closingBracket.textContent = isArray ? ']' : '}';
+                closingWrapper.appendChild(closingBracket);
+
+                if (!isLast) {
+                    const comma = document.createElement('span');
+                    comma.textContent = ',';
+                    closingWrapper.appendChild(comma);
+                }
+
+                container.appendChild(closingWrapper);
+                break;
+
+            case 'string':
+                const stringSpan = document.createElement('span');
+                stringSpan.className = 'json-string';
+                stringSpan.textContent = `"${value}"`;
+                container.appendChild(stringSpan);
+                if (!isLast) {
+                    const comma = document.createElement('span');
+                    comma.textContent = ',';
+                    container.appendChild(comma);
+                }
+                break;
+
+            case 'number':
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'json-number';
+                numberSpan.textContent = value;
+                container.appendChild(numberSpan);
+                if (!isLast) {
+                    const comma = document.createElement('span');
+                    comma.textContent = ',';
+                    container.appendChild(comma);
+                }
+                break;
+
+            case 'boolean':
+                const booleanSpan = document.createElement('span');
+                booleanSpan.className = 'json-boolean';
+                booleanSpan.textContent = value;
+                container.appendChild(booleanSpan);
+                if (!isLast) {
+                    const comma = document.createElement('span');
+                    comma.textContent = ',';
+                    container.appendChild(comma);
+                }
+                break;
+        }
+
+        return container;
+    }
+
+    function copyResult() {
+        const output = document.getElementById('outputJSON');
+        // 创建一个临时容器来获取纯JSON文本
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = output.innerHTML;
+
+        // 移除所有项目计数提示
+        const counts = tempContainer.querySelectorAll('.item-count');
+        counts.forEach(count => count.remove());
+
+        // 获取处理后的文本
+        const text = tempContainer.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    function clearAll() {
+        document.getElementById('inputJSON').value = '';
+        document.getElementById('outputJSON').innerHTML = '';
+        document.getElementById('errorMsg').textContent = '';
+    }
+
+    function showError(message) {
+        document.getElementById('errorMsg').textContent = message;
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // 添加示例JSON的处理
+    document.addEventListener('DOMContentLoaded', function() {
+        const exampleJSON = {
+            "name": "JSON格式化工具",
+            "version": "1.0.0",
+            "features": ["格式化", "压缩", "转义"],
+            "settings": {
+                "theme": "light",
+                "autoFormat": true,
+                "indentSize": 4
+            },
+            "isActive": true,
+            "lastUpdate": null
+        };
+        document.getElementById('inputJSON').value = JSON.stringify(exampleJSON);
+        formatJSON();
+    });
+
+    // 全屏切换功能
+    function toggleFullscreen() {
+        const container = document.querySelector('.container');
+        const button = document.querySelector('.fullscreen-button');
+        container.classList.toggle('fullscreen');
+
+        if (container.classList.contains('fullscreen')) {
+            button.innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                </svg>
+            `;
+        } else {
+            button.innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                </svg>
+            `;
+        }
+    }
+
+    // 添加输入框自动格式化功能
+    let formatTimer;
+    document.getElementById('inputJSON').addEventListener('input', function() {
+        clearTimeout(formatTimer);
+        formatTimer = setTimeout(() => {
+            try {
+                const input = this.value.trim();
+                if (input) {
+                    // 尝试解析JSON，如果成功则自动格式化
+                    JSON.parse(input);
+                    formatJSON();
+                }
+            } catch (e) {
+                // 如果解析失败，不执行格式化
+            }
+        }, 500); // 500ms 防抖
+    });
+
+    // 添加快捷键支持
+    document.addEventListener('keydown', function(e) {
+        // Alt + F 切换全屏
+        if (e.altKey && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            toggleFullscreen();
+        }
+    });
+</script>
+</body>
+</html>
