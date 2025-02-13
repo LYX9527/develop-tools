@@ -369,6 +369,7 @@
                     lengthSpan.style.color = '#999';
                     lengthSpan.style.fontSize = '12px';
                     lengthSpan.style.marginLeft = '5px';
+                    lengthSpan.className = 'item-count';
                     lengthSpan.textContent = `${Object.keys(value).length} 项`;
                     wrapper.appendChild(lengthSpan);
                 }
@@ -456,7 +457,17 @@
 
     function copyResult() {
         const output = document.getElementById('outputJSON');
-        const text = output.textContent;
+        // 创建一个临时容器来获取纯JSON文本
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = output.innerHTML;
+
+        // 移除所有项目计数提示
+        const counts = tempContainer.querySelectorAll('.item-count');
+        counts.forEach(count => count.remove());
+
+        // 获取处理后的文本
+        const text = tempContainer.textContent;
+
         navigator.clipboard.writeText(text).then(() => {
             showToast('已复制到剪贴板');
         }, () => {
