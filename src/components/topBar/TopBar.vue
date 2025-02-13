@@ -6,11 +6,16 @@ import themeSwitchStyle from "@/components/topBar/ThemeSwitchStyle.ts";
 import {ThemeMode} from "@/models/Constant.ts";
 import {useAppStatusStore} from "@/stores";
 import {ref, watch} from "vue";
+import {useRouter} from "vue-router";
 
 const themeIsDark = ref<boolean>(false)
 const headRef = ref<HTMLElement | null>(null)
 const toolQuery = ref<string>("")
 const appStatus = useAppStatusStore()
+const router =useRouter()
+function goHome(){
+  router.push({path: "/"})
+}
 watch(themeIsDark, (newValue) => {
   appStatus.changeThemeMode(newValue ? ThemeMode.Dark : ThemeMode.Light)
 })
@@ -22,7 +27,7 @@ watch(themeIsDark, (newValue) => {
       <div class="logo">
         <img src="@/assets/logo.png" alt="logo">
       </div>
-      <div class="title">开发工具集</div>
+      <div class="title" @click="goHome">开发工具集</div>
       <div class="query-tool-input">
         <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery" :style="{ width: '80%' }">
           <template #suffix>
@@ -81,6 +86,7 @@ watch(themeIsDark, (newValue) => {
     }
 
     .title {
+      cursor: pointer;
       font-weight: bold;
       font-size: 20px;
     }

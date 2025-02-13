@@ -2,11 +2,9 @@
 
 import {darkTheme, NConfigProvider, zhCN, dateZhCN, NEl} from 'naive-ui'
 import TopBar from "@/components/topBar/TopBar.vue";
-import ToolList from "@/pages/toolList/ToolList.vue";
 import {useAppStatusStore} from "@/stores";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
-
 const appStatus = useAppStatusStore()
 const contentRef = ref<HTMLElement | null>(null)
 let scrollBeforeIsTop = true
@@ -22,6 +20,8 @@ function contentScroll(e: any) {
     appStatus.changeScrollAtTopStatus(false)
   }
 }
+onMounted(()=>{
+})
 </script>
 
 <template>
@@ -30,7 +30,7 @@ function contentScroll(e: any) {
     <n-el class="app-view">
       <TopBar></TopBar>
       <div ref="contentRef" class="content" @scroll="contentScroll">
-        <ToolList/>
+        <router-view></router-view>
       </div>
     </n-el>
   </n-config-provider>
