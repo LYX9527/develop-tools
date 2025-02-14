@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片Base64转换工具</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .converter-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #0056b3;
+        }
+
+        .action-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .file-label:hover {
+            background: #218838;
+        }
+
+        .preview-area {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .base64-input {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .info-text {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .drag-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #fff;
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drag-area.dragover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+
+        .drag-area-text {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>图片Base64转换工具</h1>
+
+        <div class="converter-section">
+            <div class="section-title">
+                <h2>图片转Base64</h2>
+                <div class="button-group">
+                    <label class="file-label">
+                        选择图片
+                        <input type="file" class="file-input" accept="image/*" onchange="handleImageSelect(this)">
+                    </label>
+                    <button class="action-button" onclick="copyImageBase64()">复制Base64</button>
+                </div>
+            </div>
+
+            <div class="drag-area" id="dragArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div class="drag-area-text">拖放图片到这里，或点击选择图片</div>
+            </div>
+
+            <div class="preview-area">
+                <img id="previewImage" class="preview-image" style="display: none;">
+            </div>
+
+            <textarea id="base64Output" class="base64-input" readonly placeholder="这里将显示图片的Base64编码"></textarea>
+            <div class="info-text">图片大小: <span id="imageSize">0 KB</span></div>
+        </div>
+
+        <div class="converter-section">
+            <div class="section-title">
+                <h2>Base64转图片</h2>
+                <div class="button-group">
+                    <button class="action-button" onclick="convertBase64ToImage()">转换</button>
+                    <button class="action-button" onclick="downloadImage()">下载图片</button>
+                </div>
+            </div>
+
+            <textarea id="base64Input" class="base64-input" placeholder="在这里粘贴Base64编码"></textarea>
+
+            <div class="preview-area">
+                <img id="convertedImage" class="preview-image" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function handleImageSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                processImageFile(file);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dragArea = document.getElementById('dragArea');
+            dragArea.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                processImageFile(file);
+            } else {
+                showToast('请选择图片文件');
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dragArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dragArea').classList.remove('dragover');
+        }
+
+        function processImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                document.getElementById('base64Output').value = base64;
+                document.getElementById('previewImage').src = base64;
+                document.getElementById('previewImage').style.display = 'inline-block';
+                document.getElementById('imageSize').textContent = formatFileSize(file.size);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function copyImageBase64() {
+            const base64Output = document.getElementById('base64Output');
+            base64Output.select();
+            navigator.clipboard.writeText(base64Output.value).then(() => {
+                showToast('Base64已复制到剪贴板');
+            }, () => {
+                showToast('复制失败，请手动复制');
+            });
+        }
+
+        function convertBase64ToImage() {
+            const base64Input = document.getElementById('base64Input').value.trim();
+            if (!base64Input) {
+                showToast('请输入Base64编码');
+                return;
+            }
+
+            try {
+                const convertedImage = document.getElementById('convertedImage');
+                convertedImage.src = base64Input;
+                convertedImage.style.display = 'inline-block';
+            } catch (error) {
+                showToast('无效的Base64编码');
+            }
+        }
+
+        function downloadImage() {
+            const convertedImage = document.getElementById('convertedImage');
+            if (convertedImage.style.display === 'none') {
+                showToast('请先转换图片');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = 'converted-image.png';
+            link.href = convertedImage.src;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 初始化拖放区域点击事件
+        document.getElementById('dragArea').addEventListener('click', () => {
+            document.querySelector('.file-input').click();
+        });
+    </script>
+</body>
+</html> 
