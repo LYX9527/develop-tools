@@ -1,6 +1,15 @@
 <script setup lang="ts">
 
-import {darkTheme, NConfigProvider, zhCN, dateZhCN, NEl, type GlobalThemeOverrides} from 'naive-ui'
+import {
+  darkTheme,
+  NConfigProvider,
+  zhCN,
+  dateZhCN,
+  NEl,
+  NMessageProvider,
+  NNotificationProvider,
+  type GlobalThemeOverrides
+} from 'naive-ui'
 import TopBar from "@/components/topBar/TopBar.vue";
 import {useAppStatusStore} from "@/stores";
 import {ref} from "vue";
@@ -34,12 +43,17 @@ function contentScroll(e: any) {
 <template>
   <n-config-provider style="height: 100%" :theme="appStatus.getThemeMode==ThemeMode.Light?null:darkTheme"
                      :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
-    <n-el class="app-view">
-      <TopBar></TopBar>
-      <div ref="contentRef" class="content" @scroll="contentScroll">
-        <router-view></router-view>
-      </div>
-    </n-el>
+    <n-message-provider>
+      <n-notification-provider>
+        <n-el class="app-view">
+          <TopBar></TopBar>
+          <div ref="contentRef" class="content" @scroll="contentScroll">
+            <router-view></router-view>
+          </div>
+        </n-el>
+      </n-notification-provider>
+    </n-message-provider>
+
   </n-config-provider>
 
 </template>
