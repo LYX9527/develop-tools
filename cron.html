@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron表达式工具</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cronstrue/2.47.0/cronstrue-i18n.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/later/1.2.0/later.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .cron-builder {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .field-group {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .field-label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .field-description {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .expression-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .expression-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .copy-button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #5a6268;
+        }
+
+        .description {
+            margin: 15px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .next-runs {
+            margin-top: 20px;
+        }
+
+        .next-runs h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .next-runs ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .next-runs li {
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .next-runs li:last-child {
+            border-bottom: none;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .quick-select {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .quick-select h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .quick-select-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quick-select-button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .quick-select-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Cron表达式工具</h1>
+
+    <div class="quick-select">
+        <h3>常用表达式</h3>
+        <div class="quick-select-buttons">
+            <button class="quick-select-button" onclick="setQuickExpression('0 0 * * * ?')">每小时</button>
+            <button class="quick-select-button" onclick="setQuickExpression('0 0 0 * * ?')">每天零点</button>
+            <button class="quick-select-button" onclick="setQuickExpression('0 0 0 1 * ?')">每月1号零点</button>
+            <button class="quick-select-button" onclick="setQuickExpression('0 0 0 1 1 ?')">每年1月1日零点</button>
+            <button class="quick-select-button" onclick="setQuickExpression('0 0/30 * * * ?')">每30分钟</button>
+        </div>
+    </div>
+
+    <div class="cron-builder">
+        <div class="field-group">
+            <div class="field-label">秒</div>
+            <div class="field-description">0-59</div>
+            <select id="seconds" onchange="updateExpression()">
+                <option value="*">每秒 (*)</option>
+                <option value="0" selected>0</option>
+                <option value="0/5">每5秒</option>
+                <option value="0/10">每10秒</option>
+                <option value="0/30">每30秒</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="field-label">分钟</div>
+            <div class="field-description">0-59</div>
+            <select id="minutes" onchange="updateExpression()">
+                <option value="*">每分钟 (*)</option>
+                <option value="0" selected>0</option>
+                <option value="0/5">每5分钟</option>
+                <option value="0/10">每10分钟</option>
+                <option value="0/30">每30分钟</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="field-label">小时</div>
+            <div class="field-description">0-23</div>
+            <select id="hours" onchange="updateExpression()">
+                <option value="*">每小时 (*)</option>
+                <option value="0" selected>0</option>
+                <option value="*/2">每2小时</option>
+                <option value="*/4">每4小时</option>
+                <option value="*/6">每6小时</option>
+                <option value="*/12">每12小时</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="field-label">日期</div>
+            <div class="field-description">1-31</div>
+            <select id="day" onchange="updateExpression()">
+                <option value="*">每天 (*)</option>
+                <option value="1">1号</option>
+                <option value="L">最后一天</option>
+                <option value="1W">最近的工作日</option>
+                <option value="LW">最后一个工作日</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="field-label">月份</div>
+            <div class="field-description">1-12</div>
+            <select id="month" onchange="updateExpression()">
+                <option value="*">每月 (*)</option>
+                <option value="1">一月</option>
+                <option value="*/3">每季度</option>
+                <option value="*/6">每半年</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="field-label">星期</div>
+            <div class="field-description">1-7 或 SUN-SAT</div>
+            <select id="week" onchange="updateExpression()">
+                <option value="?">不指定 (?)</option>
+                <option value="*">每天 (*)</option>
+                <option value="MON">周一</option>
+                <option value="MON-FRI">周一至周五</option>
+                <option value="1L">最后一个周日</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="result-section">
+        <div class="expression-group">
+            <input type="text" id="cronExpression" class="expression-input" value="0 0 0 * * ?"
+                   oninput="validateExpression()">
+            <button class="copy-button" onclick="copyExpression()">复制</button>
+        </div>
+
+        <div id="expressionError" class="error"></div>
+        <div id="expressionDescription" class="description"></div>
+
+        <div class="next-runs">
+            <h3>未来10次运行时间</h3>
+            <ul id="nextRunsList"></ul>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    function updateExpression() {
+        const seconds = document.getElementById('seconds').value;
+        const minutes = document.getElementById('minutes').value;
+        const hours = document.getElementById('hours').value;
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const week = document.getElementById('week').value;
+
+        const expression = `${seconds} ${minutes} ${hours} ${day} ${month} ${week}`;
+        document.getElementById('cronExpression').value = expression;
+        validateExpression();
+    }
+
+    function validateExpression() {
+        const expression = document.getElementById('cronExpression').value;
+        try {
+            // 验证表达式格式
+            const parts = expression.split(' ');
+            if (parts.length !== 6) {
+                throw new Error('Cron表达式必须包含6个部分');
+            }
+
+            // 验证秒的格式
+            const seconds = parts[0];
+            if (seconds.includes('/')) {
+                const [start, step] = seconds.split('/');
+                if (start !== '*' && start !== '0') {
+                    throw new Error('秒的格式不正确，间隔格式应为 */n 或 0/n');
+                }
+                const stepValue = parseInt(step);
+                if (isNaN(stepValue) || stepValue < 1 || stepValue > 59) {
+                    throw new Error('秒的间隔必须在1-59之间');
+                }
+            }
+
+            // 使用 cronstrue 解析表达式
+            const description = cronstrue.toString(expression, { locale: "zh_CN" });
+            document.getElementById('expressionDescription').textContent = description;
+            document.getElementById('expressionError').textContent = '';
+
+            // 计算未来10次运行时间
+            calculateNextRuns(expression);
+        } catch (err) {
+            document.getElementById('expressionError').textContent = err.message || '无效的Cron表达式';
+            document.getElementById('expressionDescription').textContent = '';
+            document.getElementById('nextRunsList').innerHTML = '';
+        }
+    }
+
+    function calculateNextRuns(expression) {
+        try {
+            const parts = expression.split(' ');
+            // 转换为标准 cron 格式
+            let cronExpression = expression;
+            if (parts[5] === '?') {
+                cronExpression = parts.slice(0, 5).join(' ') + ' *';
+            }
+
+            const nextRuns = [];
+            // 使用 later.js 计算
+            later.date.localTime();
+            const schedule = later.parse.cron(cronExpression, true); // true 表示包含秒
+            const occurrences = later.schedule(schedule).next(10);
+
+            // 转换时间格式
+            nextRuns.push(...occurrences);
+
+            // 显示结果
+            const list = document.getElementById('nextRunsList');
+            list.innerHTML = nextRuns
+                .map(date => moment(date).format('YYYY-MM-DD HH:mm:ss'))
+                .map(time => `<li>${time}</li>`)
+                .join('');
+        } catch (err) {
+            console.error('计算下次运行时间出错:', err);
+            document.getElementById('nextRunsList').innerHTML = `<li>${err.message || '计算下次运行时间出错'}</li>`;
+        }
+    }
+
+    function setQuickExpression(expression) {
+        document.getElementById('cronExpression').value = expression;
+        validateExpression();
+    }
+
+    function copyExpression() {
+        const expression = document.getElementById('cronExpression').value;
+        navigator.clipboard.writeText(expression).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        updateExpression();
+    });
+
+    // 添加常用表达式示例
+    const quickExpressions = {
+        'every-minute': '0 * * * * ?',
+        'every-5-seconds': '*/5 * * * * ?',
+        'every-hour': '0 0 * * * ?',
+        'every-day': '0 0 0 * * ?',
+        'every-week': '0 0 0 * * MON',
+        'every-month': '0 0 0 1 * ?',
+        'every-year': '0 0 0 1 1 ?',
+        'every-30min': '0 0/30 * * * ?',
+        'work-days': '0 0 9 ? * MON-FRI',
+        'weekend': '0 0 10 ? * SAT,SUN',
+        'every-quarter': '0 0 0 1 */3 ?',
+        'every-half-year': '0 0 0 1 */6 ?'
+    };
+</script>
+</body>
+</html>
