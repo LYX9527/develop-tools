@@ -1,23 +1,63 @@
 <script setup lang="ts">
-import {LogoGithub, ShareSocialOutline} from "@vicons/ionicons5"
+import {LogoGithub} from "@vicons/ionicons5"
+import {Toolbox16Regular} from "@vicons/fluent"
 import {DocumentSearch16Regular} from "@vicons/fluent";
-import {NIcon, NSwitch, NInput} from "naive-ui"
+import {NIcon, NSwitch, NInput, NDropdown, type DropdownOption} from "naive-ui"
 import themeSwitchStyle from "@/components/topBar/ThemeSwitchStyle.ts";
 import {ThemeMode} from "@/models/Constant.ts";
 import {useAppStatusStore} from "@/stores";
-import {ref, watch} from "vue";
+import {computed, onMounted, ref, shallowRef, watch, h} from "vue";
 import {useRouter} from "vue-router";
+import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
+import {getToolLoadedInfos} from "@/utils/getToolLoadedInfos.ts";
 
 const themeIsDark = ref<boolean>(false)
 const headRef = ref<HTMLElement | null>(null)
 const toolQuery = ref<string>("")
 const appStatus = useAppStatusStore()
-const router =useRouter()
-function goHome(){
+const router = useRouter()
+let toolList = shallowRef<DropdownOption  []>([])
+const toolQueryOptions = computed(() => {
+  if (toolQuery.value == "") {
+    return []
+  }
+  return toolList.value.filter((option: any) => {
+    return option.label.includes(toolQuery.value)
+  })
+})
+
+function openGithub() {
+  window.open("https://github.com/LYX9527/develop-tools")
+}
+
+function handleSelect(key: string) {
+  toolQuery.value = ""
+  router.push({path: `/tool/${key}`})
+}
+
+function goHome() {
   router.push({path: "/"})
 }
+
 watch(themeIsDark, (newValue) => {
   appStatus.changeThemeMode(newValue ? ThemeMode.Dark : ThemeMode.Light)
+})
+onMounted(() => {
+  getToolLoadedInfos().then((list) => {
+    toolList.value = list.map((item: ToolLoadedInfo) => {
+      return {
+        label: item.name,
+        key: item.toolTag,
+        icon: () => {
+          return h(NIcon, {color: "#007BFFFF"}, {
+            default: () => h(item.icon ? item.icon : Toolbox16Regular)
+          })
+        }
+      }
+    })
+  }).catch((e) => {
+    console.log("ToolList加载失败", e)
+  })
 })
 </script>
 
@@ -29,11 +69,14 @@ watch(themeIsDark, (newValue) => {
       </div>
       <div class="title" @click="goHome">开发工具集</div>
       <div class="query-tool-input">
-        <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery" :style="{ width: '80%' }">
-          <template #suffix>
-            <n-icon :component="DocumentSearch16Regular"/>
-          </template>
-        </n-input>
+        <n-dropdown :show="toolQueryOptions.lenght!=0" :options="toolQueryOptions" @select="handleSelect">
+          <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery"
+                   :style="{ width: '80%' }">
+            <template #suffix>
+              <n-icon :component="DocumentSearch16Regular"/>
+            </template>
+          </n-input>
+        </n-dropdown>
       </div>
     </div>
     <div class="right-box">
@@ -49,17 +92,11 @@ watch(themeIsDark, (newValue) => {
           浅色
         </template>
       </n-switch>
-      <div class="menu-option">
+      <div class="menu-option" @click="openGithub">
         <n-icon size="22">
           <LogoGithub/>
         </n-icon>
         <p>Github</p>
-      </div>
-      <div class="menu-option">
-        <n-icon size="22">
-          <ShareSocialOutline/>
-        </n-icon>
-        <p>网站分享</p>
       </div>
     </div>
   </div>
@@ -106,6 +143,7 @@ watch(themeIsDark, (newValue) => {
       display: flex;
       align-items: center;
       cursor: pointer;
+      transition: 0.2s;
     }
   }
 }
