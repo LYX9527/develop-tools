@@ -1,13 +1,22 @@
 <script setup lang="ts">
 
-import {darkTheme, NConfigProvider, zhCN, dateZhCN, NEl} from 'naive-ui'
+import {darkTheme, NConfigProvider, zhCN, dateZhCN, NEl, type GlobalThemeOverrides} from 'naive-ui'
 import TopBar from "@/components/topBar/TopBar.vue";
 import {useAppStatusStore} from "@/stores";
-import {onMounted, ref} from "vue";
+import {ref} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
+
 const appStatus = useAppStatusStore()
 const contentRef = ref<HTMLElement | null>(null)
 let scrollBeforeIsTop = true
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    "primaryColor": "#007BFFFF",
+    "primaryColorHover": "#2B90FCFF",
+    "primaryColorPressed": "#0067D5FF",
+    "primaryColorSuppl": "#3C78B8FF",
+  }
+}
 
 function contentScroll(e: any) {
   const nowScrollY = contentRef.value?.scrollTop ?? 0
@@ -15,18 +24,16 @@ function contentScroll(e: any) {
     scrollBeforeIsTop = true
     appStatus.changeScrollAtTopStatus(true)
   }
-  if (scrollBeforeIsTop && nowScrollY != 0){
-    scrollBeforeIsTop=false
+  if (scrollBeforeIsTop && nowScrollY != 0) {
+    scrollBeforeIsTop = false
     appStatus.changeScrollAtTopStatus(false)
   }
 }
-onMounted(()=>{
-})
 </script>
 
 <template>
   <n-config-provider style="height: 100%" :theme="appStatus.getThemeMode==ThemeMode.Light?null:darkTheme"
-                     :locale="zhCN" :date-locale="dateZhCN">
+                     :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
     <n-el class="app-view">
       <TopBar></TopBar>
       <div ref="contentRef" class="content" @scroll="contentScroll">
