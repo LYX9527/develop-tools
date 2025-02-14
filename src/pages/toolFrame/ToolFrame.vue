@@ -40,7 +40,7 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <p class="description">描述</p>
+      <p class="description">{{ toolInfo?.description }}</p>
     </div>
     <router-view></router-view>
 
