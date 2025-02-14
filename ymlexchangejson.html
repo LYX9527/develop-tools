@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON/YAML转换</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .editor-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            min-height: 500px;
+        }
+
+        .editor-section {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+
+        .editor-label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor {
+            width: 100%;
+            height: 500px;
+            font-family: monospace;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            background: #f8f9fa;
+        }
+
+        .editor:focus {
+            outline: none;
+            border-color: #007BFF;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .convert-button {
+            padding: 8px 16px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .convert-button:hover {
+            background: #0056b3;
+        }
+
+        .copy-button {
+            padding: 4px 8px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #5a6268;
+        }
+
+        .format-button {
+            padding: 4px 8px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .format-button:hover {
+            background: #218838;
+        }
+
+        .clear-button {
+            padding: 4px 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .clear-button:hover {
+            background: #c82333;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>JSON/YAML转换</h1>
+
+    <div class="editor-container">
+        <div class="editor-section">
+            <div class="editor-label">
+                <span>JSON</span>
+                <div>
+                    <button class="format-button" onclick="formatJSON()">格式化</button>
+                    <button class="copy-button" onclick="copyJSON()">复制</button>
+                    <button class="clear-button" onclick="clearJSON()">清空</button>
+                </div>
+            </div>
+            <textarea id="jsonEditor" class="editor" placeholder="请输入JSON"></textarea>
+            <div id="jsonError" class="error"></div>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-label">
+                <span>YAML</span>
+                <div>
+                    <button class="format-button" onclick="formatYAML()">格式化</button>
+                    <button class="copy-button" onclick="copyYAML()">复制</button>
+                    <button class="clear-button" onclick="clearYAML()">清空</button>
+                </div>
+            </div>
+            <textarea id="yamlEditor" class="editor" placeholder="请输入YAML"></textarea>
+            <div id="yamlError" class="error"></div>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="convert-button" onclick="jsonToYaml()">JSON → YAML</button>
+        <button class="convert-button" onclick="yamlToJson()">YAML → JSON</button>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    function jsonToYaml() {
+        try {
+            const jsonStr = document.getElementById('jsonEditor').value;
+            if (!jsonStr.trim()) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            const jsonObj = JSON.parse(jsonStr);
+            const yamlStr = jsyaml.dump(jsonObj, {
+                lineWidth: -1,  // 禁用折行
+                noRefs: true,   // 禁用引用
+                quotingType: '"' // 使用双引号
+            });
+            document.getElementById('yamlEditor').value = yamlStr;
+            document.getElementById('jsonError').textContent = '';
+        } catch (err) {
+            document.getElementById('jsonError').textContent = '无效的JSON格式: ' + err.message;
+        }
+    }
+
+    function yamlToJson() {
+        try {
+            const yamlStr = document.getElementById('yamlEditor').value;
+            if (!yamlStr.trim()) {
+                showToast('请输入YAML数据');
+                return;
+            }
+            const jsonObj = jsyaml.load(yamlStr);
+            const jsonStr = JSON.stringify(jsonObj, null, 2);
+            document.getElementById('jsonEditor').value = jsonStr;
+            document.getElementById('yamlError').textContent = '';
+        } catch (err) {
+            document.getElementById('yamlError').textContent = '无效的YAML格式: ' + err.message;
+        }
+    }
+
+    function formatJSON() {
+        try {
+            const jsonStr = document.getElementById('jsonEditor').value;
+            if (!jsonStr.trim()) return;
+            const jsonObj = JSON.parse(jsonStr);
+            document.getElementById('jsonEditor').value = JSON.stringify(jsonObj, null, 2);
+            document.getElementById('jsonError').textContent = '';
+        } catch (err) {
+            document.getElementById('jsonError').textContent = '无效的JSON格式: ' + err.message;
+        }
+    }
+
+    function formatYAML() {
+        try {
+            const yamlStr = document.getElementById('yamlEditor').value;
+            if (!yamlStr.trim()) return;
+            const jsonObj = jsyaml.load(yamlStr);
+            document.getElementById('yamlEditor').value = jsyaml.dump(jsonObj, {
+                lineWidth: -1,
+                noRefs: true,
+                quotingType: '"'
+            });
+            document.getElementById('yamlError').textContent = '';
+        } catch (err) {
+            document.getElementById('yamlError').textContent = '无效的YAML格式: ' + err.message;
+        }
+    }
+
+    function copyJSON() {
+        const text = document.getElementById('jsonEditor').value;
+        copyToClipboard(text);
+    }
+
+    function copyYAML() {
+        const text = document.getElementById('yamlEditor').value;
+        copyToClipboard(text);
+    }
+
+    function clearJSON() {
+        document.getElementById('jsonEditor').value = '';
+        document.getElementById('jsonError').textContent = '';
+    }
+
+    function clearYAML() {
+        document.getElementById('yamlEditor').value = '';
+        document.getElementById('yamlError').textContent = '';
+    }
+
+    function copyToClipboard(text) {
+        if (!text.trim()) {
+            showToast('没有可复制的内容');
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // 修改示例数据，使其更有代表性
+    document.addEventListener('DOMContentLoaded', function() {
+        const exampleJSON = {
+            name: "配置示例",
+            version: "1.0.0",
+            description: "这是一个包含多种数据类型的示例配置文件，用于演示JSON和YAML的转换效果。",
+            settings: {
+                enabled: true,
+                timeout: 30,
+                items: [
+                    "第一项配置内容",
+                    "这是一段较长的配置说明文本",
+                    "another_config_item"
+                ],
+                database: {
+                    host: "localhost",
+                    port: 5432,
+                    credentials: {
+                        username: "admin",
+                        password: "password123"
+                    }
+                }
+            }
+        };
+        document.getElementById('jsonEditor').value = JSON.stringify(exampleJSON, null, 2);
+        jsonToYaml();
+    });
+</script>
+</body>
+</html>
