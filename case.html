@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命名转换</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .case-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #2c3e50;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .result-value {
+            font-family: monospace;
+            flex: 1;
+            margin: 0 10px;
+            word-break: break-all;
+        }
+
+        .copy-button {
+            padding: 4px 8px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #0056b3;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>命名转换</h1>
+
+    <div class="case-section">
+        <div class="input-group">
+            <label>输入文本:</label>
+            <input type="text" id="inputText" placeholder="输入需要转换的文本">
+        </div>
+
+        <div id="results">
+            <!-- 结果将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+</div>
+
+<script>
+    // 转换函数
+    const transformers = {
+        original: {
+            name: '原始输出',
+            transform: text => text
+        },
+        lowercase: {
+            name: '全小写',
+            transform: text => text.toLowerCase()
+        },
+        uppercase: {
+            name: '全大写',
+            transform: text => text.toUpperCase()
+        },
+        capitalize: {
+            name: '首字母大写',
+            transform: text => text.split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ')
+        },
+        camelCase: {
+            name: '驼峰',
+            transform: text => text.toLowerCase()
+                .split(/[\s-_]+/)
+                .map((word, index) => index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1))
+                .join('')
+        },
+        pascalCase: {
+            name: '帕斯卡',
+            transform: text => text.toLowerCase()
+                .split(/[\s-_]+/)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join('')
+        },
+        snakeCase: {
+            name: '下划线',
+            transform: text => text.toLowerCase()
+                .replace(/[\s-]+/g, '_')
+        },
+        constantCase: {
+            name: '静态变量',
+            transform: text => text.toUpperCase()
+                .replace(/[\s-]+/g, '_')
+        },
+        kebabCase: {
+            name: '中划线',
+            transform: text => text.toLowerCase()
+                .replace(/[\s_]+/g, '-')
+        }
+    };
+
+    // 更新结果
+    function updateResults() {
+        const input = document.getElementById('inputText').value;
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
+
+        if (!input.trim()) return;
+
+        Object.entries(transformers).forEach(([key, { name, transform }]) => {
+            const result = transform(input);
+            addResultItem(name, result);
+        });
+    }
+
+    // 添加结果项
+    function addResultItem(label, value) {
+        const resultsContainer = document.getElementById('results');
+        const item = document.createElement('div');
+        item.className = 'result-item';
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'result-label';
+        labelDiv.textContent = label;
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'result-value';
+        valueDiv.textContent = value;
+
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.textContent = '复制';
+        copyButton.onclick = () => copyToClipboard(value);
+
+        item.appendChild(labelDiv);
+        item.appendChild(valueDiv);
+        item.appendChild(copyButton);
+        resultsContainer.appendChild(item);
+    }
+
+    // 复制到剪贴板
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    // 显示提示信息
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // 添加事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('inputText').addEventListener('input', updateResults);
+        
+        // 添加示例文本
+        document.getElementById('inputText').value = 'Hello World';
+        updateResults();
+    });
+</script>
+</body>
+</html> 
