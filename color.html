@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色工具</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .content-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .shadow-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .shadow-preview {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        .shadow-controls {
+            flex: 1;
+        }
+
+        .direction-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .direction-button {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .direction-button.active {
+            background: #007BFF;
+            color: white;
+            border-color: #007BFF;
+        }
+
+        .direction-button.center {
+            visibility: hidden;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-input {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .color-text {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: monospace;
+            width: 120px;
+        }
+
+        .preview-box {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 4px;
+            background: #dee2e6;
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #007BFF;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .shape-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .shape-button {
+            flex: 1;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .shape-button.active {
+            background: #007BFF;
+            color: white;
+            border-color: #007BFF;
+        }
+
+        .shape-button svg {
+            width: 100%;
+            height: 20px;
+        }
+
+        .code-output {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-top: 20px;
+            position: relative;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            padding-top: 45px;
+        }
+
+        .copy-button {
+            padding: 4px 8px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-button:hover {
+            background: #0056b3;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .code-line {
+            color: #e6db74;
+        }
+
+        .code-property {
+            color: #66d9ef;
+        }
+
+        .code-value {
+            color: #a6e22e;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .tab.active {
+            background: #007BFF;
+            color: white;
+        }
+
+        .preview-color {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            margin: 20px auto;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .color-values {
+            margin-top: 20px;
+        }
+
+        .value-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .value-item label {
+            width: 60px;
+            margin: 0;
+        }
+
+        .value-item input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+            background: #f8f9fa;
+            cursor: default;
+        }
+
+        .code-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .reset-button {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .reset-button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>颜色工具</h1>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('picker')">颜色选择器</div>
+        <div class="tab" onclick="switchTab('shadow')">阴影生成器</div>
+    </div>
+
+    <div id="picker" class="content-section">
+        <div class="setting-item">
+            <label>选择颜色:</label>
+            <div class="color-picker">
+                <input type="color" id="colorPicker" class="color-input" value="#e0e0e0">
+                <input type="text" id="colorText" class="color-text" value="#e0e0e0">
+            </div>
+        </div>
+
+        <div class="preview-color" id="previewColor"></div>
+
+        <div class="color-values">
+            <div class="value-item">
+                <label>HEX:</label>
+                <input type="text" id="hexValue" readonly>
+                <button class="copy-button" onclick="copyColorValue('hex')">复制</button>
+            </div>
+            <div class="value-item">
+                <label>RGB:</label>
+                <input type="text" id="rgbValue" readonly>
+                <button class="copy-button" onclick="copyColorValue('rgb')">复制</button>
+            </div>
+            <div class="value-item">
+                <label>RGBA:</label>
+                <input type="text" id="rgbaValue" readonly>
+                <button class="copy-button" onclick="copyColorValue('rgba')">复制</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shadow" class="content-section" style="display: none;">
+        <div class="shadow-container">
+            <div class="shadow-preview">
+                <div class="preview-box" id="previewBox"></div>
+            </div>
+            <div class="shadow-controls">
+                <div class="setting-item">
+                    <label>阴影方向:</label>
+                    <div class="direction-buttons">
+                        <button class="direction-button" data-direction="top-left">↖</button>
+                        <button class="direction-button" data-direction="top">↑</button>
+                        <button class="direction-button" data-direction="top-right">↗</button>
+                        <button class="direction-button" data-direction="left">←</button>
+                        <button class="direction-button center">·</button>
+                        <button class="direction-button" data-direction="right">→</button>
+                        <button class="direction-button" data-direction="bottom-left">↙</button>
+                        <button class="direction-button" data-direction="bottom">↓</button>
+                        <button class="direction-button active" data-direction="bottom-right">↘</button>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>大小</span>
+                        <span id="sizeValue">50px</span>
+                    </div>
+                    <input type="range" id="sizeSlider" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>圆角</span>
+                        <span id="radiusValue">50px</span>
+                    </div>
+                    <input type="range" id="radiusSlider" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>阴影距离</span>
+                        <span id="distanceValue">24px</span>
+                    </div>
+                    <input type="range" id="distanceSlider" class="slider" min="0" max="100" value="24">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>阴影强度</span>
+                        <span id="intensityValue">46px</span>
+                    </div>
+                    <input type="range" id="intensitySlider" class="slider" min="0" max="100" value="46">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>模糊度</span>
+                        <span id="blurValue">0px</span>
+                    </div>
+                    <input type="range" id="blurSlider" class="slider" min="0" max="100" value="0">
+                </div>
+
+                <div class="setting-item">
+                    <label>阴影形状:</label>
+                    <div class="shape-buttons">
+                        <button class="shape-button active" data-shape="normal">
+                            <svg viewBox="0 0 100 20">
+                                <path d="M0,10 L100,10" stroke="currentColor" fill="none"/>
+                            </svg>
+                        </button>
+                        <button class="shape-button" data-shape="concave">
+                            <svg viewBox="0 0 100 20">
+                                <path d="M0,10 Q50,0 100,10" stroke="currentColor" fill="none"/>
+                            </svg>
+                        </button>
+                        <button class="shape-button" data-shape="convex">
+                            <svg viewBox="0 0 100 20">
+                                <path d="M0,10 Q50,20 100,10" stroke="currentColor" fill="none"/>
+                            </svg>
+                        </button>
+                        <button class="shape-button" data-shape="pressed">
+                            <svg viewBox="0 0 100 20">
+                                <path d="M0,5 L40,5 L50,15 L60,5 L100,5" stroke="currentColor" fill="none"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="code-output">
+                    <div class="code-buttons">
+                        <button class="copy-button" onclick="copyCode()">复制</button>
+                        <button class="reset-button" onclick="resetShadow()">重置</button>
+                    </div>
+                    <div id="codeOutput"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    let currentShape = 'normal';
+    let currentColor = '#E0E0E0';
+    let currentDirection = 'bottom-right';
+    const defaultSettings = {
+        size: 50,
+        radius: 50,
+        distance: 20,
+        intensity: 60,
+        blur: 0,
+        shape: 'normal',
+        direction: 'bottom-right',
+        color: '#E0E0E0'
+    };
+
+    function resetShadow() {
+        // 重置所有滑块值
+        document.getElementById('sizeSlider').value = defaultSettings.size;
+        document.getElementById('radiusSlider').value = defaultSettings.radius;
+        document.getElementById('distanceSlider').value = defaultSettings.distance;
+        document.getElementById('intensitySlider').value = defaultSettings.intensity;
+        document.getElementById('blurSlider').value = defaultSettings.blur;
+
+        // 更新显示的值
+        document.getElementById('sizeValue').textContent = defaultSettings.size + 'px';
+        document.getElementById('radiusValue').textContent = defaultSettings.radius + 'px';
+        document.getElementById('distanceValue').textContent = defaultSettings.distance + 'px';
+        document.getElementById('intensityValue').textContent = defaultSettings.intensity + 'px';
+        document.getElementById('blurValue').textContent = defaultSettings.blur + 'px';
+
+        // 重置形状按钮
+        document.querySelectorAll('.shape-button').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.shape === defaultSettings.shape) {
+                btn.classList.add('active');
+            }
+        });
+
+        // 重置方向按钮
+        document.querySelectorAll('.direction-button').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.direction === defaultSettings.direction) {
+                btn.classList.add('active');
+            }
+        });
+
+        // 重置全局变量
+        currentShape = defaultSettings.shape;
+        currentDirection = defaultSettings.direction;
+        currentColor = defaultSettings.color;
+
+        // 更新预览
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const size = document.getElementById('sizeSlider').value;
+        const radius = document.getElementById('radiusSlider').value;
+        const distance = document.getElementById('distanceSlider').value;
+        const intensity = document.getElementById('intensitySlider').value;
+        const blur = document.getElementById('blurSlider').value;
+
+        const box = document.getElementById('previewBox');
+        box.style.width = size * 2 + 'px';
+        box.style.height = size * 2 + 'px';
+        box.style.borderRadius = radius + 'px';
+
+        const darkShadow = `rgba(0, 0, 0, 0.2)`;
+        const lightShadow = `rgba(255, 255, 255, 0.7)`;
+
+        let xOffset = 0, yOffset = 0;
+        switch(currentDirection) {
+            case 'top-left': xOffset = -1; yOffset = -1; break;
+            case 'top': xOffset = 0; yOffset = -1; break;
+            case 'top-right': xOffset = 1; yOffset = -1; break;
+            case 'left': xOffset = -1; yOffset = 0; break;
+            case 'right': xOffset = 1; yOffset = 0; break;
+            case 'bottom-left': xOffset = -1; yOffset = 1; break;
+            case 'bottom': xOffset = 0; yOffset = 1; break;
+            case 'bottom-right': xOffset = 1; yOffset = 1; break;
+        }
+
+        let shadowStyle = '';
+        switch(currentShape) {
+            case 'normal':
+                shadowStyle = `
+                        ${xOffset * distance}px ${yOffset * distance}px ${intensity}px ${darkShadow},
+                        ${-xOffset * distance}px ${-yOffset * distance}px ${intensity}px ${lightShadow}
+                    `;
+                break;
+            case 'concave':
+                shadowStyle = `inset ${xOffset * distance}px ${yOffset * distance}px ${intensity}px ${lightShadow},
+                                 inset ${-xOffset * distance}px ${-yOffset * distance}px ${intensity}px ${darkShadow}`;
+                break;
+            case 'convex':
+                shadowStyle = `inset ${xOffset * distance}px ${yOffset * distance}px ${intensity}px ${darkShadow},
+                                 inset ${-xOffset * distance}px ${-yOffset * distance}px ${intensity}px ${lightShadow}`;
+                break;
+            case 'pressed':
+                shadowStyle = `inset ${xOffset * distance}px ${yOffset * distance}px ${intensity}px ${darkShadow}`;
+                break;
+        }
+
+        box.style.background = currentColor;
+        box.style.boxShadow = shadowStyle;
+
+        updateCode();
+    }
+
+    function updateCode() {
+        const size = document.getElementById('sizeSlider').value;
+        const radius = document.getElementById('radiusSlider').value;
+        const distance = document.getElementById('distanceSlider').value;
+        const intensity = document.getElementById('intensitySlider').value;
+
+        const code = `
+<span class="code-property">border-radius:</span> <span class="code-value">${radius}px</span>;
+<span class="code-property">background:</span> <span class="code-value">${currentColor}</span>;
+<span class="code-property">box-shadow:</span> <span class="code-value">${document.getElementById('previewBox').style.boxShadow}</span>;`;
+
+        document.getElementById('codeOutput').innerHTML = code;
+    }
+
+    function copyCode() {
+        const code = document.getElementById('codeOutput').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.getElementById(tabName).style.display = 'block';
+        event.target.classList.add('active');
+    }
+
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    function updateColorValues(color) {
+        const rgb = hexToRgb(color);
+        if (rgb) {
+            document.getElementById('hexValue').value = color;
+            document.getElementById('rgbValue').value = `(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            document.getElementById('rgbaValue').value = `(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
+            document.getElementById('previewColor').style.backgroundColor = color;
+        }
+    }
+
+    function copyColorValue(type) {
+        const value = document.getElementById(type + 'Value').value;
+        navigator.clipboard.writeText(value).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const colorPicker = document.getElementById('colorPicker');
+        const colorText = document.getElementById('colorText');
+
+        colorPicker.addEventListener('input', function(e) {
+            currentColor = e.target.value;
+            colorText.value = currentColor;
+            updateColorValues(currentColor);
+            updatePreview();
+        });
+
+        colorText.addEventListener('input', function(e) {
+            currentColor = e.target.value;
+            colorPicker.value = currentColor;
+            updateColorValues(currentColor);
+            updatePreview();
+        });
+
+        // 初始化颜色值
+        updateColorValues(currentColor);
+
+        // 滑块事件
+        const sliders = ['size', 'radius', 'distance', 'intensity', 'blur'];
+        sliders.forEach(id => {
+            const slider = document.getElementById(id + 'Slider');
+            const value = document.getElementById(id + 'Value');
+
+            slider.addEventListener('input', function(e) {
+                value.textContent = e.target.value + 'px';
+                updatePreview();
+            });
+        });
+
+        // 形状按钮事件
+        document.querySelectorAll('.shape-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.shape-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                currentShape = button.dataset.shape;
+                updatePreview();
+            });
+        });
+
+        // 方向按钮事件
+        document.querySelectorAll('.direction-button').forEach(button => {
+            if (!button.classList.contains('center')) {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.direction-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    currentDirection = button.dataset.direction;
+                    updatePreview();
+                });
+            }
+        });
+
+        // 设置初始阴影效果
+        resetShadow();
+    });
+</script>
+</body>
+</html>
