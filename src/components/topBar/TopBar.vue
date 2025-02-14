@@ -25,7 +25,9 @@ const toolQueryOptions = computed(() => {
     return option.label.includes(toolQuery.value)
   })
 })
-
+function openGithub(){
+  window.open("https://github.com/LYX9527/develop-tools")
+}
 function handleSelect(key: string) {
   toolQuery.value=""
   router.push({path: `/tool/${key}`})
@@ -88,7 +90,7 @@ onMounted(() => {
           浅色
         </template>
       </n-switch>
-      <div class="menu-option">
+      <div class="menu-option" @click="openGithub">
         <n-icon size="22">
           <LogoGithub/>
         </n-icon>
@@ -145,6 +147,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       cursor: pointer;
+      transition:0.2s;
     }
   }
 }
