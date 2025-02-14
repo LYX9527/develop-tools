@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {LogoGithub, ShareSocialOutline} from "@vicons/ionicons5"
+import {LogoGithub} from "@vicons/ionicons5"
 import {Toolbox16Regular} from "@vicons/fluent"
 import {DocumentSearch16Regular} from "@vicons/fluent";
 import {NIcon, NSwitch, NInput, NDropdown, type DropdownOption} from "naive-ui"
@@ -18,18 +18,20 @@ const appStatus = useAppStatusStore()
 const router = useRouter()
 let toolList = shallowRef<DropdownOption  []>([])
 const toolQueryOptions = computed(() => {
-  if (toolQuery.value == ""){
+  if (toolQuery.value == "") {
     return []
   }
   return toolList.value.filter((option: any) => {
     return option.label.includes(toolQuery.value)
   })
 })
-function openGithub(){
+
+function openGithub() {
   window.open("https://github.com/LYX9527/develop-tools")
 }
+
 function handleSelect(key: string) {
-  toolQuery.value=""
+  toolQuery.value = ""
   router.push({path: `/tool/${key}`})
 }
 
@@ -96,12 +98,6 @@ onMounted(() => {
         </n-icon>
         <p>Github</p>
       </div>
-      <div class="menu-option">
-        <n-icon size="22">
-          <ShareSocialOutline/>
-        </n-icon>
-        <p>网站分享</p>
-      </div>
     </div>
   </div>
 </template>
@@ -147,7 +143,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       cursor: pointer;
-      transition:0.2s;
+      transition: 0.2s;
     }
   }
 }
