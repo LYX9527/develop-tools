@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP请求测试工具</title>
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .request-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .url-line {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .method-select {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .send-button {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: #0056b3;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .tab.active {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 0 4px 4px 4px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .headers-table, .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .headers-table td, .params-table td {
+            padding: 5px;
+        }
+
+        .headers-table input, .params-table input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .add-row-button {
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .add-row-button:hover {
+            background: #218838;
+        }
+
+        .remove-row {
+            padding: 4px 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .remove-row:hover {
+            background: #c82333;
+        }
+
+        .body-input {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .body-type {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .body-type label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .form-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .form-data-table td {
+            padding: 5px;
+        }
+
+        .form-data-table input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .response-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .response-container {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .response-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .response-action-button {
+            padding: 4px 8px;
+            background: rgba(108, 117, 125, 0.8);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            backdrop-filter: blur(2px);
+        }
+
+        .response-action-button:hover {
+            background: rgba(108, 117, 125, 1);
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .response-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .response-time {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .response-body {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+            overflow-x: scroll;
+            background: white;
+            white-space: pre-wrap;
+            tab-size: 4;
+            -moz-tab-size: 4;
+        }
+
+        .quick-requests {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .quick-requests h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .quick-requests-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quick-request-button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .quick-request-button:hover {
+            background: #5a6268;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>HTTP请求测试工具</h1>
+
+    <div class="quick-requests">
+        <h3>常用请求</h3>
+        <div class="quick-requests-buttons">
+            <button class="quick-request-button" onclick="loadQuickRequest('get-example')">GET示例</button>
+            <button class="quick-request-button" onclick="loadQuickRequest('post-json')">POST JSON</button>
+            <button class="quick-request-button" onclick="loadQuickRequest('post-form')">POST 表单</button>
+            <button class="quick-request-button" onclick="loadQuickRequest('put-example')">PUT示例</button>
+            <button class="quick-request-button" onclick="loadQuickRequest('delete-example')">DELETE示例</button>
+        </div>
+    </div>
+
+    <div class="request-section">
+        <div class="url-line">
+            <select id="method" class="method-select">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="HEAD">HEAD</option>
+                <option value="OPTIONS">OPTIONS</option>
+            </select>
+            <input type="text" id="url" class="url-input" placeholder="输入请求URL">
+            <button class="send-button" onclick="sendRequest()">发送请求</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'params')">Params</button>
+            <button class="tab" onclick="switchTab(event, 'headers')">Headers</button>
+            <button class="tab" onclick="switchTab(event, 'body')">Body</button>
+        </div>
+
+        <div id="params" class="tab-content active">
+            <table class="params-table" id="paramsTable">
+                <tr>
+                    <td><input type="text" placeholder="参数名"></td>
+                    <td><input type="text" placeholder="参数值"></td>
+                    <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                </tr>
+            </table>
+            <button class="add-row-button" onclick="addRow('paramsTable')">添加参数</button>
+        </div>
+
+        <div id="headers" class="tab-content">
+            <table class="headers-table" id="headersTable">
+                <tr>
+                    <td><input type="text" placeholder="Header名"></td>
+                    <td><input type="text" placeholder="Header值"></td>
+                    <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                </tr>
+            </table>
+            <button class="add-row-button" onclick="addRow('headersTable')">添加Header</button>
+        </div>
+
+        <div id="body" class="tab-content">
+            <div class="body-type">
+                <label>
+                    <input type="radio" name="bodyType" value="none" checked onchange="switchBodyType(this.value)">
+                    none
+                </label>
+                <label>
+                    <input type="radio" name="bodyType" value="form-data" onchange="switchBodyType(this.value)">
+                    form-data
+                </label>
+                <label>
+                    <input type="radio" name="bodyType" value="x-www-form-urlencoded" onchange="switchBodyType(this.value)">
+                    x-www-form-urlencoded
+                </label>
+                <label>
+                    <input type="radio" name="bodyType" value="raw" onchange="switchBodyType(this.value)">
+                    raw
+                </label>
+            </div>
+            <div id="formDataBody" style="display: none;">
+                <table class="form-data-table" id="formDataTable">
+                    <tr>
+                        <td><input type="text" placeholder="Key"></td>
+                        <td><input type="text" placeholder="Value"></td>
+                        <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                    </tr>
+                </table>
+                <button class="add-row-button" onclick="addFormDataRow()">添加字段</button>
+            </div>
+            <div id="urlEncodedBody" style="display: none;">
+                <table class="params-table" id="urlEncodedTable">
+                    <tr>
+                        <td><input type="text" placeholder="Key"></td>
+                        <td><input type="text" placeholder="Value"></td>
+                        <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                    </tr>
+                </table>
+                <button class="add-row-button" onclick="addUrlEncodedRow()">添加字段</button>
+            </div>
+            <textarea id="requestBody" class="body-input" style="display: none;"
+                      placeholder="请求体 (JSON, XML, Text etc.)"></textarea>
+        </div>
+    </div>
+
+    <div class="response-section">
+        <div class="response-header">
+            <div id="responseStatus" class="response-status"></div>
+            <div id="responseTime" class="response-time"></div>
+        </div>
+        <div class="response-container">
+            <div class="response-actions">
+                <button class="response-action-button" onclick="formatResponse()">格式化</button>
+                <button class="response-action-button" onclick="compressResponse()">压缩</button>
+                <button class="response-action-button" onclick="copyResponse()">复制</button>
+            </div>
+            <textarea id="responseBody" class="response-body" readonly spellcheck="false"></textarea>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    // 常用请求示例
+    const quickRequests = {
+        'get-example': {
+            method: 'GET',
+            url: 'https://api.example.com/users',
+            headers: [
+                { name: 'Accept', value: 'application/json' }
+            ],
+            params: [
+                { name: 'page', value: '1' },
+                { name: 'limit', value: '10' }
+            ]
+        },
+        'post-json': {
+            method: 'POST',
+            url: 'https://api.example.com/users',
+            headers: [
+                { name: 'Content-Type', value: 'application/json' }
+            ],
+            body: JSON.stringify({
+                name: "John Doe",
+                email: "john@example.com"
+            }, null, 2)
+        },
+        'post-form': {
+            method: 'POST',
+            url: 'https://api.example.com/upload',
+            headers: [
+                { name: 'Content-Type', value: 'application/x-www-form-urlencoded' }
+            ],
+            body: 'name=John&age=30'
+        },
+        'put-example': {
+            method: 'PUT',
+            url: 'https://api.example.com/users/1',
+            headers: [
+                { name: 'Content-Type', value: 'application/json' }
+            ],
+            body: JSON.stringify({
+                name: "John Doe Updated",
+                email: "john.updated@example.com"
+            }, null, 2)
+        },
+        'delete-example': {
+            method: 'DELETE',
+            url: 'https://api.example.com/users/1',
+            headers: [
+                { name: 'Authorization', value: 'Bearer token' }
+            ]
+        }
+    };
+
+    function loadQuickRequest(requestId) {
+        const request = quickRequests[requestId];
+        if (!request) return;
+
+        document.getElementById('method').value = request.method;
+        document.getElementById('url').value = request.url;
+        document.getElementById('requestBody').value = request.body || '';
+
+        // 清空并重新填充headers
+        const headersTable = document.getElementById('headersTable');
+        headersTable.innerHTML = '';
+        if (request.headers) {
+            request.headers.forEach(header => {
+                const row = headersTable.insertRow();
+                row.innerHTML = `
+                        <td><input type="text" value="${header.name}" placeholder="Header名"></td>
+                        <td><input type="text" value="${header.value}" placeholder="Header值"></td>
+                        <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                    `;
+            });
+        }
+
+        // 清空并重新填充params
+        const paramsTable = document.getElementById('paramsTable');
+        paramsTable.innerHTML = '';
+        if (request.params) {
+            request.params.forEach(param => {
+                const row = paramsTable.insertRow();
+                row.innerHTML = `
+                        <td><input type="text" value="${param.name}" placeholder="参数名"></td>
+                        <td><input type="text" value="${param.value}" placeholder="参数值"></td>
+                        <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+                    `;
+            });
+        }
+    }
+
+    function switchTab(event, tabName) {
+        const tabs = document.getElementsByClassName('tab');
+        const tabContents = document.getElementsByClassName('tab-content');
+
+        for (let tab of tabs) {
+            tab.classList.remove('active');
+        }
+        for (let content of tabContents) {
+            content.classList.remove('active');
+        }
+
+        event.currentTarget.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+    }
+
+    function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        const row = table.insertRow();
+        row.innerHTML = `
+                <td><input type="text" placeholder="${tableId === 'headersTable' ? 'Header名' : '参数名'}"></td>
+                <td><input type="text" placeholder="${tableId === 'headersTable' ? 'Header值' : '参数值'}"></td>
+                <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+            `;
+    }
+
+    function removeRow(button) {
+        button.closest('tr').remove();
+    }
+
+    function getTableData(tableId) {
+        const table = document.getElementById(tableId);
+        const data = {};
+        for (let row of table.rows) {
+            const inputs = row.getElementsByTagName('input');
+            if (inputs[0].value) {
+                data[inputs[0].value] = inputs[1].value;
+            }
+        }
+        return data;
+    }
+
+    function switchBodyType(type) {
+        document.getElementById('formDataBody').style.display = type === 'form-data' ? 'block' : 'none';
+        document.getElementById('urlEncodedBody').style.display = type === 'x-www-form-urlencoded' ? 'block' : 'none';
+        document.getElementById('requestBody').style.display = type === 'raw' ? 'block' : 'none';
+    }
+
+    function addFormDataRow() {
+        const table = document.getElementById('formDataTable');
+        const row = table.insertRow();
+        row.innerHTML = `
+                <td><input type="text" placeholder="Key"></td>
+                <td><input type="text" placeholder="Value"></td>
+                <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+            `;
+    }
+
+    function addUrlEncodedRow() {
+        const table = document.getElementById('urlEncodedTable');
+        const row = table.insertRow();
+        row.innerHTML = `
+                <td><input type="text" placeholder="Key"></td>
+                <td><input type="text" placeholder="Value"></td>
+                <td><button class="remove-row" onclick="removeRow(this)">×</button></td>
+            `;
+    }
+
+    function getFormData() {
+        const formData = new FormData();
+        const table = document.getElementById('formDataTable');
+        for (let row of table.rows) {
+            const inputs = row.getElementsByTagName('input');
+            const key = inputs[0].value;
+            if (key) {
+                formData.append(key, inputs[1].value || '');
+            }
+        }
+        return formData;
+    }
+
+    function getUrlEncodedData() {
+        const data = new URLSearchParams();
+        const table = document.getElementById('urlEncodedTable');
+        for (let row of table.rows) {
+            const inputs = row.getElementsByTagName('input');
+            if (inputs[0].value) {
+                data.append(inputs[0].value, inputs[1].value);
+            }
+        }
+        return data;
+    }
+
+    function formatResponse() {
+        const responseBody = document.getElementById('responseBody');
+        try {
+            const json = JSON.parse(responseBody.value);
+            responseBody.value = JSON.stringify(json, null, 4);
+        } catch (e) {
+            showToast('响应内容不是有效的JSON格式');
+        }
+    }
+
+    function compressResponse() {
+        const responseBody = document.getElementById('responseBody');
+        try {
+            const json = JSON.parse(responseBody.value);
+            responseBody.value = JSON.stringify(json);
+        } catch (e) {
+            showToast('响应内容不是有效的JSON格式');
+        }
+    }
+
+    function copyResponse() {
+        const responseBody = document.getElementById('responseBody');
+        responseBody.select();
+        navigator.clipboard.writeText(responseBody.value).then(() => {
+            showToast('已复制到剪贴板');
+        }, () => {
+            showToast('复制失败，请手动复制');
+        });
+    }
+
+    async function sendRequest() {
+        const method = document.getElementById('method').value;
+        let url = document.getElementById('url').value;
+        const headers = getTableData('headersTable');
+        const params = getTableData('paramsTable');
+
+        // 获取请求体类型和内容
+        const bodyType = document.querySelector('input[name="bodyType"]:checked').value;
+        let body = null;
+
+        if (!['GET', 'HEAD'].includes(method)) {
+            switch (bodyType) {
+                case 'form-data':
+                    body = getFormData();
+                    delete headers['Content-Type']; // 让浏览器自动设置
+                    break;
+                case 'x-www-form-urlencoded':
+                    body = getUrlEncodedData();
+                    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                    break;
+                case 'raw':
+                    body = document.getElementById('requestBody').value;
+                    headers['Content-Type'] = 'application/json';
+                    break;
+            }
+        }
+
+        // 添加URL参数
+        const urlObj = new URL(url);
+        Object.entries(params).forEach(([key, value]) => {
+            urlObj.searchParams.append(key, value);
+        });
+        url = urlObj.toString();
+
+        try {
+            const startTime = performance.now();
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: ['GET', 'HEAD'].includes(method) ? null : body
+            });
+
+            const endTime = performance.now();
+            const duration = Math.round(endTime - startTime);
+
+            const responseStatus = document.getElementById('responseStatus');
+            responseStatus.textContent = `${response.status} ${response.statusText}`;
+            responseStatus.className = `response-status ${response.ok ? 'status-success' : 'status-error'}`;
+
+            document.getElementById('responseTime').textContent = `${duration}ms`;
+
+            const responseText = await response.text();
+            const responseBody = document.getElementById('responseBody');
+            responseBody.value = '';  // 清空现有内容
+
+            try {
+                // 尝试格式化JSON响应
+                const jsonResponse = JSON.parse(responseText);
+                responseBody.value = JSON.stringify(jsonResponse, null, 4);
+            } catch {
+                // 如果不是JSON，直接显示原始响应
+                responseBody.value = responseText;
+            }
+        } catch (error) {
+            document.getElementById('responseStatus').textContent = 'Error';
+            document.getElementById('responseStatus').className = 'response-status status-error';
+            document.getElementById('responseTime').textContent = '';
+            const responseBody = document.getElementById('responseBody');
+            responseBody.value = error.message;
+        }
+    }
+
+    // 初始化添加一些默认行
+    document.addEventListener('DOMContentLoaded', () => {
+        addRow('headersTable');
+        addRow('paramsTable');
+        addFormDataRow();
+        addUrlEncodedRow();
+    });
+</script>
+</body>
+</html>
