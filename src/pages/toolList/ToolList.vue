@@ -14,6 +14,13 @@ function selectTool(item: ToolLoadedInfo) {
   router.push({path: `/tool/${item.toolTag}`})
 }
 
+function openGithub(event: Event, github?: string) {
+  event.stopPropagation()
+  if (github) {
+    window.open(github)
+  }
+}
+
 onMounted(() => {
   loadingShow.value = true
   getToolLoadedInfos().then((list) => {
@@ -46,6 +53,10 @@ onMounted(() => {
         <div v-for="tag in item.tags" class="tag">
           {{ tag }}
         </div>
+      </div>
+      <div class="powered-by" @click="(e) => openGithub(e, item.github)">
+        <span class="powered-text">Powered by</span>
+        <span class="author">{{ item.author }}</span>
       </div>
     </div>
   </div>
@@ -90,6 +101,7 @@ onMounted(() => {
     box-sizing: border-box;
     border-radius: 12px;
     padding: 20px;
+    padding-bottom: 45px;
     border: 1px solid rgba(152, 152, 152, 0.18);
     transition: all 0.3s ease;
     position: relative;
@@ -124,6 +136,35 @@ onMounted(() => {
         border: 1px solid #007BFF;
         padding: 2px 7px;
         font-size: 11px;
+      }
+    }
+
+    .powered-by {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+
+      .powered-text {
+        color: var(--text-color-3, #999);
+      }
+
+      .author {
+        color: #007BFF;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      &:hover {
+        opacity: 1;
       }
     }
   }

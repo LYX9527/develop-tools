@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import {NCard} from "naive-ui"
 
+const code = `
+const toolInfo: ToolBaseInfo = {
+    name: '颜色工具',
+    description: '拾取颜色工具',
+    icon: Icon,
+    tags: ['颜色', '阴影',"CSS"],
+}`
 </script>
 
 <template>
@@ -10,6 +17,8 @@ import {NCard} from "naive-ui"
     你可以使用useAppStore()获取当前应用程序状态比如主题模式，
     或则参考naiveUI使用NEl来使用
   </n-card>
+  <MacCodeBlock :code="code" language="css"/>
+
 </template>
 
 <style scoped lang="scss">

@@ -18,6 +18,8 @@ export interface ToolBaseInfo {
     author?: string;
     // 工具作者的邮箱，是一个可选字段，用于联系作者
     email?: string;
+    // 工具的github地址，是一个可选字段，用于提供工具的github地址
+    github?: string;
 }
 
 /**
