@@ -14,13 +14,16 @@
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
     "jsencrypt": "^3.3.2",
+    "jsqr": "^1.4.0",
     "pinia": "^2.3.1",
+    "qrcode": "^1.5.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.1",
+    "@types/qrcode": "^1.5.5",
     "@vicons/fluent": "^0.13.0",
     "@vicons/ionicons5": "^0.13.0",
     "@vitejs/plugin-vue": "^5.2.1",
