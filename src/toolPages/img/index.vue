@@ -91,10 +91,6 @@ function processImageFile(file: File, type: 'base64' | 'compress' | 'crop') {
         compressFileSize.value = formatFileSize(file.size)
         compressedFileSize.value = '0 KB'
         break
-      case 'crop':
-        cropFile.value = file
-        cropPreviewUrl.value = base64
-        break
     }
   }
   reader.readAsDataURL(file)
@@ -210,6 +206,7 @@ async function compressImage() {
     message.error('压缩失败')
   }
 }
+
 // 触发文件选择
 function triggerFileInput(type: 'base64' | 'compress') {
   switch (type) {
@@ -364,32 +361,51 @@ function triggerFileInput(type: 'base64' | 'compress') {
   .tab-container {
     max-width: 1200px;
     margin: 0 auto;
-    background: white;
+    background: var(--n-card-color);
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--n-border-color);
+    box-shadow: var(--n-box-shadow);
     overflow: hidden;
 
     .tab-header {
       display: flex;
-      border-bottom: 1px solid #dee2e6;
+      border-bottom: 1px solid var(--n-divider-color);
 
       .tab {
         flex: 1;
         padding: 15px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
-        color: #6c757d;
-        background: #f8f9fa;
+        transition: all 0.3s var(--n-bezier);
+        color: var(--n-text-color-2);
+        background: var(--n-color);
+        position: relative;
+        border: var(--n-border-color);
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: transparent;
+          transition: background-color 0.3s var(--n-bezier);
+        }
 
         &.active {
-          background: white;
-          color: #007bff;
+          background: var(--n-card-color);
+          color: var(--t-primary-color);
           font-weight: 500;
+
+          &::after {
+            background: var(--t-primary-color);
+          }
         }
 
         &:hover:not(.active) {
-          background: #e9ecef;
+          color: var(--n-primary-color-hover);
+          background: var(--n-hover-color);
         }
       }
     }
@@ -413,23 +429,23 @@ function triggerFileInput(type: 'base64' | 'compress') {
         min-width: 100px;
         height: 36px;
         padding: 0 16px;
-        background: #007bff;
-        color: white;
+        background: var(--n-primary-color);
+        color: var(--n-text-color);
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: background 0.3s var(--n-bezier);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-size: 14px;
 
         &:hover {
-          background: #0056b3;
+          background: var(--n-primary-color-hover);
         }
 
         &:disabled {
-          background: #6c757d;
+          background: var(--n-text-color-3);
           cursor: not-allowed;
         }
       }
@@ -441,12 +457,12 @@ function triggerFileInput(type: 'base64' | 'compress') {
 
     .drag-area {
       position: relative;
-      border: 2px dashed #dee2e6;
+      border: 2px dashed var(--n-border-color);
       border-radius: 8px;
       padding: 40px;
       text-align: center;
-      background: #fff;
-      transition: all 0.3s ease;
+      background: var(--n-color);
+      transition: all 0.3s var(--n-bezier);
       cursor: pointer;
       margin-bottom: 20px;
 
@@ -462,12 +478,12 @@ function triggerFileInput(type: 'base64' | 'compress') {
       }
 
       &.dragover {
-        border-color: #007bff;
-        background: #f8f9fa;
+        border-color: var(--n-primary-color);
+        background: var(--n-hover-color);
       }
 
       .drag-area-text {
-        color: #6c757d;
+        color: var(--n-text-color-3);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -477,9 +493,14 @@ function triggerFileInput(type: 'base64' | 'compress') {
           content: '';
           width: 40px;
           height: 40px;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E");
           background-size: contain;
           opacity: 0.5;
+          filter: var(--n-icon-filter);
+
+          :deep([data-theme='dark'] &) {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E");
+          }
         }
       }
     }
@@ -490,9 +511,10 @@ function triggerFileInput(type: 'base64' | 'compress') {
       .preview-image {
         max-width: 100%;
         max-height: 400px;
-        border: 2px dashed #dee2e6;
+        border: 2px dashed var(--n-border-color);
         border-radius: 8px;
         padding: 10px;
+        background: var(--n-color);
       }
     }
 
@@ -501,7 +523,7 @@ function triggerFileInput(type: 'base64' | 'compress') {
       :deep(.n-input) {
         .n-input__textarea-el {
           padding: 10px;
-          border: 1px solid #dee2e6;
+          border: 1px solid var(--n-border-color);
           border-radius: 4px;
           font-family: monospace;
           font-size: 13px;
@@ -510,12 +532,14 @@ function triggerFileInput(type: 'base64' | 'compress') {
           min-height: 120px;
           white-space: pre-wrap;
           word-break: break-all;
+          background: var(--n-color);
+          color: var(--n-text-color);
         }
       }
     }
 
     .info-text {
-      color: #6c757d;
+      color: var(--n-text-color-3);
       font-size: 14px;
     }
 
@@ -524,8 +548,9 @@ function triggerFileInput(type: 'base64' | 'compress') {
       flex-direction: column;
       gap: 16px;
       padding: 20px;
-      background: #f8f9fa;
+      background: var(--n-color);
       border-radius: 8px;
+      border: 1px solid var(--n-border-color);
 
       .setting-item {
         display: flex;
@@ -535,14 +560,14 @@ function triggerFileInput(type: 'base64' | 'compress') {
         .setting-label {
           width: 80px;
           font-size: 14px;
-          color: #6c757d;
+          color: var(--n-text-color-2);
         }
 
         .setting-value {
           min-width: 48px;
           text-align: right;
           font-size: 14px;
-          color: #6c757d;
+          color: var(--n-text-color-3);
         }
 
         :deep(.n-slider) {
@@ -562,7 +587,7 @@ function triggerFileInput(type: 'base64' | 'compress') {
     .size-info {
       margin-top: 8px;
       font-size: 14px;
-      color: #6c757d;
+      color: var(--n-text-color-3);
       display: flex;
       gap: 16px;
       justify-content: center;

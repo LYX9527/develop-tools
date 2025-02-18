@@ -1,30 +1,40 @@
-#app{
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+#app {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 html,body{
   height: 100%;
   width: 100%;
 }
-*{
-  padding: 0;
-  margin: 0;
-  user-select: none;
+
+* {
+    padding: 0;
+    margin: 0;
+    user-select: none;
 }
+
 ::-webkit-scrollbar {
-  width: 18px;
-  height: 8px;
+    width: 18px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  transition: 0.2s;
-  border-radius: 10px;
-  border: 6px solid rgba(0, 0, 0, 0);
-  box-shadow: 6px 0 0 #a9abaf inset;
+    transition: 0.2s;
+    border-radius: 10px;
+    border: 6px solid rgba(0, 0, 0, 0);
+    box-shadow: 6px 0 0 #a9abaf inset;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  box-shadow: 8px 0 0 #888888 inset;
+    box-shadow: 8px 0 0 #888888 inset;
+}
+
+body {
+    --n-border-color: #A49D9D55;
+    --n-box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
+    --n-divider-color: #e1e4e8;
+    --n-border-hover-color: #e6e9ec;
+    --t-primary-color: #007BFF;
 }
