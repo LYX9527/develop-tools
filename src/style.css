@@ -37,4 +37,9 @@ body {
     --n-divider-color: #e1e4e8;
     --n-border-hover-color: #e6e9ec;
     --t-primary-color: #007BFF;
+    --t-success-color: #28a745;
+    --t-error-color: #dc3545;
+    --t-warning-color: #ffc107;
+    --t-info-color: #17a2b8;
+    --t-light-color: #f8f9fa;
 }
