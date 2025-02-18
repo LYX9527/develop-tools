@@ -13,6 +13,7 @@
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
+    "js-yaml": "^4.1.0",
     "jsencrypt": "^3.3.2",
     "jsqr": "^1.4.0",
     "pinia": "^2.3.1",
