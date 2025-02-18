@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.1",
     "@types/qrcode": "^1.5.5",
     "@vicons/fluent": "^0.13.0",
