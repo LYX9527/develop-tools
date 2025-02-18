@@ -5,5 +5,7 @@ const toolInfo:ToolBaseInfo = {
     description: '用来做开发例子的示例工具',
     icon:Icon,
     tags:['工具','示例'],
+    author:'Setruth',
+    github:'https://github.com/setruth'
 }
 export default toolInfo;
