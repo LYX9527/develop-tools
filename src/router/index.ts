@@ -28,6 +28,7 @@ const router = createRouter({
 })
 
 function initRouter() {
+    console.group(`🛠️工具路由注册`);
     for (const toolPath in toolModules) {
         const routerTag = toolPath.split('toolPages/').pop()?.split('/index.vue')[0];
         const route: RouteRecordRaw = {
@@ -36,8 +37,9 @@ function initRouter() {
             component: () => import(`@/toolPages/${routerTag}/index.vue`)
         };
         router.addRoute("tool", route)
-        console.log("工具注册", route.name)
+        console.log(`%c ${routerTag} `, 'background: #007BFFFF; padding: 2px; border-radius: 0 3px 3px 0; color: #fff');
     }
+    console.groupEnd();
 }
 
 router.beforeEach(async (to, _) => {
