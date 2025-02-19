@@ -9,8 +9,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/toolList/ToolList.vue'),
     },
     {
-        path:'/tool/',
-        name:"tool",
+        path: '/tool/',
+        name: "tool",
         component: () => import('@/pages/toolFrame/ToolFrame.vue'),
     },
     {
@@ -23,31 +23,28 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes,
 })
-async function initRouter() {
+
+function initRouter() {
     console.log("动态注册路由")
     for (const toolPath in toolModules) {
-        const toolModulePromise = toolModules[toolPath](); // 加载 Vue 组件
-        await toolModulePromise.then((module) => {
-            const routerTag = toolPath.split('toolPages/').pop()?.split('/index.vue')[0];
-            const route: RouteRecordRaw = {
-                path: `/tool/${routerTag}`,
-                name: `${routerTag}`,
-                component: module.default,
-            };
-            router.addRoute("tool",route)
-            console.log("路由注册", route.name)
-        }).catch((error) => {
-            console.error(`工具加载失败:${toolPath}`, error);
-        });
+        const routerTag = toolPath.split('toolPages/').pop()?.split('/index.vue')[0];
+        const route: RouteRecordRaw = {
+            path: `/tool/${routerTag}`,
+            name: `${routerTag}`,
+            component: () => import(`@/toolPages/${routerTag}/index.vue`)
+        };
+        router.addRoute("tool", route)
+        console.log("路由注册", route.name)
     }
 }
 
 router.beforeEach(async (to, _) => {
     if (!isInitRouter) {
-        await initRouter()
-        isInitRouter=true
-        return {path:to.fullPath}
+        initRouter()
+        isInitRouter = true
+        return {path: to.fullPath}
     }
+    console.log("放行")
     return true
 })
 
