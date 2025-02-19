@@ -12,8 +12,8 @@ export const getToolLoadedInfoByToolTag = async (toolTag: string): Promise<ToolL
     if (!toolInfosCache) {
         await initToolLoadedInfos()
     }
-    const toolInfo=toolInfosCache!!.find((tool) => tool.toolTag === toolTag)
-    if (toolInfo){
+    const toolInfo = toolInfosCache!!.find((tool) => tool.toolTag === toolTag)
+    if (toolInfo) {
         return toolInfo
     }
     throw new Error(`找不到${toolTag}`);
@@ -22,17 +22,12 @@ export const getToolLoadedInfoByToolTag = async (toolTag: string): Promise<ToolL
 
 async function initToolLoadedInfos() {
     const files = import.meta.glob('@/toolPages/*/Info.ts');
-    const toolInfosTemp: ToolLoadedInfo[] = []
-    for (const filePath in files) {
-        const module = await files[filePath]() as { default: ToolBaseInfo };
+    toolInfosCache = [];
+    const promises = Object.entries(files).map(async ([filePath, moduleLoader]) => {
+        const module = await moduleLoader() as { default: ToolBaseInfo };
         const toolTag = filePath.split('toolPages/').pop()?.split('/Info.ts')[0];
-        if (toolTag) {
-            const toolLoadedInfo: ToolLoadedInfo = {
-                ...module.default,
-                toolTag,
-            };
-            toolInfosTemp.push(toolLoadedInfo)
-        }
-    }
-    toolInfosCache = toolInfosTemp
+        if (!toolTag) return
+        toolInfosCache!!.push({...module.default, toolTag})
+    });
+    await Promise.all(promises);
 }
