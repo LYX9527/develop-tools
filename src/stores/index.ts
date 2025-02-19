@@ -1,6 +1,7 @@
 import {defineStore} from "pinia";
-import {computed, ref} from "vue";
+import {computed, ref, shallowRef} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
+import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 
 export const useAppStatusStore = defineStore('appStatus', () => {
     const themeMode = ref(ThemeMode.Light)
@@ -20,5 +21,20 @@ export const useAppStatusStore = defineStore('appStatus', () => {
         getScrollAtTopStatus,
         changeScrollAtTopStatus,
         changeThemeMode,
+    }
+})
+
+export const useNowToolInfoStore = defineStore('nowToolInfo', () => {
+    const nowToolInfo = shallowRef<ToolLoadedInfo | null>(null)
+    const getNowToolInfo = computed(() => {
+        return nowToolInfo.value
+    })
+    const updateNowToolInfo = (newToolInfo: ToolLoadedInfo) => {
+        nowToolInfo.value = newToolInfo
+    }
+
+    return {
+        getNowToolInfo,
+        updateNowToolInfo,
     }
 })
