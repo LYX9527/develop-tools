@@ -6,8 +6,10 @@ import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {useNowToolInfoStore} from "@/stores";
 
 const nowToolInfo = useNowToolInfoStore()
-const toolInfo = computed(()=>nowToolInfo.getNowToolInfo)
-
+const toolInfo = computed(() => nowToolInfo.getNowToolInfo)
+function openGithub(github: string) {
+  window.open(github)
+}
 onMounted(() => {
   // const toolTag = route.fullPath.split("/tool/")[1]
   // getToolLoadedInfoByToolTag(toolTag).then((info) => {
@@ -45,8 +47,11 @@ onMounted(() => {
           <div class="name" v-if="toolInfo?.author">
             {{ toolInfo.author }} : 作者
           </div>
+          <div class="github" v-if="toolInfo?.github"  @click="openGithub(toolInfo.github)">
+            {{ toolInfo.github }} : GitHub
+          </div>
           <div class="email" v-if="toolInfo?.email">
-            {{ toolInfo?.email }} : 邮箱
+            {{ toolInfo.email }} : 邮箱
           </div>
         </div>
       </div>
@@ -105,16 +110,29 @@ onMounted(() => {
 
       .author-info {
         text-align: end;
-
         .name {
-          user-select: text;
           font-weight: bold;
+        }
+
+        .github {
+          cursor: pointer;
+          transition: 0.2s;
+          color: var(--text-color-1);
+          text-decoration: none;
+        }
+
+        .github:hover {
+          color: var(--primary-color);
+          text-decoration: underline;
         }
 
         .email {
           text-decoration: underline;
           font-style: italic;
+          cursor: pointer;
+          transition: 0.2s;
           user-select: text;
+          color: var(--text-color-1);
         }
       }
     }
