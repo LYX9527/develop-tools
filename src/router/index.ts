@@ -1,5 +1,8 @@
 import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router'
 import type {RouteRecordRaw} from 'vue-router'
+import {getToolLoadedInfoByToolTag} from "@/utils/getToolLoadedInfos.ts";
+import {useNowToolInfoStore} from "@/stores";
+import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 
 let isInitRouter = false
 const routes: RouteRecordRaw[] = [
@@ -25,7 +28,6 @@ const router = createRouter({
 })
 
 function initRouter() {
-    console.log("动态注册路由")
     for (const toolPath in toolModules) {
         const routerTag = toolPath.split('toolPages/').pop()?.split('/index.vue')[0];
         const route: RouteRecordRaw = {
@@ -34,17 +36,23 @@ function initRouter() {
             component: () => import(`@/toolPages/${routerTag}/index.vue`)
         };
         router.addRoute("tool", route)
-        console.log("路由注册", route.name)
+        console.log("工具注册", route.name)
     }
 }
 
 router.beforeEach(async (to, _) => {
+
+    if (to.fullPath.startsWith("/tool/")) {
+        const toolTag = to.fullPath.split("/tool/")[1]
+        getToolLoadedInfoByToolTag(toolTag).then((toolInfo: ToolLoadedInfo) => {
+            useNowToolInfoStore().updateNowToolInfo(toolInfo)
+        })
+    }
     if (!isInitRouter) {
         initRouter()
         isInitRouter = true
         return {path: to.fullPath}
     }
-    console.log("放行")
     return true
 })
 

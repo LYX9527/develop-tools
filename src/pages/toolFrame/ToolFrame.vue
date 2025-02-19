@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import {useRoute, useRouter} from "vue-router";
 import {NIcon, NEllipsis, NSpin} from "naive-ui"
-import {onMounted, shallowRef} from "vue";
-import {getToolLoadedInfoByToolTag} from "@/utils/getToolLoadedInfos.ts";
+import {computed, onMounted, shallowRef, watch} from "vue";
 import {Toolbox16Regular} from "@vicons/fluent";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
+import {useNowToolInfoStore} from "@/stores";
 
-const route = useRoute()
-const toolInfo = shallowRef<ToolLoadedInfo>()
+const nowToolInfo = useNowToolInfoStore()
+const toolInfo = computed(()=>nowToolInfo.getNowToolInfo)
+
 onMounted(() => {
-  const toolTag = route.fullPath.split("/tool/")[1]
-  getToolLoadedInfoByToolTag(toolTag).then((info) => {
-    toolInfo.value = info
-  }).catch((e) => {
-    console.log(`${toolTag}加载失败`, e)
-    toolInfo.value = {
-      name: "(未知的工具)",
-      description: "",
-      tags: [],
-      icon: null,
-    }
-  })
+  // const toolTag = route.fullPath.split("/tool/")[1]
+  // getToolLoadedInfoByToolTag(toolTag).then((info) => {
+  //   toolInfo.value = info
+  // }).catch((e) => {
+  //   console.log(`${toolTag}加载失败`, e)
+  //   toolInfo.value = {
+  //     name: "(未知的工具)",
+  //     description: "",
+  //     tags: [],
+  //     icon: null,
+  //   }
+  // })
 })
 </script>
 
