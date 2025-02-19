@@ -76,37 +76,20 @@ onMounted(() => {
 }
 
 .tool-list {
-  column-count: 5;
-  column-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-gap: 20px;
   padding: 20px 40px;
-  @media (max-width: 1199px) {
-    column-count: 4;
-  }
-  @media (max-width: 999px) {
-    column-count: 3;
-  }
-
-  @media (max-width: 799px) {
-    column-count: 2;
-  }
-
-  @media (max-width: 599px) {
-    column-count: 1;
-  }
-
 
   .tool-card {
     overflow: hidden;
-    margin-bottom: 20px;
     box-sizing: border-box;
     border-radius: 12px;
-    padding: 20px;
-    padding-bottom: 45px;
+    padding: 20px 20px 45px;
     border: 1px solid rgba(152, 152, 152, 0.18);
     transition: all 0.3s ease;
     position: relative;
     cursor: pointer;
-    break-inside: avoid;
 
     .icon {
       color: #007BFF;

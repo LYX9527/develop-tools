@@ -12,27 +12,38 @@ export const getToolLoadedInfoByToolTag = async (toolTag: string): Promise<ToolL
     if (!toolInfosCache) {
         await initToolLoadedInfos()
     }
-    const toolInfo=toolInfosCache!!.find((tool) => tool.toolTag === toolTag)
-    if (toolInfo){
+    const toolInfo = toolInfosCache!!.find((tool) => tool.toolTag === toolTag)
+    if (toolInfo) {
         return toolInfo
     }
     throw new Error(`找不到${toolTag}`);
 };
 
-
-async function initToolLoadedInfos() {
-    const files = import.meta.glob('@/toolPages/*/Info.ts');
-    const toolInfosTemp: ToolLoadedInfo[] = []
-    for (const filePath in files) {
-        const module = await files[filePath]() as { default: ToolBaseInfo };
-        const toolTag = filePath.split('toolPages/').pop()?.split('/Info.ts')[0];
-        if (toolTag) {
-            const toolLoadedInfo: ToolLoadedInfo = {
-                ...module.default,
-                toolTag,
-            };
-            toolInfosTemp.push(toolLoadedInfo)
+//闭包避免并发调用初始化重复给缓存赋值
+const initToolLoadedInfos = (() => {
+    let promise: Promise<void> | null = null;
+    return async () => {
+        if (promise) {
+            return promise;
         }
-    }
-    toolInfosCache = toolInfosTemp
-}
+        return promise = new Promise<void>(async (resolve,_) => {
+            try {
+                const files = import.meta.glob('@/toolPages/*/Info.ts');
+                const toolInfosCacheTemp: ToolLoadedInfo[] = [];
+                const promises = Object.entries(files).map(async ([filePath, moduleLoader]) => {
+                    const module = await moduleLoader() as { default: ToolBaseInfo };
+                    const toolTag = filePath.split('toolPages/').pop()?.split('/Info.ts')[0];
+                    if (!toolTag) return;
+                    toolInfosCacheTemp.push({...module.default, toolTag});
+                });
+                await Promise.all(promises);
+                toolInfosCache = toolInfosCacheTemp;
+                resolve()
+            } catch (error) {
+                console.error("初始化工具列表失败", error)
+            } finally {
+                promise = null;
+            }
+        });
+    };
+})();
