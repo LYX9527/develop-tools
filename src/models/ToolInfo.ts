@@ -1,3 +1,4 @@
+import ToolTags from "./ToolTags.ts"
 /**
  * 定义工具的基础信息接口
  * 接口用于标准化工具基本信息，包括工具的名称、描述、标签、图标以及可选的作者和邮箱信息
@@ -10,10 +11,14 @@ export interface ToolBaseInfo {
     name: string;
     // 工具的描述，提供工具功能和用途的详细说明
     description: string;
-    // 工具的标签，用于分类或搜索工具时使用
+    /**
+     * 工具的类型标签，用于分类或搜索工具时使用，
+     *
+     * 建议使用 {@link ToolTags}内置的tag，以便类型统计收录，也可以自定义tag内容，但是统计收录不会识别
+     */
     tags: string[];
     // 工具的图标，提供直观的视觉标识，请用组件或null，为Null时会自动生成默认图标
-    icon: any|null;
+    icon: any | null;
     // 工具作者的姓名，是一个可选字段
     author?: string;
     // 工具作者的邮箱，是一个可选字段，用于联系作者
