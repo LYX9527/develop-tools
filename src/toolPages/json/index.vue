@@ -168,8 +168,11 @@ function createJSONTree(value: any, key: string | null = null, level = 0, isLast
 
         // 添加所有子节点
         entries.forEach(([k, v], i) => {
+          const childWrapper = document.createElement('div')
+          childWrapper.className = 'child-wrapper'
           const child = createJSONTree(v, isArray ? null : k, level + 1, i === entries.length - 1)
-          childrenContainer.appendChild(child)
+          childWrapper.appendChild(child)
+          childrenContainer.appendChild(childWrapper)
         })
 
         // 创建结束括号容器
@@ -267,20 +270,31 @@ function createComma() {
 function copyResult() {
   if (!outputContainer.value) return
 
-  // 创建临时容器来获取纯JSON文本
-  const tempContainer = document.createElement('div')
-  tempContainer.innerHTML = outputContainer.value.innerHTML
+  try {
+    // 创建临时容器
+    const tempContainer = document.createElement('div')
+    tempContainer.innerHTML = outputContainer.value.innerHTML
 
-  // 移除所有项目计数提示
-  const counts = tempContainer.querySelectorAll('.item-count')
-  counts.forEach(count => count.remove())
+    // 移除所有折叠指示器
+    tempContainer.querySelectorAll('.json-tree-collapsible::before').forEach(el => el.remove())
 
-  // 获取处理后的文本
-  const text = tempContainer.textContent || ''
+    // 移除所有项目计数提示
+    tempContainer.querySelectorAll('.json-tree-item-count').forEach(el => el.remove())
 
-  navigator.clipboard.writeText(text)
+    // 移除所有预览内容
+    tempContainer.querySelectorAll('.json-tree-preview').forEach(el => el.remove())
+
+    // 移除所有换行和多余空格
+    const text = tempContainer.textContent || ''
+    const jsonObj = JSON.parse(text)
+    const formattedText = JSON.stringify(jsonObj, null, 2)
+
+    navigator.clipboard.writeText(formattedText)
       .then(() => message.success('已复制到剪贴板'))
       .catch(() => message.error('复制失败，请手动复制'))
+  } catch (e) {
+    message.error('复制失败，内容格式有误')
+  }
 }
 
 // 清空所有
@@ -369,6 +383,11 @@ function addStyles() {
 
     .json-tree-collapsible.collapsed + .closing-line {
       display: none;
+    }
+
+    .child-wrapper {
+      position: relative;
+      padding-left: 0;
     }
   `
   document.head.appendChild(styleEl)
