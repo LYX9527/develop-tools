@@ -42,4 +42,5 @@ body {
     --t-warning-color: #ffc107;
     --t-info-color: #17a2b8;
     --t-light-color: #f8f9fa;
+    --n-bezier: cubic-bezier(0.5, 0, 0, 1);
 }

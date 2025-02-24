@@ -185,7 +185,7 @@ function createJSONTree(value: any, key: string | null = null, level = 0, isLast
         closeBracket.className = styles.bracket
         closeBracket.textContent = isArray ? ']' : '}'
         closingContainer.appendChild(closeBracket)
-        
+
         // 添加逗号（如果需要）
         if (!isLast) {
           const comma = createComma()
@@ -200,7 +200,7 @@ function createJSONTree(value: any, key: string | null = null, level = 0, isLast
           preview.style.display = isCollapsed ? 'inline' : 'none'
           itemCount.style.display = isCollapsed ? 'none' : 'inline'
           closingContainer.style.display = isCollapsed ? 'none' : 'block'
-          
+
           if (isCollapsed) {
             // 在折叠状态下，将结束括号添加到行内
             const inlineClosing = closeBracket.cloneNode(true)
@@ -350,31 +350,12 @@ function addStyles() {
     .json-tree-indent {
       margin-left: 20px;
       position: relative;
-      border-left: 1px solid #e0e0e0;
       padding-left: 10px;
     }
 
     .json-tree-indent.hidden {
       display: none;
     }
-
-    .json-tree-preview {
-      color: #999;
-      font-style: italic;
-    }
-
-    .json-tree-item-count {
-      color: rgb(153, 153, 153);
-      font-size: 12px;
-      margin-left: 5px;
-    }
-
-    .json-tree-key { color: #881391; }
-    .json-tree-string { color: #268bd2; }
-    .json-tree-number { color: #b58900; }
-    .json-tree-boolean { color: #859900; }
-    .json-tree-null { color: #dc322f; }
-    .json-tree-bracket { color: #666; }
 
     .closing-line {
       display: block;
@@ -446,12 +427,12 @@ onMounted(() => {
     </button>
     <h1>JSON工具</h1>
     <div class="button-group">
-      <button class="action-button" @click="formatJSON">格式化</button>
-      <button class="action-button" @click="compressJSON">压缩</button>
-      <button class="action-button" @click="escapeJSON">转义</button>
-      <button class="action-button" @click="unescapeJSON">去除转义</button>
-      <button class="action-button" @click="copyResult">复制结果</button>
-      <button class="action-button" @click="clearAll">清空</button>
+      <n-button class="action-button" @click="formatJSON">格式化</n-button>
+      <n-button class="action-button" @click="compressJSON">压缩</n-button>
+      <n-button class="action-button" @click="escapeJSON">转义</n-button>
+      <n-button class="action-button" @click="unescapeJSON">去除转义</n-button>
+      <n-button class="action-button" @click="copyResult">复制结果</n-button>
+      <n-button class="action-button" @click="clearAll">清空</n-button>
     </div>
     <div class="editor-container">
       <div class="editor-section">
@@ -480,24 +461,24 @@ onMounted(() => {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f5f5f5;
+  background-color: var(--n-color-modal);
   padding: 20px;
-  color: #333;
+  color: var(--n-text-color);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  background: white;
+  background: var(--n-color);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--n-box-shadow);
   position: relative;
 
   h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #2c3e50;
+    color: var(--n-text-color);
   }
 
   &.fullscreen {
@@ -511,6 +492,7 @@ body {
     border-radius: 0;
     z-index: 1000;
     padding: 20px;
+    background: var(--base-color);
 
     .editor-container {
       height: calc(100vh - 180px);
@@ -537,7 +519,7 @@ body {
   .editor-label {
     font-weight: 500;
     margin-bottom: 10px;
-    color: #2c3e50;
+    color: var(--n-text-color);
   }
 }
 
@@ -546,12 +528,13 @@ body {
   height: 500px;
   font-family: monospace;
   padding: 15px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--n-border-color);
   border-radius: 8px;
   resize: none;
-  font-size: 14px;
+  font-size: var(--n-font-size);
   line-height: 1.5;
-  background: #f8f9fa;
+  background: var(--n-color-modal);
+  color: var(--n-text-color);
   overflow-x: auto;
   white-space: pre;
   word-wrap: normal;
@@ -570,15 +553,14 @@ body {
 
   .action-button {
     padding: 8px 16px;
-    background: #007BFF;
-    color: white;
+    color: var(--color);
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s var(--n-bezier);
 
     &:hover {
-      background: #0056b3;
+      background: var(--n-primary-color-hover);
     }
   }
 }
@@ -587,13 +569,13 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #333;
-  color: white;
+  background: var(--n-color-modal);
+  color: var(--n-text-color);
   padding: 10px 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px var(--n-box-shadow);
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s var(--n-bezier);
   z-index: 1000;
 
   &.show {
@@ -602,9 +584,9 @@ body {
 }
 
 .error {
-  color: #dc3545;
+  color: var(--n-error-color);
   margin-top: 10px;
-  font-size: 14px;
+  font-size: var(--n-font-size-small);
 }
 
 .fullscreen-button {
@@ -612,8 +594,6 @@ body {
   right: 10px;
   top: 10px;
   padding: 5px;
-  background: #007BFF;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -623,9 +603,47 @@ body {
   justify-content: center;
   width: 30px;
   height: 30px;
+  transition: all 0.3s var(--n-bezier);
 
   &:hover {
-    background: #0056b3;
+    background: var(--n-primary-color-hover);
+  }
+}
+
+// JSON树样式
+:deep(.json-tree) {
+  .json-tree-key {
+    color: var(--n-purple) !important;
+  }
+
+  .json-tree-string {
+    color: var(--n-blue) !important;
+  }
+
+  .json-tree-number {
+    color: var(--n-orange) !important;
+  }
+
+  .json-tree-boolean {
+    color: var(--n-green) !important;
+  }
+
+  .json-tree-null {
+    color: var(--n-red) !important;
+  }
+
+  .json-tree-bracket {
+    color: var(--n-text-color-3) !important;
+  }
+
+  .json-tree-indent {
+    border-left: 1px solid var(--n-divider-color);
+  }
+
+  .json-tree-item-count,
+  .json-tree-preview,
+  .json-tree-collapsible::before {
+    color: var(--n-text-color-3);
   }
 }
 </style>
