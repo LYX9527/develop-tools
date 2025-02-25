@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue‘
+import {ref} from 'vue'
+
 const props = defineProps<{
   accept?: string
   maxSize?: number // 单位: MB
@@ -82,19 +83,19 @@ function triggerFileSelect() {
 
 <template>
   <div
-    class="upload-zone"
-    :class="{ 'is-dragging': isDragging }"
-    @drop="handleDrop"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @click="triggerFileSelect"
+      class="upload-zone"
+      :class="{ 'is-dragging': isDragging }"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @click="triggerFileSelect"
   >
     <div class="upload-content">
       <div class="upload-icon">
         <svg viewBox="0 0 24 24" width="32" height="32">
           <path
-            fill="currentColor"
-            d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+              fill="currentColor"
+              d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
           />
         </svg>
       </div>
@@ -106,11 +107,11 @@ function triggerFileSelect() {
       </div>
     </div>
     <input
-      ref="inputRef"
-      type="file"
-      :accept="accept"
-      @change="handleFileSelect"
-      style="display: none"
+        ref="inputRef"
+        type="file"
+        :accept="accept"
+        @change="handleFileSelect"
+        style="display: none"
     >
   </div>
 </template>
