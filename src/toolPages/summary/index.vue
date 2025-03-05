@@ -55,7 +55,7 @@ async function getSummary() {
 
     const response = await fetch('https://r.jina.ai/' + encodeURIComponent(url.value), {
       headers: {
-        'Authorization': 'Bearer <your-api-key>'
+        'Authorization': 'Bearer jina_40908bcd77f547c98782e87615d75640j3U77nRok0rM7I0LfIsrQVv3tm8B'
       }
     })
 
