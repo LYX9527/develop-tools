@@ -302,6 +302,18 @@ function handleLogin() {
             />
           </div>
         </div>
+        <div class="input-group">
+          <label>搜索结果:</label>
+          <div class="input-container">
+            <glass-morphism-input
+                v-model="searchValue"
+                placeholder="请输入搜索内容..."
+                :blur="5"
+                :opacity="0.2"
+                searchable
+            />
+          </div>
+        </div>
       </div>
     </glass-morphism-panel>
 

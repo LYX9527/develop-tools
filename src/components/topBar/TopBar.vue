@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {LogoGithub} from "@vicons/ionicons5"
 import {Toolbox16Regular} from "@vicons/fluent"
-import {DocumentSearch16Regular} from "@vicons/fluent";
 import {NIcon, NSwitch, NInput, NDropdown, type DropdownOption} from "naive-ui"
 import themeSwitchStyle from "@/components/topBar/ThemeSwitchStyle.ts";
 import {ThemeMode} from "@/models/Constant.ts";
@@ -10,8 +9,6 @@ import {computed, onMounted, ref, shallowRef, watch, h} from "vue";
 import {useRouter} from "vue-router";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {getToolLoadedInfos} from "@/utils/getToolLoadedInfos.ts";
-import GlassMorphismPanel from "@/components/GlassMorphismPanel.vue";
-import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const themeIsDark = ref<boolean>(false)
 const headRef = ref<HTMLElement | null>(null)
@@ -25,6 +22,11 @@ const toolQueryOptions = computed(() => {
   }
   return toolList.value.filter((option: any) => {
     return option.label.includes(toolQuery.value)
+  }).map((option: any) => {
+    return {
+      label: option.label,
+      value: option.key
+    }
   })
 })
 
@@ -32,9 +34,9 @@ function openGithub() {
   window.open("https://github.com/LYX9527/develop-tools")
 }
 
-function handleSelect(key: string) {
+function handleSelect(obj: any) {
   toolQuery.value = ""
-  router.push({path: `/tool/${key}`})
+  router.push({path: `/tool/${obj.value}`})
 }
 
 function goHome() {
@@ -65,28 +67,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <glass-morphism-panel radius="0" class="head" :class="{'head-fixed':!appStatus.getScrollAtTopStatus}" ref="headRef">
+  <GlassMorphismPanel radius="0" class="head" :class="{'head-fixed':!appStatus.getScrollAtTopStatus}" ref="headRef">
     <div class="left-box">
       <div class="logo">
         <img src="@/assets/logo.png" alt="logo">
       </div>
       <div class="title" @click="goHome">开发工具集</div>
       <div class="query-tool-input">
-<!--        <n-dropdown :show="toolQueryOptions.lenght!=0" :options="toolQueryOptions" @select="handleSelect">-->
-<!--          <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery"-->
-<!--                   :style="{ width: '80%' }">-->
-<!--            <template #suffix>-->
-<!--              <n-icon :component="DocumentSearch16Regular"/>-->
-<!--            </template>-->
-<!--          </n-input>-->
-        <glass-morphism-input
+        <GlassMorphismInput
             v-model="toolQuery"
-            placeholder="请输入内容..."
-            :blur="5"
-            :opacity="0.2"
-            :search="handleSelect"
+            placeholder="搜索已有工具..."
+            searchable
+            :searchOptions="toolQueryOptions"
+            @select-option="handleSelect"
+            width="100%"
         />
-<!--        </n-dropdown>-->
       </div>
     </div>
     <div class="right-box">
@@ -109,7 +104,7 @@ onMounted(() => {
         <p>Github</p>
       </div>
     </div>
-  </glass-morphism-panel>
+  </GlassMorphismPanel>
 </template>
 
 <style scoped lang="scss">
@@ -140,6 +135,7 @@ onMounted(() => {
 
     .query-tool-input {
       margin-left: 20px;
+      width: 300px;
     }
   }
 

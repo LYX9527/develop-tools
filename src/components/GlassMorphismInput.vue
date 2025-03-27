@@ -184,6 +184,30 @@ const props = defineProps({
     type: String,
     default: 'none',
     validator: (val: string) => ['none', 'both', 'horizontal', 'vertical'].includes(val)
+  },
+  // 搜索结果下拉框相关属性
+  searchable: {
+    type: Boolean,
+    default: false
+  },
+  searchOptions: {
+    type: Array<Option>,
+    default: () => []
+  },
+  // 搜索结果最大显示数量
+  maxSearchResults: {
+    type: Number,
+    default: 8
+  },
+  // 搜索结果高亮关键词
+  highlightMatches: {
+    type: Boolean,
+    default: true
+  },
+  // 自定义搜索过滤函数
+  filterFunction: {
+    type: Function,
+    default: null
   }
 })
 
@@ -200,7 +224,8 @@ const emit = defineEmits([
   'search',
   'enter',
   'click',
-  'suffix-click'
+  'suffix-click',
+  'select-option'
 ])
 
 // 控制聚焦状态
@@ -298,12 +323,19 @@ const suffixStyle = computed(() => {
 const handleFocus = (e: FocusEvent) => {
   isFocused.value = true
   emit('focus', e)
+
+  // 如果有搜索选项且输入框有值，则显示下拉框
+  if (props.searchable && inputValue.value && props.searchOptions.length > 0) {
+    filterSearchOptions()
+    showSearchDropdown.value = filteredOptions.value.length > 0
+  }
 }
 
 // 处理失焦事件
 const handleBlur = (e: FocusEvent) => {
   isFocused.value = false
   emit('blur', e)
+  closeSearchDropdown()
   emit('change', props.modelValue)
 }
 
@@ -312,27 +344,109 @@ const handleSuffixClick = (e: Event) => {
   emit('click:suffix', e)
 }
 
-// 处理回车键
-const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    if (typeof props.search === 'function') {
-      props.search(inputValue.value)
-      emit('search', inputValue.value)
-    } else if (props.search) {
-      emit('search', inputValue.value)
+// 修改键盘导航处理逻辑，确保回车键可以触发搜索
+const handleKeydown = (event: KeyboardEvent) => {
+  // 如果没有显示搜索下拉框且是enter键，直接触发搜索
+  if (!showSearchDropdown.value && event.key === 'Enter' && props.searchable) {
+    event.preventDefault()
+    filterSearchOptions()
+    showDropdown()
+    return
+  }
+
+  // 下拉框显示时的键盘导航
+  if (showSearchDropdown.value) {
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault()
+        highlightedIndex.value = Math.min(highlightedIndex.value + 1, filteredOptions.value.length - 1)
+        scrollToHighlighted()
+        break
+      case 'ArrowUp':
+        event.preventDefault()
+        highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1)
+        scrollToHighlighted()
+        break
+      case 'Enter':
+        if (highlightedIndex.value >= 0) {
+          event.preventDefault()
+          selectOption(filteredOptions.value[highlightedIndex.value])
+        } else {
+          // 当没有选中项时，触发搜索并显示结果
+          event.preventDefault()
+          filterSearchOptions()
+          showDropdown()
+        }
+        break
+      case 'Escape':
+        event.preventDefault()
+        showSearchDropdown.value = false
+        break
     }
   }
 }
 
-// 处理按钮点击
-const handleButtonClick = (e: Event) => {
-  e.preventDefault()
+// 改进搜索触发逻辑
+const handleInput = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  inputValue.value = target.value
+  emit('update:modelValue', target.value)
+  emit('input', event)
 
-  if (typeof props.search === 'function') {
-    props.search(inputValue.value)
-    emit('search', inputValue.value)
+  // 添加搜索下拉功能 - 使用延迟搜索，优化体验
+  if (props.searchable) {
+    // 使用防抖处理，避免频繁触发
+    clearTimeout(searchDebounceTimer.value)
+    searchDebounceTimer.value = setTimeout(() => {
+      filterSearchOptions()
+    }, 300) // 300ms的防抖延迟
+  }
+}
+
+// 添加搜索防抖处理
+const searchDebounceTimer = ref<NodeJS.Timeout | undefined>(undefined)
+
+// 修改 filterSearchOptions 函数以改进空结果处理
+const filterSearchOptions = () => {
+  if (!props.searchable) {
+    filteredOptions.value = []
+    return
+  }
+
+  // 清空输入时显示推荐选项或隐藏下拉框
+  if (!inputValue.value) {
+    // 可以选择显示推荐选项或隐藏下拉框
+    filteredOptions.value = props.searchOptions.slice(0, props.maxSearchResults)
+    if (filteredOptions.value.length > 0) {
+      showDropdown()
+    } else {
+      showSearchDropdown.value = false
+    }
+    return
+  }
+
+  const searchText = inputValue.value.toString().toLowerCase()
+
+  // 如果提供了自定义过滤函数，则使用自定义函数
+  if (props.filterFunction && typeof props.filterFunction === 'function') {
+    filteredOptions.value = props.filterFunction(props.searchOptions, searchText)
   } else {
-    emit('button-click', inputValue.value)
+    // 默认过滤逻辑
+    filteredOptions.value = props.searchOptions.filter(option => {
+      const optionLabel = typeof option === 'object' ? option.label || option.value : option
+      return String(optionLabel).toLowerCase().includes(searchText)
+    }).slice(0, props.maxSearchResults)
+  }
+
+  // 重置高亮索引
+  highlightedIndex.value = -1
+
+  // 显示下拉框并更新位置
+  if (filteredOptions.value.length > 0) {
+    showDropdown()
+  } else {
+    // 也显示"无结果"状态的下拉框
+    showDropdown()
   }
 }
 
@@ -681,7 +795,17 @@ const showExceededBubble = () => {
     showBubble.value = false
   }, 1500)
 }
+// 处理按钮点击
+const handleButtonClick = (e: Event) => {
+  e.preventDefault()
 
+  if (typeof props.search === 'function') {
+    props.search(inputValue.value)
+    emit('search', inputValue.value)
+  } else {
+    emit('button-click', inputValue.value)
+  }
+}
 // 修改处理输入的函数
 const handleTextareaInput = (event: Event) => {
   if (!event.target) return
@@ -698,6 +822,12 @@ const handleTextareaInput = (event: Event) => {
   if (props.autosize) {
     nextTick(adjustHeight)
   }
+
+  // 添加搜索下拉功能
+  if (props.searchable) {
+    filterSearchOptions()
+    showSearchDropdown.value = filteredOptions.value.length > 0
+  }
 }
 
 // 检测是否超出字符限制
@@ -710,10 +840,82 @@ const isExceeded = computed(() => {
 const currentLength = computed(() => {
   return String(props.modelValue || '').length
 })
+
+// 添加下拉搜索相关状态
+const showSearchDropdown = ref(false)
+const filteredOptions = ref<Option[]>([])
+const highlightedIndex = ref(-1)
+const searchResultsRef = ref<HTMLElement | null>(null)
+
+// 高亮显示匹配文本
+const highlightText = (text: string) => {
+  if (!props.highlightMatches || !inputValue.value) return text
+
+  const searchText = inputValue.value.toString()
+  if (!searchText.trim()) return text
+
+  const regex = new RegExp(`(${searchText.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi')
+  return text.replace(regex, '<span class="highlight">$1</span>')
+}
+
+// 关闭下拉菜单
+const closeSearchDropdown = () => {
+  setTimeout(() => {
+    showSearchDropdown.value = false
+  }, 200)
+}
+
+// 选择选项
+const selectOption = (option: Option) => {
+  const value = typeof option === 'object' ? option.value : option
+  const label = typeof option === 'object' ? option.label || option.value : option
+
+  inputValue.value = String(label)
+  emit('update:modelValue', inputValue.value)
+  emit('select-option', option)
+  showSearchDropdown.value = false
+}
+
+// 滚动到高亮选项
+const scrollToHighlighted = () => {
+  if (highlightedIndex.value >= 0 && searchResultsRef.value) {
+    nextTick(() => {
+      const highlightedElement = searchResultsRef.value?.querySelector(`.search-option:nth-child(${highlightedIndex.value + 1})`)
+      if (highlightedElement) {
+        highlightedElement.scrollIntoView({block: 'nearest'})
+      }
+    })
+  }
+}
+
+// 添加下拉框定位相关引用
+const inputWrapperRef = ref<HTMLElement | null>(null)
+const dropdownPosition = ref({top: '0px', left: '0px', width: '0px'})
+
+// 计算下拉框位置
+const updateDropdownPosition = () => {
+  if (!inputWrapperRef.value) return
+
+  const rect = inputWrapperRef.value.getBoundingClientRect()
+  dropdownPosition.value = {
+    top: `${rect.bottom + window.scrollY + 5}px`, // 输入框底部 + 滚动偏移 + 间距
+    left: `${rect.left + window.scrollX}px`,
+    width: `${rect.width}px`
+  }
+}
+
+// 处理下拉框显示
+const showDropdown = () => {
+  if (!props.searchable || filteredOptions.value.length === 0) return
+
+  updateDropdownPosition()
+  showSearchDropdown.value = true
+}
 </script>
 
 <template>
   <div class="glass-input-wrapper"
+       ref="inputWrapperRef"
        :class="{ 'is-focused': isFocused, 'is-error': error, 'is-disabled': disabled, 'is-textarea': textarea }"
        :style="wrapperStyle">
     <!-- 复合输入框 -->
@@ -748,7 +950,7 @@ const currentLength = computed(() => {
               :placeholder="placeholder"
               :disabled="disabled"
               :type="type"
-              @input="e => inputValue = (e.target as HTMLInputElement).value"
+              @input="handleInput"
               @focus="handleFocus"
               @blur="handleBlur"
               @keydown="handleKeydown"
@@ -815,7 +1017,7 @@ const currentLength = computed(() => {
           :placeholder="placeholder"
           :disabled="disabled"
           :type="type"
-          @input="e => inputValue = (e.target as HTMLInputElement).value"
+          @input="handleInput"
           @focus="handleFocus"
           @blur="handleBlur"
           @keydown="handleKeydown"
@@ -853,6 +1055,35 @@ const currentLength = computed(() => {
         </div>
       </div>
     </template>
+
+    <!-- 使用 Teleport 传送下拉框到 body -->
+    <Teleport to="body">
+      <transition name="dropdown-fade">
+        <div v-if="searchable && showSearchDropdown"
+             class="search-dropdown glass-dropdown"
+             ref="searchResultsRef"
+             :style="dropdownPosition">
+          <div v-if="filteredOptions.length === 0" class="no-results">
+            无搜索结果
+          </div>
+          <template v-else>
+            <div
+                v-for="(option, index) in filteredOptions"
+                :key="typeof option === 'object' ? option.value : index"
+                class="search-option"
+                :class="{ 'highlighted': index === highlightedIndex }"
+                @mouseenter="highlightedIndex = index"
+                @click="selectOption(option)"
+            >
+              <span v-if="typeof option === 'object' && option.label"
+                    v-html="highlightText(String(option.label))"></span>
+              <span v-else
+                    v-html="highlightText(String(typeof option === 'object' ? option.value : option))"></span>
+            </div>
+          </template>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 
   <!-- 使用 Teleport 将下拉菜单传送到 body 末尾 -->
@@ -1304,7 +1535,7 @@ const currentLength = computed(() => {
 
 /* 保持与现有禁用、错误、焦点状态样式的一致性 */
 .is-disabled .glass-textarea,
-.is-disabled  {
+.is-disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -1315,7 +1546,7 @@ const currentLength = computed(() => {
 }
 
 .is-focused .glass-textarea,
-.is-focused  {
+.is-focused {
   border-color: v-bind('focusBorderColor');
 }
 
@@ -1410,5 +1641,64 @@ const currentLength = computed(() => {
   }
 }
 
+/* 搜索下拉框样式 */
+.search-dropdown {
+  position: fixed;
+  z-index: 9999;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 8px 0;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 2px;
+  /* 保持与前缀下拉选择样式一致 */
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
 
+.search-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.search-option:hover,
+.search-option.highlighted {
+  background-color: rgba(24, 144, 255, 0.3);
+  color: white;
+}
+
+.no-results {
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  font-style: italic;
+}
+
+/* 高亮匹配文本样式改进 */
+.highlight {
+  color: #40a9ff;
+  font-weight: bold;
+  background: rgba(24, 144, 255, 0.15);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* 下拉动画 */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
 </style>
