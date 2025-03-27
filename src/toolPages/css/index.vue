@@ -110,9 +110,7 @@ function handleLogin() {
 </script>
 
 <template>
-  <div class="glass-demo" :class="{ 'dark-mode': darkMode }" :style="{
-    backgroundImage: `url(${backgroundImage})`
-  }">
+  <div class="glass-demo" :class="{ 'dark-mode': darkMode }">
     <div class="controls">
       <n-space>
         <n-select v-model:value="backgroundType" :options="backgroundOptions" style="width: 120px"/>
@@ -286,6 +284,21 @@ function handleLogin() {
                 suffixButton
                 search
                 buttonType="success"
+            />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>多行文本:</label>
+          <div class="input-container">
+            <glass-morphism-input
+                v-model="searchValue"
+                placeholder="请输入搜索内容..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
+                rows="10"
+                maxlength="100"
             />
           </div>
         </div>

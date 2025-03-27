@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, onMounted, onUnmounted} from 'vue'
+import {computed, ref, onMounted, onUnmounted, nextTick} from 'vue'
 
 // 定义组件属性
 const props = defineProps({
@@ -138,6 +138,52 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (val: string) => ['default', 'primary', 'success', 'warning', 'danger'].includes(val)
+  },
+  // 添加textarea相关属性
+  textarea: {
+    type: Boolean,
+    default: false
+  },
+  // textarea行数
+  rows: {
+    type: [String, Number],
+    default: 4
+  },
+  // textarea列数
+  cols: {
+    type: [String, Number],
+    default: 50
+  },
+  // 是否自动调整高度
+  autosize: {
+    type: Boolean,
+    default: false
+  },
+  // 最大输入长度
+  maxlength: {
+    type: [String, Number],
+    default: undefined
+  },
+  // 是否显示字数统计
+  showCount: {
+    type: Boolean,
+    default: false
+  },
+  // 文本输入区域的最小高度
+  minHeight: {
+    type: [String, Number],
+    default: '80px'
+  },
+  // 文本输入区域的最大高度
+  maxHeight: {
+    type: [String, Number],
+    default: '200px'
+  },
+  // 调整大小方向
+  resize: {
+    type: String,
+    default: 'none',
+    validator: (val: string) => ['none', 'both', 'horizontal', 'vertical'].includes(val)
   }
 })
 
@@ -151,7 +197,10 @@ const emit = defineEmits([
   'update:selectValue',
   'click:suffix',
   'button-click',
-  'search'
+  'search',
+  'enter',
+  'click',
+  'suffix-click'
 ])
 
 // 控制聚焦状态
@@ -531,6 +580,13 @@ onMounted(() => {
 
   // 添加全局下拉菜单事件监听，现在类型安全
   window.addEventListener(DROPDOWN_OPEN_EVENT, handleGlobalDropdownOpen);
+
+  // 如果是textarea模式，初始化高度
+  nextTick(() => {
+    if (props.textarea && props.autosize && textareaRef.value) {
+      adjustHeight()
+    }
+  })
 });
 
 onUnmounted(() => {
@@ -540,15 +596,78 @@ onUnmounted(() => {
 
   window.removeEventListener(DROPDOWN_OPEN_EVENT, handleGlobalDropdownOpen);
 });
+
+// 处理textarea自动调整高度
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
+
+// 自动调整高度函数
+const adjustHeight = () => {
+  if (!props.autosize || !textareaRef.value) return
+
+  const textarea = textareaRef.value
+  // 先重置高度，以便重新计算
+  textarea.style.height = 'auto'
+
+  // 根据内容高度设置
+  const newHeight = Math.max(
+      parseInt(typeof props.minHeight === 'string' ? props.minHeight : String(props.minHeight)),
+      Math.min(textarea.scrollHeight, parseInt(typeof props.maxHeight === 'string' ? props.maxHeight : String(props.maxHeight)))
+  )
+  textarea.style.height = `${newHeight}px`
+}
+
+// 处理 rows 和 cols 的类型转换 - 确保输出字符串类型
+const textareaRows = computed<string>(() => String(props.rows))
+const textareaCols = computed<string>(() => String(props.cols))
+const textareaMaxLength = computed<string | undefined>(() =>
+    props.maxlength !== undefined ? String(props.maxlength) : undefined
+)
+
+// 创建单独的 textarea 样式对象，避免传递非标准属性
+const textareaStyle = computed(() => {
+  const minH = typeof props.minHeight === 'number' ? `${props.minHeight}px` : props.minHeight;
+  const maxH = typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight;
+
+  return {
+    resize: props.resize,
+    overflowY: 'auto',
+    minHeight: minH,
+    maxHeight: maxH
+  } as {
+    resize: string;
+    overflowY: string;
+    minHeight: string;
+    maxHeight: string;
+  }
+})
+
+// 输入内容处理 - 类型安全版本
+const handleSafeTextareaInput = (event: Event) => {
+  if (event.target) {
+    const target = event.target as HTMLTextAreaElement;
+    inputValue.value = target.value;
+
+    // 调用自动调整高度
+    if (props.autosize) {
+      nextTick(adjustHeight);
+    }
+  }
+}
+
+// 计算当前输入长度
+const currentLength = computed(() => {
+  return String(props.modelValue || '').length
+})
 </script>
 
 <template>
-  <div class="glass-input-wrapper" :class="{ 'is-focused': isFocused, 'is-error': error, 'is-disabled': disabled }"
+  <div class="glass-input-wrapper"
+       :class="{ 'is-focused': isFocused, 'is-error': error, 'is-disabled': disabled, 'is-textarea': textarea }"
        :style="wrapperStyle">
     <!-- 复合输入框 -->
     <div v-if="prefix || suffix || useSelectPrefix || useSelectSuffix || suffixButton || showSearchIcon"
          class="glass-input"
-         :class="{'has-suffix-button': suffixButton}"
+         :class="{'has-suffix-button': suffixButton, 'is-textarea': textarea}"
          :style="inputStyle">
 
       <!-- 前缀下拉选择 -->
@@ -570,7 +689,9 @@ onUnmounted(() => {
       <!-- 输入内容区域 -->
       <div class="input-content">
         <slot>
+          <!-- 根据textarea属性选择渲染input或textarea -->
           <input
+              v-if="!textarea"
               class="glass-input-field"
               :value="inputValue"
               :placeholder="placeholder"
@@ -626,20 +747,44 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 标准输入框 -->
-    <input
-        v-else
-        class="glass-input"
-        :style="inputStyle"
-        :value="inputValue"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :type="type"
-        @input="e => inputValue = (e.target as HTMLInputElement).value"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @keydown="handleKeydown"
-    />
+    <!-- 标准输入框（非复合情况） -->
+    <template v-else>
+      <input
+          v-if="!textarea"
+          class="glass-input"
+          :style="inputStyle"
+          :value="inputValue"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :type="type"
+          @input="e => inputValue = (e.target as HTMLInputElement).value"
+          @focus="handleFocus"
+          @blur="handleBlur"
+          @keydown="handleKeydown"
+      />
+
+      <!-- 修复非复合情况下的 textarea -->
+      <textarea
+          v-else
+          ref="textareaRef"
+          class="glass-input glass-textarea"
+          :style="{...inputStyle, ...textareaStyle} as any"
+          :value="inputValue"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :rows="textareaRows"
+          :cols="textareaCols"
+          :maxlength="textareaMaxLength"
+          @input="handleSafeTextareaInput"
+          @focus="handleFocus"
+          @blur="handleBlur"
+      ></textarea>
+
+      <!-- 字数统计 -->
+      <div v-if="textarea && showCount && maxlength" class="textarea-character-count">
+        {{ currentLength }}/{{ maxlength }}
+      </div>
+    </template>
   </div>
 
   <!-- 使用 Teleport 将下拉菜单传送到 body 末尾 -->
@@ -1035,5 +1180,81 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 添加textarea特有样式 */
+.glass-input-wrapper.is-textarea {
+  height: auto;
+}
+
+.glass-input.is-textarea {
+  height: auto;
+  min-height: 40px;
+}
+
+.glass-textarea,
+.glass-textarea-field {
+  height: auto;
+  min-height: 80px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  width: 100%;
+  outline: none;
+  padding: 10px 0;
+  overflow-y: auto; /* 添加垂直滚动支持 */
+  overflow-x: hidden; /* 防止水平滚动 */
+  box-sizing: border-box; /* 确保内边距不会增加总宽度 */
+}
+
+.character-count,
+.textarea-character-count {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 2; /* 确保总是显示在上层 */
+}
+
+.textarea-character-count {
+  bottom: 15px;
+  right: 8px;
+}
+
+.input-content {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 保持与现有禁用、错误、焦点状态样式的一致性 */
+.is-disabled .glass-textarea,
+.is-disabled .glass-textarea-field {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.is-error .glass-textarea,
+.is-error .glass-textarea-field {
+  border-color: v-bind('errorBorderColor');
+}
+
+.is-focused .glass-textarea,
+.is-focused .glass-textarea-field {
+  border-color: v-bind('focusBorderColor');
+}
+
+/* 添加样式确保 resize 功能工作正常 */
+.glass-textarea[style*="resize:"] {
+  overflow: auto; /* 确保调整大小时可以滚动 */
 }
 </style>
