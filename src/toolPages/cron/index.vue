@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useMessage } from 'naive-ui'
-import { loadScript } from '@/utils/scriptLoader'
+import {ref, onMounted} from 'vue'
+import {useMessage} from 'naive-ui'
+import {loadScript} from '@/utils/scriptLoader'
 import moment from "moment/moment";
 import cronstrue from 'cronstrue'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
+
 declare const later: any
 
 const message = useMessage()
@@ -46,56 +48,56 @@ const week = ref('?')
 // 字段选项
 const fieldOptions = {
   seconds: [
-    { label: '每秒 (*)', value: '*' },
-    { label: '0', value: '0' },
-    { label: '每5秒', value: '0/5' },
-    { label: '每10秒', value: '0/10' },
-    { label: '每30秒', value: '0/30' }
+    {label: '每秒 (*)', value: '*'},
+    {label: '0', value: '0'},
+    {label: '每5秒', value: '0/5'},
+    {label: '每10秒', value: '0/10'},
+    {label: '每30秒', value: '0/30'}
   ],
   minutes: [
-    { label: '每分钟 (*)', value: '*' },
-    { label: '0', value: '0' },
-    { label: '每5分钟', value: '0/5' },
-    { label: '每10分钟', value: '0/10' },
-    { label: '每30分钟', value: '0/30' }
+    {label: '每分钟 (*)', value: '*'},
+    {label: '0', value: '0'},
+    {label: '每5分钟', value: '0/5'},
+    {label: '每10分钟', value: '0/10'},
+    {label: '每30分钟', value: '0/30'}
   ],
   hours: [
-    { label: '每小时 (*)', value: '*' },
-    { label: '0', value: '0' },
-    { label: '每2小时', value: '*/2' },
-    { label: '每4小时', value: '*/4' },
-    { label: '每6小时', value: '*/6' },
-    { label: '每12小时', value: '*/12' }
+    {label: '每小时 (*)', value: '*'},
+    {label: '0', value: '0'},
+    {label: '每2小时', value: '*/2'},
+    {label: '每4小时', value: '*/4'},
+    {label: '每6小时', value: '*/6'},
+    {label: '每12小时', value: '*/12'}
   ],
   day: [
-    { label: '每天 (*)', value: '*' },
-    { label: '1号', value: '1' },
-    { label: '最后一天', value: 'L' },
-    { label: '最近的工作日', value: '1W' },
-    { label: '最后一个工作日', value: 'LW' }
+    {label: '每天 (*)', value: '*'},
+    {label: '1号', value: '1'},
+    {label: '最后一天', value: 'L'},
+    {label: '最近的工作日', value: '1W'},
+    {label: '最后一个工作日', value: 'LW'}
   ],
   month: [
-    { label: '每月 (*)', value: '*' },
-    { label: '一月', value: '1' },
-    { label: '每季度', value: '*/3' },
-    { label: '每半年', value: '*/6' }
+    {label: '每月 (*)', value: '*'},
+    {label: '一月', value: '1'},
+    {label: '每季度', value: '*/3'},
+    {label: '每半年', value: '*/6'}
   ],
   week: [
-    { label: '不指定 (?)', value: '?' },
-    { label: '每天 (*)', value: '*' },
-    { label: '周一', value: 'MON' },
-    { label: '周一至周五', value: 'MON-FRI' },
-    { label: '最后一个周日', value: '1L' }
+    {label: '不指定 (?)', value: '?'},
+    {label: '每天 (*)', value: '*'},
+    {label: '周一', value: 'MON'},
+    {label: '周一至周五', value: 'MON-FRI'},
+    {label: '最后一个周日', value: '1L'}
   ]
 }
 
 // 常用表达式
 const quickExpressions = [
-  { label: '每小时', value: '0 0 * * * ?' },
-  { label: '每天零点', value: '0 0 0 * * ?' },
-  { label: '每月1号零点', value: '0 0 0 1 * ?' },
-  { label: '每年1月1日零点', value: '0 0 0 1 1 ?' },
-  { label: '每30分钟', value: '0 0/30 * * * ?' }
+  {label: '每小时', value: '0 0 * * * ?'},
+  {label: '每天零点', value: '0 0 0 * * ?'},
+  {label: '每月1号零点', value: '0 0 0 1 * ?'},
+  {label: '每年1月1日零点', value: '0 0 0 1 1 ?'},
+  {label: '每30分钟', value: '0 0/30 * * * ?'}
 ]
 
 // 更新表达式
@@ -145,7 +147,7 @@ function calculateNextExecutions() {
     const occurrences = later.schedule(schedule).next(10)
 
     nextExecutionTimes.value = occurrences.map(date =>
-      moment(date).format('YYYY-MM-DD HH:mm:ss')
+        moment(date).format('YYYY-MM-DD HH:mm:ss')
     )
   } catch (err: any) {
     console.error('计算下次运行时间出错:', err)
@@ -178,7 +180,7 @@ onMounted(() => {
 <template>
   <div class="container">
     <div v-if="!isScriptsLoaded" class="loading-overlay">
-      <n-spin size="large" />
+      <n-spin size="large"/>
       <p>加载中...</p>
     </div>
 
@@ -187,10 +189,10 @@ onMounted(() => {
       <h3>常用表达式</h3>
       <div class="quick-select-buttons">
         <n-button
-          v-for="expr in quickExpressions"
-          :key="expr.value"
-          @click="selectQuickExpression(expr.value)"
-          size="small"
+            v-for="expr in quickExpressions"
+            :key="expr.value"
+            @click="selectQuickExpression(expr.value)"
+            size="small"
         >
           {{ expr.label }}
         </n-button>
@@ -202,9 +204,9 @@ onMounted(() => {
         <div class="field-label">秒</div>
         <div class="field-description">0-59</div>
         <n-select
-          v-model:value="seconds"
-          :options="fieldOptions.seconds"
-          @update:value="updateExpression"
+            v-model:value="seconds"
+            :options="fieldOptions.seconds"
+            @update:value="updateExpression"
         />
       </div>
 
@@ -212,9 +214,9 @@ onMounted(() => {
         <div class="field-label">分钟</div>
         <div class="field-description">0-59</div>
         <n-select
-          v-model:value="minutes"
-          :options="fieldOptions.minutes"
-          @update:value="updateExpression"
+            v-model:value="minutes"
+            :options="fieldOptions.minutes"
+            @update:value="updateExpression"
         />
       </div>
 
@@ -222,9 +224,9 @@ onMounted(() => {
         <div class="field-label">小时</div>
         <div class="field-description">0-23</div>
         <n-select
-          v-model:value="hours"
-          :options="fieldOptions.hours"
-          @update:value="updateExpression"
+            v-model:value="hours"
+            :options="fieldOptions.hours"
+            @update:value="updateExpression"
         />
       </div>
 
@@ -232,9 +234,9 @@ onMounted(() => {
         <div class="field-label">日期</div>
         <div class="field-description">1-31</div>
         <n-select
-          v-model:value="day"
-          :options="fieldOptions.day"
-          @update:value="updateExpression"
+            v-model:value="day"
+            :options="fieldOptions.day"
+            @update:value="updateExpression"
         />
       </div>
 
@@ -242,9 +244,9 @@ onMounted(() => {
         <div class="field-label">月份</div>
         <div class="field-description">1-12</div>
         <n-select
-          v-model:value="month"
-          :options="fieldOptions.month"
-          @update:value="updateExpression"
+            v-model:value="month"
+            :options="fieldOptions.month"
+            @update:value="updateExpression"
         />
       </div>
 
@@ -252,21 +254,26 @@ onMounted(() => {
         <div class="field-label">星期</div>
         <div class="field-description">1-7 或 SUN-SAT</div>
         <n-select
-          v-model:value="week"
-          :options="fieldOptions.week"
-          @update:value="updateExpression"
+            v-model:value="week"
+            :options="fieldOptions.week"
+            @update:value="updateExpression"
         />
       </div>
     </div>
 
     <div class="result-section">
       <div class="expression-group">
-        <n-input
-          v-model:value="cronExpression"
-          placeholder="Cron表达式"
-          @input="validateExpression"
+        <glass-morphism-input
+            v-model="cronExpression"
+            placeholder="请输入搜索内容..."
+            :blur="5"
+            :opacity="0.2"
+            suffixButton
+            buttonText="复制"
+            buttonType="success"
+            @button-click="copyExpression"
+            @input="validateExpression"
         />
-        <n-button @click="copyExpression">复制</n-button>
       </div>
 
       <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
@@ -276,9 +283,9 @@ onMounted(() => {
         <h3>未来10次运行时间</h3>
         <div class="time-list">
           <div
-            v-for="(time, index) in nextExecutionTimes"
-            :key="index"
-            class="time-item"
+              v-for="(time, index) in nextExecutionTimes"
+              :key="index"
+              class="time-item"
           >
             {{ time }}
           </div>

@@ -6,5 +6,6 @@ const toolInfo:ToolBaseInfo = {
     icon:Icon,
     tags:['图片','水印',"自定义"],
     author:'Setruth',
+    github:'https://github.com/Setruth',
 }
 export default toolInfo;

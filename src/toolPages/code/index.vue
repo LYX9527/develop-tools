@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NInput, NButton, NTabs, NTabPane, useMessage } from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('base64')
@@ -108,11 +109,15 @@ function clearInput() {
               <span class="section-title">输入:</span>
               <NButton size="small" @click="clearInput">清空</NButton>
             </div>
-            <NInput
-                v-model:value="base64Input"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="base64Input"
                 placeholder="请输入要转换的文本..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
+                rows="10"
+                maxlength="1000"
             />
           </div>
 
@@ -126,10 +131,15 @@ function clearInput() {
               <span class="section-title">输出:</span>
               <NButton size="small" @click="copyResult(base64Output)">复制</NButton>
             </div>
-            <NInput
-                v-model:value="base64Output"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="base64Output"
+                placeholder="请输入搜索内容..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
+                rows="10"
+                maxlength="1000"
                 readonly
             />
           </div>
@@ -143,11 +153,15 @@ function clearInput() {
               <span class="section-title">输入:</span>
               <NButton size="small" @click="clearInput">清空</NButton>
             </div>
-            <NInput
-                v-model:value="urlInput"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="urlInput"
                 placeholder="请输入要转换的URL..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
+                rows="10"
+                maxlength="1000"
             />
           </div>
 
@@ -161,11 +175,16 @@ function clearInput() {
               <span class="section-title">输出:</span>
               <NButton size="small" @click="copyResult(urlOutput)">复制</NButton>
             </div>
-            <NInput
-                v-model:value="urlOutput"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="urlOutput"
+                placeholder="请输入搜索内容..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
                 readonly
+                rows="10"
+                maxlength="1000"
             />
           </div>
         </div>
@@ -178,11 +197,15 @@ function clearInput() {
               <span class="section-title">输入:</span>
               <NButton size="small" @click="clearInput">清空</NButton>
             </div>
-            <NInput
-                v-model:value="jwtInput"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="jwtInput"
                 placeholder="请输入JWT令牌..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
+                rows="10"
+                maxlength="1000"
             />
           </div>
 
@@ -195,11 +218,16 @@ function clearInput() {
               <span class="section-title">输出:</span>
               <NButton size="small" @click="copyResult(jwtOutput)">复制</NButton>
             </div>
-            <NInput
-                v-model:value="jwtOutput"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 10 }"
+            <glass-morphism-input
+                v-model="jwtOutput"
+                placeholder="请输入搜索内容..."
+                :blur="5"
+                :opacity="0.2"
+                textarea
+                showCount
                 readonly
+                rows="10"
+                maxlength="1000"
             />
           </div>
         </div>
@@ -250,4 +278,4 @@ function clearInput() {
     }
   }
 }
-</style> 
+</style>

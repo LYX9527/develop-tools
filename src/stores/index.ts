@@ -2,6 +2,8 @@ import {defineStore} from "pinia";
 import {computed, ref, shallowRef, watch, onMounted} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
+import { stringToUUID } from '@/hooks/Utils'
+import { getToolLoadedInfos } from "@/utils/getToolLoadedInfos";
 
 // 本地存储的键名
 const THEME_STORAGE_KEY = 'app-theme-mode';
@@ -137,4 +139,182 @@ export const useNowToolInfoStore = defineStore('nowToolInfo', () => {
         getNowToolInfo,
         updateNowToolInfo,
     }
+})
+
+interface ToolInfo {
+  name: string;
+  route: string;
+  description: string;
+  icon?: string;
+  category?: string;
+  tags?: string[];
+}
+
+interface UserToolsPreferences {
+  pinned: string[];
+  sortOrder: string[];
+  favorites: string[];
+  lastUsed: { id: string, timestamp: number }[];
+}
+
+// 工具存储
+export const useTools = defineStore('tools', {
+  state: () => ({
+    tools: [], // 初始为空数组，将在初始化时加载
+    preferences: {
+      pinned: [],
+      sortOrder: [],
+      favorites: [],
+      lastUsed: [],
+    } as UserToolsPreferences
+  }),
+  
+  getters: {
+    // 获取工具的唯一ID
+    getToolId: (state) => (tool: ToolInfo) => {
+      return stringToUUID(tool.name, 'tool')
+    },
+    
+    // 获取排序后的工具列表
+    sortedTools: (state) => {
+      // 创建工具的副本
+      const allTools = [...state.tools]
+      
+      // 生成未在用户排序中的工具ID集合
+      const userSortIds = new Set(state.preferences.sortOrder)
+      const unsortedTools = allTools.filter(tool => !userSortIds.has(state.getToolId(tool)))
+      
+      // 首先按用户排序构建结果列表
+      const result = state.preferences.sortOrder
+        .map(id => allTools.find(tool => state.getToolId(tool) === id))
+        .filter(Boolean) // 过滤掉不存在的
+      
+      // 然后添加未排序的工具
+      result.push(...unsortedTools)
+      
+      // 最后将已固定的工具移到前面
+      return result.sort((a, b) => {
+        const aId = state.getToolId(a)
+        const bId = state.getToolId(b)
+        
+        const aIsPinned = state.preferences.pinned.includes(aId)
+        const bIsPinned = state.preferences.pinned.includes(bId)
+        
+        if (aIsPinned && !bIsPinned) return -1
+        if (!aIsPinned && bIsPinned) return 1
+        return 0
+      })
+    },
+    
+    // 检查工具是否被固定
+    isPinned: (state) => (tool: ToolInfo) => {
+      return state.preferences.pinned.includes(state.getToolId(tool))
+    },
+    
+    // 检查工具是否是收藏
+    isFavorite: (state) => (tool: ToolInfo) => {
+      return state.preferences.favorites.includes(state.getToolId(tool))
+    }
+  },
+  
+  actions: {
+    // 初始化，从localStorage加载用户偏好设置和工具列表
+    async initialize() {
+      try {
+        // 加载工具列表
+        this.tools = await getToolLoadedInfos();
+        
+        // 加载用户偏好设置
+        const savedPrefs = localStorage.getItem('user_tools_preferences')
+        if (savedPrefs) {
+          this.preferences = JSON.parse(savedPrefs)
+        }
+      } catch (e) {
+        console.error('初始化工具列表失败:', e)
+      }
+    },
+    
+    // 保存用户偏好设置到localStorage
+    savePreferences() {
+      try {
+        localStorage.setItem('user_tools_preferences', JSON.stringify(this.preferences))
+      } catch (e) {
+        console.error('Failed to save user tool preferences', e)
+      }
+    },
+    
+    // 切换工具的固定状态
+    togglePin(tool: ToolInfo) {
+      const toolId = this.getToolId(tool)
+      const index = this.preferences.pinned.indexOf(toolId)
+      
+      if (index === -1) {
+        // 添加到固定列表
+        this.preferences.pinned.push(toolId)
+      } else {
+        // 从固定列表移除
+        this.preferences.pinned.splice(index, 1)
+      }
+      
+      this.savePreferences()
+    },
+    
+    // 切换工具的收藏状态
+    toggleFavorite(tool: ToolInfo) {
+      const toolId = this.getToolId(tool)
+      const index = this.preferences.favorites.indexOf(toolId)
+      
+      if (index === -1) {
+        // 添加到收藏列表
+        this.preferences.favorites.push(toolId)
+      } else {
+        // 从收藏列表移除
+        this.preferences.favorites.splice(index, 1)
+      }
+      
+      this.savePreferences()
+    },
+    
+    // 更新工具排序
+    updateSortOrder(fromId: string, toId: string) {
+      // 如果拖拽的ID不在排序中，添加所有工具到排序
+      if (!this.preferences.sortOrder.includes(fromId)) {
+        this.preferences.sortOrder = this.tools.map(tool => this.getToolId(tool))
+      }
+      
+      const fromIndex = this.preferences.sortOrder.indexOf(fromId)
+      const toIndex = this.preferences.sortOrder.indexOf(toId)
+      
+      // 从数组中移出并插入新位置
+      if (fromIndex !== -1 && toIndex !== -1) {
+        this.preferences.sortOrder.splice(fromIndex, 1)
+        this.preferences.sortOrder.splice(toIndex, 0, fromId)
+        this.savePreferences()
+      }
+    },
+    
+    // 记录工具使用
+    recordToolUsage(tool: ToolInfo) {
+      const toolId = this.getToolId(tool)
+      
+      // 移除旧记录
+      const index = this.preferences.lastUsed.findIndex(item => item.id === toolId)
+      if (index !== -1) {
+        this.preferences.lastUsed.splice(index, 1)
+      }
+      
+      // 添加新记录
+      this.preferences.lastUsed.push({
+        id: toolId,
+        timestamp: Date.now()
+      })
+      
+      // 限制最近使用数量
+      if (this.preferences.lastUsed.length > 10) {
+        this.preferences.lastUsed.shift()
+      }
+      
+      this.savePreferences()
+    }
+  }
 })

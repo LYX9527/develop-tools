@@ -208,6 +208,11 @@ const props = defineProps({
   filterFunction: {
     type: Function,
     default: null
+  },
+  // 添加 readonly 属性
+  readonly: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -950,6 +955,7 @@ const showDropdown = () => {
               :placeholder="placeholder"
               :disabled="disabled"
               :type="type"
+              :readonly="readonly"
               @input="handleInput"
               @focus="handleFocus"
               @blur="handleBlur"
@@ -996,6 +1002,7 @@ const showDropdown = () => {
             class="suffix-button"
             :class="`button-${buttonType}`"
             :style="buttonStyle"
+            :disabled="disabled && !readonly"
             @click="handleButtonClick"
         >
           <div class="button-content">
@@ -1017,6 +1024,7 @@ const showDropdown = () => {
           :placeholder="placeholder"
           :disabled="disabled"
           :type="type"
+          :readonly="readonly"
           @input="handleInput"
           @focus="handleFocus"
           @blur="handleBlur"
@@ -1035,6 +1043,7 @@ const showDropdown = () => {
             :rows="textareaRows"
             :cols="textareaCols"
             :maxlength="textareaMaxLength"
+            :readonly="readonly"
             @input="handleTextareaInput"
             @focus="handleFocus"
             @blur="handleBlur"
@@ -1700,5 +1709,20 @@ const showDropdown = () => {
 .dropdown-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* 添加 readonly 特定样式 */
+.glass-morphism-input input[readonly],
+.glass-morphism-input textarea[readonly] {
+  cursor: text;
+  opacity: 0.9;
+  color: var(--input-text-color, #2c3e50);
+}
+
+/* 确保 readonly 不影响 disabled 的样式 */
+.glass-morphism-input.is-disabled input[readonly],
+.glass-morphism-input.is-disabled textarea[readonly] {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 </style>

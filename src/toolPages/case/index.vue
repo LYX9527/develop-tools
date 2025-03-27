@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { NInput, NButton, NSpace, NTabs, NTabPane, useMessage } from 'naive-ui'
+import {ref} from 'vue'
+import {NInput, NButton, NSpace, NTabs, NTabPane, useMessage} from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('convert')
@@ -25,27 +26,27 @@ const transformers = {
   },
   camelCase: (text: string) => {
     return text.toLowerCase()
-      .replace(/[^a-zA-Z0-9]+(.)/g, (_, c) => c.toUpperCase())
+        .replace(/[^a-zA-Z0-9]+(.)/g, (_, c) => c.toUpperCase())
   },
   pascalCase: (text: string) => {
     return text.toLowerCase()
-      .replace(/(^|\s+)([a-z])/g, (_, space, c) => c.toUpperCase())
-      .replace(/\s+/g, '')
+        .replace(/(^|\s+)([a-z])/g, (_, space, c) => c.toUpperCase())
+        .replace(/\s+/g, '')
   },
   snakeCase: (text: string) => {
     return text.toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-zA-Z0-9_]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '')
   },
   kebabCase: (text: string) => {
     return text.toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-zA-Z0-9-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9-]/g, '')
   },
   alternating: (text: string) => {
     return text.split('')
-      .map((c, i) => i % 2 ? c.toLowerCase() : c.toUpperCase())
-      .join('')
+        .map((c, i) => i % 2 ? c.toLowerCase() : c.toUpperCase())
+        .join('')
   }
 }
 
@@ -55,7 +56,7 @@ function transformAll() {
     message.warning('请输入要转换的文本')
     return
   }
-  
+
   Object.entries(transformers).forEach(([key, fn]) => {
     outputFormats.value[key as keyof typeof outputFormats.value] = fn(inputText.value)
   })
@@ -69,8 +70,8 @@ function copyResult(format: keyof typeof outputFormats.value) {
     return
   }
   navigator.clipboard.writeText(text)
-    .then(() => message.success('复制成功'))
-    .catch(() => message.error('复制失败'))
+      .then(() => message.success('复制成功'))
+      .catch(() => message.error('复制失败'))
 }
 
 // 清空输入
@@ -94,76 +95,145 @@ function clearInput() {
               <NButton type="error" @click="clearInput">清空</NButton>
             </NSpace>
           </div>
-          <NInput
-              type="textarea"
-              v-model:value="inputText"
-              :autosize="{ minRows: 3, maxRows: 5 }"
+          <glass-morphism-input
+              v-model="inputText"
               placeholder="在此输入要转换的文本..."
+              :blur="5"
+              :opacity="0.2"
+              textarea
+              showCount
+              rows="10"
+              maxlength="1000"
           />
+
         </div>
 
         <div class="format-list">
           <div class="format-item">
             <span class="format-label">大写</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.upper"/>
-              <NButton size="small" @click="copyResult('upper')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.upper"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('upper')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">小写</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.lower"/>
-              <NButton size="small" @click="copyResult('lower')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.lower"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('lower')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">首字母大写</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.capitalize"/>
-              <NButton size="small" @click="copyResult('capitalize')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.capitalize"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('capitalize')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">驼峰命名</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.camelCase"/>
-              <NButton size="small" @click="copyResult('camelCase')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.camelCase"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('camelCase')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">帕斯卡命名</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.pascalCase"/>
-              <NButton size="small" @click="copyResult('pascalCase')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.pascalCase"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('pascalCase')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">下划线命名</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.snakeCase"/>
-              <NButton size="small" @click="copyResult('snakeCase')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.snakeCase"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('snakeCase')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">连字符命名</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.kebabCase"/>
-              <NButton size="small" @click="copyResult('kebabCase')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.kebabCase"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('kebabCase')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">交替大小写</span>
             <div class="format-content">
-              <NInput readonly :value="outputFormats.alternating"/>
-              <NButton size="small" @click="copyResult('alternating')">复制</NButton>
+              <glass-morphism-input
+                  v-model="outputFormats.alternating"
+                  placeholder="请输入"
+                  readonly
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  button-text="复制"
+                  @button-click="copyResult('alternating')"
+              />
             </div>
           </div>
         </div>
@@ -234,7 +304,7 @@ function clearInput() {
 
         :deep(.n-input) {
           flex: 1;
-          
+
           .n-input__input-el {
             font-family: 'Fira Code', monospace;
           }
@@ -243,4 +313,4 @@ function clearInput() {
     }
   }
 }
-</style> 
+</style>
