@@ -298,7 +298,7 @@ function handleLogin() {
                 textarea
                 showCount
                 rows="10"
-                maxlength="100"
+                maxlength="1000"
             />
           </div>
         </div>

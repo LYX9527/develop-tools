@@ -641,18 +641,70 @@ const textareaStyle = computed(() => {
   }
 })
 
-// 输入内容处理 - 类型安全版本
-const handleSafeTextareaInput = (event: Event) => {
-  if (event.target) {
-    const target = event.target as HTMLTextAreaElement;
-    inputValue.value = target.value;
+// 添加气泡相关状态
+const showBubble = ref(false)
+const bubbleMessage = ref('已超出字符限制！')
+const bubblePosition = ref({left: '50%', top: '30%'})
+const cooldown = ref(false)
 
-    // 调用自动调整高度
-    if (props.autosize) {
-      nextTick(adjustHeight);
-    }
+// 简化后的处理超出字符气泡显示函数
+const showExceededBubble = () => {
+  if (cooldown.value) return
+
+  // 设置冷却时间
+  cooldown.value = true
+  setTimeout(() => {
+    cooldown.value = false
+  }, 2000)
+
+  // 随机位置 (简化版)
+  const randomTop = Math.floor(Math.random() * 60) + 10 // 10%-70%的范围
+  const randomLeft = Math.floor(Math.random() * 60) + 20 // 20%-80%的范围
+  bubblePosition.value = {
+    top: `${randomTop}%`,
+    left: `${randomLeft}%`
+  }
+
+  // 随机消息
+  const messages = [
+    '已超出字符限制！',
+    '字数超了哦~',
+    '太长了，精简一下？',
+    '已超出最大长度！',
+    '字数超限，请删减'
+  ]
+  bubbleMessage.value = messages[Math.floor(Math.random() * messages.length)]
+
+  // 显示和隐藏气泡
+  showBubble.value = true
+  setTimeout(() => {
+    showBubble.value = false
+  }, 1500)
+}
+
+// 修改处理输入的函数
+const handleTextareaInput = (event: Event) => {
+  if (!event.target) return
+
+  const target = event.target as HTMLTextAreaElement
+  inputValue.value = target.value
+
+  // 字数超出检查
+  if (props.maxlength && target.value.length > Number(props.maxlength)) {
+    showExceededBubble()
+  }
+
+  // 自动调整高度
+  if (props.autosize) {
+    nextTick(adjustHeight)
   }
 }
+
+// 检测是否超出字符限制
+const isExceeded = computed(() => {
+  if (!props.maxlength) return false
+  return currentLength.value > Number(props.maxlength)
+})
 
 // 计算当前输入长度
 const currentLength = computed(() => {
@@ -687,11 +739,10 @@ const currentLength = computed(() => {
       </div>
 
       <!-- 输入内容区域 -->
-      <div class="input-content">
+      <div class="input-content" ref="textareaContentRef">
         <slot>
           <!-- 根据textarea属性选择渲染input或textarea -->
           <input
-              v-if="!textarea"
               class="glass-input-field"
               :value="inputValue"
               :placeholder="placeholder"
@@ -702,6 +753,13 @@ const currentLength = computed(() => {
               @blur="handleBlur"
               @keydown="handleKeydown"
           />
+
+          <!-- 字数统计 -->
+          <div v-if="textarea && showCount && maxlength"
+               class="textarea-character-count"
+               :class="{ 'exceeded': isExceeded }">
+            {{ currentLength }}/{{ maxlength }}
+          </div>
         </slot>
       </div>
 
@@ -763,26 +821,36 @@ const currentLength = computed(() => {
           @keydown="handleKeydown"
       />
 
-      <!-- 修复非复合情况下的 textarea -->
-      <textarea
-          v-else
-          ref="textareaRef"
-          class="glass-input glass-textarea"
-          :style="{...inputStyle, ...textareaStyle} as any"
-          :value="inputValue"
-          :placeholder="placeholder"
-          :disabled="disabled"
-          :rows="textareaRows"
-          :cols="textareaCols"
-          :maxlength="textareaMaxLength"
-          @input="handleSafeTextareaInput"
-          @focus="handleFocus"
-          @blur="handleBlur"
-      ></textarea>
+      <!-- 非复合情况下的带气泡提醒的textarea -->
+      <div v-else class="textarea-container" ref="textareaContentRef">
+        <textarea
+            ref="textareaRef"
+            class="glass-input glass-textarea"
+            :style="{...inputStyle, ...textareaStyle} as any"
+            :value="inputValue"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            :rows="textareaRows"
+            :cols="textareaCols"
+            :maxlength="textareaMaxLength"
+            @input="handleTextareaInput"
+            @focus="handleFocus"
+            @blur="handleBlur"
+        ></textarea>
 
-      <!-- 字数统计 -->
-      <div v-if="textarea && showCount && maxlength" class="textarea-character-count">
-        {{ currentLength }}/{{ maxlength }}
+        <!-- 超出字符提醒气泡 -->
+        <transition name="bubble-fade">
+          <div v-show="showBubble" class="exceeded-bubble" :style="bubblePosition">
+            {{ bubbleMessage }}
+          </div>
+        </transition>
+
+        <!-- 字数统计 -->
+        <div v-if="textarea && showCount && maxlength"
+             class="textarea-character-count"
+             :class="{ 'exceeded': isExceeded }">
+          {{ currentLength }}/{{ maxlength }}
+        </div>
       </div>
     </template>
   </div>
@@ -1192,8 +1260,7 @@ const currentLength = computed(() => {
   min-height: 40px;
 }
 
-.glass-textarea,
-.glass-textarea-field {
+.glass-textarea {
   height: auto;
   min-height: 80px;
   border: none;
@@ -1210,7 +1277,6 @@ const currentLength = computed(() => {
   box-sizing: border-box; /* 确保内边距不会增加总宽度 */
 }
 
-.character-count,
 .textarea-character-count {
   position: absolute;
   bottom: 5px;
@@ -1238,18 +1304,18 @@ const currentLength = computed(() => {
 
 /* 保持与现有禁用、错误、焦点状态样式的一致性 */
 .is-disabled .glass-textarea,
-.is-disabled .glass-textarea-field {
+.is-disabled  {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .is-error .glass-textarea,
-.is-error .glass-textarea-field {
+.is-error {
   border-color: v-bind('errorBorderColor');
 }
 
 .is-focused .glass-textarea,
-.is-focused .glass-textarea-field {
+.is-focused  {
   border-color: v-bind('focusBorderColor');
 }
 
@@ -1257,4 +1323,92 @@ const currentLength = computed(() => {
 .glass-textarea[style*="resize:"] {
   overflow: auto; /* 确保调整大小时可以滚动 */
 }
+
+/* 添加textarea容器相对定位，用于气泡定位 */
+.textarea-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 超出字符气泡样式 - 毛玻璃效果 */
+.exceeded-bubble {
+  position: absolute;
+  z-index: 100;
+  background: rgba(255, 75, 75, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: bubble-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+  bubble-float 3s ease-in-out infinite alternate;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 更灵动的文本计数器效果 */
+.textarea-character-count.exceeded {
+  color: #ff4b4b;
+  background: rgba(255, 75, 75, 0.2);
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 75, 75, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 75, 75, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* 气泡弹出动画 */
+@keyframes bubble-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.5);
+  }
+  70% {
+    transform: translate(-50%, -48%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 气泡浮动动画 */
+@keyframes bubble-float {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -58%);
+  }
+  100% {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
 </style>
