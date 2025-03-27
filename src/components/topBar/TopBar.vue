@@ -78,6 +78,7 @@ onMounted(() => {
             v-model="toolQuery"
             placeholder="搜索已有工具..."
             searchable
+            search
             :searchOptions="toolQueryOptions"
             @select-option="handleSelect"
             width="100%"
