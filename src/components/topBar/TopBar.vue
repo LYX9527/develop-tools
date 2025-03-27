@@ -10,6 +10,8 @@ import {computed, onMounted, ref, shallowRef, watch, h} from "vue";
 import {useRouter} from "vue-router";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {getToolLoadedInfos} from "@/utils/getToolLoadedInfos.ts";
+import GlassMorphismPanel from "@/components/GlassMorphismPanel.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const themeIsDark = ref<boolean>(false)
 const headRef = ref<HTMLElement | null>(null)
@@ -43,6 +45,7 @@ watch(themeIsDark, (newValue) => {
   appStatus.changeThemeMode(newValue ? ThemeMode.Dark : ThemeMode.Light)
 })
 onMounted(() => {
+  themeIsDark.value = appStatus.getThemeMode == ThemeMode.Dark
   getToolLoadedInfos().then((list) => {
     toolList.value = list.map((item: ToolLoadedInfo) => {
       return {
@@ -62,21 +65,28 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="head" :class="{'head-fixed':!appStatus.getScrollAtTopStatus}" ref="headRef">
+  <glass-morphism-panel radius="0" class="head" :class="{'head-fixed':!appStatus.getScrollAtTopStatus}" ref="headRef">
     <div class="left-box">
       <div class="logo">
         <img src="@/assets/logo.png" alt="logo">
       </div>
       <div class="title" @click="goHome">开发工具集</div>
       <div class="query-tool-input">
-        <n-dropdown :show="toolQueryOptions.lenght!=0" :options="toolQueryOptions" @select="handleSelect">
-          <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery"
-                   :style="{ width: '80%' }">
-            <template #suffix>
-              <n-icon :component="DocumentSearch16Regular"/>
-            </template>
-          </n-input>
-        </n-dropdown>
+<!--        <n-dropdown :show="toolQueryOptions.lenght!=0" :options="toolQueryOptions" @select="handleSelect">-->
+<!--          <n-input clearable placeholder="输入工具名搜素" v-model:value="toolQuery"-->
+<!--                   :style="{ width: '80%' }">-->
+<!--            <template #suffix>-->
+<!--              <n-icon :component="DocumentSearch16Regular"/>-->
+<!--            </template>-->
+<!--          </n-input>-->
+        <glass-morphism-input
+            v-model="toolQuery"
+            placeholder="请输入内容..."
+            :blur="5"
+            :opacity="0.2"
+            :search="handleSelect"
+        />
+<!--        </n-dropdown>-->
       </div>
     </div>
     <div class="right-box">
@@ -99,7 +109,7 @@ onMounted(() => {
         <p>Github</p>
       </div>
     </div>
-  </div>
+  </glass-morphism-panel>
 </template>
 
 <style scoped lang="scss">

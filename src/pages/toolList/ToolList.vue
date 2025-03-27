@@ -5,6 +5,7 @@ import {onMounted, ref, shallowRef} from "vue";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {useRouter} from "vue-router";
 import {getToolLoadedInfos} from "@/utils/getToolLoadedInfos.ts";
+import GlassMorphismPanel from "@/components/GlassMorphismPanel.vue";
 
 const toolList = shallowRef<ToolLoadedInfo[]>([])
 const router = useRouter()
@@ -41,7 +42,7 @@ onMounted(() => {
     </n-spin>
   </div>
   <div class="tool-list">
-    <div v-for="item in toolList" class="tool-card" @click="selectTool(item)">
+    <glass-morphism-panel v-for="item in toolList" class="tool-card" @click="selectTool(item)">
       <div class="icon">
         <n-icon size="40" :component="item.icon?item.icon:Toolbox16Regular"></n-icon>
       </div>
@@ -58,7 +59,7 @@ onMounted(() => {
         <span class="powered-text">Powered by</span>
         <span class="author">{{ item.author }}</span>
       </div>
-    </div>
+    </glass-morphism-panel>
   </div>
 </template>
 <style scoped lang="scss">

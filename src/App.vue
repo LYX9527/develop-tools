@@ -12,7 +12,7 @@ import {
 } from 'naive-ui'
 import TopBar from "@/components/topBar/TopBar.vue";
 import {useAppStatusStore} from "@/stores";
-import {ref} from "vue";
+import {ref, computed} from "vue";
 import {ThemeMode} from "@/models/Constant.ts";
 
 const appStatus = useAppStatusStore()
@@ -38,6 +38,13 @@ function contentScroll(e: any) {
     appStatus.changeScrollAtTopStatus(false)
   }
 }
+
+
+// 添加CSS变量设置
+const bgStyle = computed(() => ({
+  '--bg-image': `url(/${appStatus.getThemeMode == ThemeMode.Light ? "bg-light.png" : "bg-dark.png"})`
+  // '--bg-image': `url(${appStatus.getThemeMode == ThemeMode.Light ? "https://cdn.yltf.xyz/bg.png" : "https://cdn.yltf.xyz/bg2.png"})`
+}))
 </script>
 
 <template>
@@ -45,7 +52,7 @@ function contentScroll(e: any) {
                      :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
     <n-message-provider>
       <n-notification-provider>
-        <n-el class="app-view">
+        <n-el class="app-view" :style="bgStyle">
           <TopBar></TopBar>
           <div ref="contentRef" class="content" @scroll="contentScroll">
             <router-view></router-view>
@@ -60,7 +67,8 @@ function contentScroll(e: any) {
 
 <style lang="scss">
 .app-view {
-  background-color: var(--card-color);
+  background: var(--bg-image);
+  background-size: cover;
   flex-direction: column;
   display: flex;
   height: 100%;

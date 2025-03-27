@@ -4,6 +4,7 @@ import {computed, onMounted, shallowRef, watch} from "vue";
 import {Toolbox16Regular} from "@vicons/fluent";
 import type {ToolLoadedInfo} from "@/models/ToolInfo.ts";
 import {useNowToolInfoStore} from "@/stores";
+import GlassMorphismPanel from "@/components/GlassMorphismPanel.vue";
 
 const nowToolInfo = useNowToolInfoStore()
 const toolInfo = computed(() => nowToolInfo.getNowToolInfo)
@@ -14,7 +15,7 @@ function openGithub(github: string) {
 </script>
 
 <template>
-  <div class="tool-frame">
+  <glass-morphism-panel class="tool-frame" radius="0">
     <div class="tool-introduce">
       <div class="tool-info">
         <div class="base-info">
@@ -47,12 +48,11 @@ function openGithub(github: string) {
       </div>
       <p class="description" v-if="toolInfo!=null">{{ toolInfo?.description }}</p>
       <div v-else style="margin-top: 10px">
-        <n-skeleton  text :repeat="2"/>
+        <n-skeleton text :repeat="2"/>
       </div>
     </div>
     <router-view></router-view>
-
-  </div>
+  </glass-morphism-panel>
 </template>
 
 <style scoped lang="scss">
