@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {NInput, NButton, NTabs, NTabPane, useMessage, NSlider, NInputNumber, NSelect} from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
 
 const message = useMessage()
 const activeTab = ref('toBase64')
@@ -24,7 +26,7 @@ const compressSettings = ref({
   quality: 80,
   maxWidth: 1920,
   maxHeight: 1080,
-  format: 'jpeg'
+  format: 'JPEG'
 })
 const compressFileSize = ref('0 KB')
 const compressedFileSize = ref('0 KB')
@@ -260,12 +262,12 @@ function triggerFileInput(type: 'base64' | 'compress') {
           <div class="button-group">
             <NButton class="action-button" @click="copyBase64">复制Base64</NButton>
           </div>
-
-          <NInput
-              v-model:value="base64Output"
-              type="textarea"
-              :autosize="{ minRows: 4, maxRows: 12 }"
+          <glass-morphism-input
+              v-model="base64Output"
+              class="base64-output"
               readonly
+              textarea
+              rows="12"
               placeholder="这里将显示图片的Base64编码"
           />
           <div class="info-text">图片大小: {{ imageSize }}</div>
@@ -273,10 +275,10 @@ function triggerFileInput(type: 'base64' | 'compress') {
 
         <!-- Base64转图片 -->
         <div v-else-if="activeTab === 'toImage'" class="tab-content">
-          <NInput
-              v-model:value="base64Input"
-              type="textarea"
-              :autosize="{ minRows: 4, maxRows: 12 }"
+          <glass-morphism-input
+              v-model="base64Input"
+              textarea
+              rows="12"
               placeholder="在这里粘贴Base64编码"
           />
           <div class="button-group">
@@ -317,21 +319,34 @@ function triggerFileInput(type: 'base64' | 'compress') {
 
             <div class="setting-item">
               <span class="setting-label">最大宽度:</span>
-              <NInputNumber v-model:value="compressSettings.maxWidth" :min="100" :max="10000"/>
+              <glass-morphism-input
+                  v-model="compressSettings.maxWidth"
+                  class="setting-value"
+                  size="small"
+                  type="number"
+              />
             </div>
 
             <div class="setting-item">
               <span class="setting-label">最大高度:</span>
-              <NInputNumber v-model:value="compressSettings.maxHeight" :min="100" :max="10000"/>
+              <glass-morphism-input
+                  v-model="compressSettings.maxHeight"
+                  class="setting-value"
+                  size="small"
+                  type="number"
+              />
             </div>
 
             <div class="setting-item">
               <span class="setting-label">输出格式:</span>
-              <NSelect v-model:value="compressSettings.format" :options="[
-                { label: 'JPEG', value: 'jpeg' },
-                { label: 'PNG', value: 'png' },
-                { label: 'WEBP', value: 'webp' }
-              ]"/>
+              <glass-morphism-select
+                  v-model="compressSettings.format"
+                  :options="[
+                    { label: 'JPEG', value: 'JPEG' },
+                    { label: 'PNG', value: 'PNG' },
+                    { label: 'WEBP', value: 'WEBP' }
+                  ]"
+              />
             </div>
           </div>
 

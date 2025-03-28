@@ -1,24 +1,7 @@
 <template>
-  <div class="logo-container">
-    <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect x="10" y="10" width="80" height="80" rx="15" ry="15" fill="transparent" stroke="#1E90FF" stroke-width="6"/>
-      <rect x="25" y="25" width="50" height="50" rx="7" ry="7" fill="transparent" stroke="#FF6347" stroke-width="3"/>
-      <text x="50" y="55" text-anchor="middle" alignment-baseline="middle" font-style="normal" font-size="30">
-        W
-      </text>
-    </svg>
-  </div>
+  <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+    <path d="M10 7l-3 5 2 3h7l2-2-2-4-2 3-4-5z"/>
+    <path d="M16.5 16.5c-.62 0-1.17-.21-1.58-.56-.4-.36-.67-.8-.86-1.28-.15-.4-.25-.82-.3-1.16h-2.05c.03.12.07.25.1.37.11.42.32.98.7 1.52.66.96 1.82 1.61 3.21 1.61 2.05 0 3.71-1.66 3.71-3.71 0-2.05-1.66-3.71-3.71-3.71-.92 0-1.76.34-2.41.9l1.03 1.73.01-.01c.34-.32.79-.5 1.27-.5 1.03 0 1.86.84 1.86 1.86 0 1.03-.84 1.86-1.86 1.86-.06 0-.11 0-.16-.01-.1-.85-.39-1.64-.74-2.21.24-.58.84-.97 1.55-.97.91 0 1.64.74 1.64 1.64 0 .9-.73 1.63-1.64 1.63z" opacity="0.7"/>
+  </svg>
 </template>
-
-<script setup>
-</script>
-
-<style scoped>
-.logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-</style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NInput, NCheckbox, useMessage } from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 
@@ -143,7 +144,11 @@ function copyPattern(pattern: string) {
     <div class="regex-section">
       <div class="input-group">
         <label>正则表达式:</label>
-        <NInput v-model:value="regexInput" @input="testRegex" placeholder="输入正则表达式"/>
+        <glass-morphism-input
+            v-model:modelValue="regexInput"
+            @update:modelValue="testRegex"
+            placeholder="输入正则表达式"
+        />
       </div>
 
       <div class="options">
@@ -160,12 +165,11 @@ function copyPattern(pattern: string) {
 
       <div class="input-group">
         <label>测试文本:</label>
-        <NInput
-            v-model:value="testInput"
-            type="textarea"
-            :autosize="{ minRows: 3, maxRows: 10 }"
-            @input="testRegex"
-            placeholder="输入需要匹配的文本"
+        <glass-morphism-input
+          v-model:modelValue="testInput"
+          @update:modelValue="testRegex"
+          textarea
+          placeholder="输入需要匹配的文本"
         />
       </div>
 

@@ -133,6 +133,7 @@ function handleClickOutside(event: Event) {
 // 添加和移除事件监听器
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  selectedLabel.value = props.modelValue
 })
 
 onUnmounted(() => {
@@ -190,7 +191,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 1px 12px;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);

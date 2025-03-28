@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { NInput, NButton, NTabs, NTabPane, NSelect, useMessage } from 'naive-ui'
+import {ref, watch} from 'vue'
+import {NInput, NButton, NTabs, NTabPane, NSelect, useMessage} from 'naive-ui'
 import QRCode from 'qrcode'
 import jsQR from 'jsqr'
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
+import GlassMorphismButton from "@/components/GlassMorphismButton.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('uuid')
@@ -32,6 +35,16 @@ const qrOptions = ref({
     light: '#ffffff'
   }
 })
+// 选项Options
+const fieldOptions = {
+  methods: [
+    {label: 'MD5', value: 'MD5'},
+    {label: 'SHA-1', value: 'SHA-1'},
+    {label: 'SHA-256', value: 'SHA-256'},
+    {label: 'SHA-384', value: 'SHA-384'},
+    {label: 'SHA-512', value: 'SHA-512'}
+  ]
+};
 
 // 添加二维码识别相关
 const qrFileInput = ref<HTMLInputElement | null>(null)
@@ -64,7 +77,7 @@ function formatFileSize(bytes: number): string {
 function generateUUID() {
   const results = []
   for (let i = 0; i < uuidCount.value; i++) {
-    let uuid = crypto.randomUUID()
+    let uuid = crypto.randomUUID() as string
     if (uuidOptions.value.uppercase) {
       uuid = uuid.toUpperCase()
     }
@@ -130,8 +143,8 @@ function copyResult(text: string) {
     return
   }
   navigator.clipboard.writeText(text)
-    .then(() => message.success('已复制到剪贴板'))
-    .catch(() => message.error('复制失败'))
+      .then(() => message.success('已复制到剪贴板'))
+      .catch(() => message.error('复制失败'))
 }
 
 // 下载二维码
@@ -213,11 +226,11 @@ function processQRImage(file: File) {
 // 修改文件上传处理函数
 async function handleHashFileUpload(file: File) {
   hashVerifyFile.value = file
-  
+
   try {
     const buffer = await file.arrayBuffer()
     const data = new Uint8Array(buffer)
-    
+
     let calculatedHash = ''
     if (hashType.value === 'MD5') {
       const md5 = await import('crypto-js/md5')
@@ -230,7 +243,7 @@ async function handleHashFileUpload(file: File) {
     }
 
     hashVerifyResult.value = calculatedHash
-    
+
     // 如果用户已输入校验值，则进行比对
     if (hashVerifyInput.value) {
       hashVerifyStatus.value = calculatedHash.toLowerCase() === hashVerifyInput.value.toLowerCase() ? 'success' : 'error'
@@ -296,53 +309,59 @@ function triggerHashFileInput() {
         <NTabPane name="uuid" tab="UUID生成">
           <div class="tab-content">
             <div class="options-group">
-              <NSelect
-                  v-model:value="uuidVersion"
-                  :options="[
+              <div class="options-group-item" style="width: 20%;">
+                <glass-morphism-select
+                    v-model="uuidVersion"
+                    width="100px"
+                    :options="[
                     { label: 'UUID v4', value: 4 }
                   ]"
-                  class="version-select"
-              />
+                />
+              </div>
               <div class="switches">
-                <NButton
-                    size="small"
+                <glass-morphism-button
                     :type="uuidOptions.uppercase ? 'primary' : 'default'"
                     @click="uuidOptions.uppercase = !uuidOptions.uppercase"
                 >
                   大写
-                </NButton>
-                <NButton
-                    size="small"
+                </glass-morphism-button>
+                <glass-morphism-button
                     :type="uuidOptions.hyphens ? 'primary' : 'default'"
                     @click="uuidOptions.hyphens = !uuidOptions.hyphens"
                 >
                   连字符
-                </NButton>
+                </glass-morphism-button>
               </div>
             </div>
 
             <div class="input-group">
-              <NInput
-                  v-model:value="uuidCount"
+              <glass-morphism-input
+                  v-model="uuidCount"
+                  placeholder="请输入用户名..."
                   type="number"
-                  :min="1"
-                  :max="100"
-                  placeholder="生成数量"
+                  :blur="5"
+                  :opacity="0.2"
+                  suffixButton
+                  buttonText="生成"
+                  buttonType="primary"
+                  @button-click="generateUUID"
               />
-              <NButton type="primary" @click="generateUUID">生成</NButton>
             </div>
 
             <div class="result-group">
-              <NInput
-                  v-model:value="uuidResult"
-                  type="textarea"
-                  :autosize="{ minRows: 3, maxRows: 10 }"
-                  readonly
+              <glass-morphism-input
+                  v-model="uuidResult"
                   placeholder="生成的UUID将显示在这里"
+                  :blur="5"
+                  :opacity="0.2"
+                  textarea
+                  showCount
+                  rows="10"
               />
               <NButton @click="copyResult(uuidResult)" :disabled="!uuidResult">
                 复制结果
               </NButton>
+
             </div>
           </div>
         </NTabPane>
@@ -350,33 +369,37 @@ function triggerHashFileInput() {
         <NTabPane name="hash" tab="哈希计算">
           <div class="tab-content">
             <div class="input-group">
-              <NSelect
-                  v-model:value="hashType"
-                  :options="[
-                    { label: 'MD5', value: 'MD5' },
-                    { label: 'SHA-1', value: 'SHA-1' },
-                    { label: 'SHA-256', value: 'SHA-256' },
-                    { label: 'SHA-384', value: 'SHA-384' },
-                    { label: 'SHA-512', value: 'SHA-512' }
-                  ]"
+              <glass-morphism-select
+                  v-model="hashType"
+                  :options="fieldOptions.methods"
               />
             </div>
 
             <div class="input-group">
-              <NInput
-                  v-model:value="hashInput"
-                  type="textarea"
-                  :autosize="{ minRows: 3, maxRows: 10 }"
+
+              <glass-morphism-input
+                  v-model="hashInput"
                   placeholder="输入需要计算哈希的内容"
+                  :blur="5"
+                  :opacity="0.2"
+                  textarea
+                  showCount
+                  rows="10"
+                  maxlength="10000"
               />
-              <NButton type="primary" @click="calculateHash">计算</NButton>
+              <NButton @click="calculateHash">计算</NButton>
             </div>
 
             <div class="result-group">
-              <NInput
-                  v-model:value="hashResult"
-                  readonly
+              <glass-morphism-input
+                  v-model="hashResult"
                   placeholder="哈希结果将显示在这里"
+                  :blur="5"
+                  :opacity="0.2"
+                  textarea
+                  readonly
+                  showCount
+                  rows="10"
               />
               <NButton @click="copyResult(hashResult)" :disabled="!hashResult">
                 复制结果
@@ -386,23 +409,18 @@ function triggerHashFileInput() {
             <div class="section-title">哈希校验</div>
             <div class="verify-section">
               <div class="verify-header">
-                <NSelect
-                    v-model:value="hashType"
-                    :options="[
-                      { label: 'MD5', value: 'MD5' },
-                      { label: 'SHA-1', value: 'SHA-1' },
-                      { label: 'SHA-256', value: 'SHA-256' },
-                      { label: 'SHA-384', value: 'SHA-384' },
-                      { label: 'SHA-512', value: 'SHA-512' }
-                    ]"
-                    class="algorithm-select"
-                />
-                <NInput
-                    v-model:value="hashVerifyInput"
+                <glass-morphism-input
+                    v-model="hashVerifyInput"
+                    v-model:selectValue="hashType"
+                    :options="fieldOptions.methods"
+                    use-select-prefix
+                    suffixWidth="70px"
                     placeholder="输入哈希值进行校验（可选）"
+                    :blur="5"
+                    :opacity="0.2"
                 />
               </div>
-              
+
               <div
                   class="upload-area"
                   :class="{
@@ -433,17 +451,19 @@ function triggerHashFileInput() {
                   </template>
                 </div>
               </div>
-              
+
               <div v-if="hashVerifyResult" class="verify-result">
-                <div class="result-header">
-                  <div class="result-label">计算结果：</div>
-                  <NButton size="small" @click="copyResult(hashVerifyResult)">
-                    复制结果
-                  </NButton>
-                </div>
-                <NInput
-                    v-model:value="hashVerifyResult"
+                <glass-morphism-input
+                    v-model="hashVerifyResult"
+                    placeholder="请输入内容..."
+                    :blur="5"
+                    :opacity="0.2"
                     readonly
+                    suffixButton
+                    buttonText="复制"
+                    @button-click="copyResult(hashVerifyResult)"
+                    width="100%"
+                    border-color="rgba(255, 255, 255, 0.3)"
                 />
                 <div v-if="hashVerifyStatus" class="status-text" :class="hashVerifyStatus">
                   {{ hashVerifyStatus === 'success' ? '哈希值匹配' : '哈希值不匹配' }}
@@ -458,32 +478,33 @@ function triggerHashFileInput() {
             <!-- 生成部分 -->
             <div class="section-title">生成二维码</div>
             <div class="input-group">
-              <NInput
-                  v-model:value="qrInput"
-                  type="textarea"
-                  :autosize="{ minRows: 3, maxRows: 6 }"
+
+              <glass-morphism-input
+                  v-model="qrInput"
                   placeholder="输入需要生成二维码的内容"
+                  :blur="5"
+                  :opacity="0.2"
+                  textarea
+                  showCount
+                  rows="10"
+                  maxlength="10000"
               />
-              <NButton type="primary" @click="generateQRCode">生成</NButton>
+              <NButton @click="generateQRCode">生成</NButton>
             </div>
 
             <div class="qr-options">
               <div class="option-item">
                 <span>尺寸:</span>
-                <NInput
-                    v-model:value="qrOptions.width"
+                <glass-morphism-input
+                    v-model="qrOptions.width"
                     type="number"
-                    :min="128"
-                    :max="1024"
                 />
               </div>
               <div class="option-item">
                 <span>边距:</span>
-                <NInput
-                    v-model:value="qrOptions.margin"
+                <glass-morphism-input
+                    v-model="qrOptions.margin"
                     type="number"
-                    :min="0"
-                    :max="10"
                 />
               </div>
             </div>
@@ -504,12 +525,10 @@ function triggerHashFileInput() {
                   type="file"
                   accept="image/*"
                   class="file-input"
-                  @change="handleQRUpload"
               />
               <div
                   class="upload-area"
                   :class="{ 'is-dragover': isDragging }"
-                  @click="triggerQRFileInput"
                   @dragover="handleDragOver"
                   @dragleave="handleDragLeave"
                   @drop="handleDrop"

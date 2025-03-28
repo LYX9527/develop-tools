@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted} from 'vue'
 import {NInput, NButton, NSpace, NTabs, NTabPane, useMessage} from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('now')
@@ -99,64 +100,120 @@ onUnmounted(() => {
           <div class="format-item">
             <span class="format-label">标准时间</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.standard"/>
-              <NButton size="small" @click="copyTime('standard')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.standard"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('standard')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">本地时间</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.local"/>
-              <NButton size="small" @click="copyTime('local')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.local"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('local')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">UTC时间</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.utc"/>
-              <NButton size="small" @click="copyTime('utc')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.utc"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('utc')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">秒级时间戳</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.timestamp"/>
-              <NButton size="small" @click="copyTime('timestamp')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.timestamp"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('timestamp')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">毫秒级时间戳</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.milliseconds"/>
-              <NButton size="small" @click="copyTime('milliseconds')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.milliseconds"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('milliseconds')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">日期格式</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.date"/>
-              <NButton size="small" @click="copyTime('date')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.date"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('date')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">时间格式</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.time"/>
-              <NButton size="small" @click="copyTime('time')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.time"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('time')"
+              />
             </div>
           </div>
 
           <div class="format-item">
             <span class="format-label">自定义格式</span>
             <div class="format-content">
-              <NInput readonly :value="currentTime.custom"/>
-              <NButton size="small" @click="copyTime('custom')">复制</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="currentTime.custom"
+                  readonly
+                  style="width: 100%"
+                  button-text="复制"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="copyTime('custom')"
+              />
             </div>
           </div>
         </div>
@@ -170,8 +227,15 @@ onUnmounted(() => {
               <NButton size="small" @click="copyTime('timestamp')">复制</NButton>
             </div>
             <div class="input-with-button">
-              <NInput v-model:value="timestampInput" placeholder="请输入时间戳..."/>
-              <NButton @click="timestampToDatetime">转换为日期时间</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="timestampInput"
+                  placeholder="请输入时间戳..."
+                  style="width: 100%"
+                  button-text="转换为日期时间"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="timestampToDatetime"
+              />
             </div>
           </div>
 
@@ -181,8 +245,15 @@ onUnmounted(() => {
               <NButton size="small" @click="copyTime('custom')">复制</NButton>
             </div>
             <div class="input-with-button">
-              <NInput v-model:value="datetimeInput" placeholder="请输入日期时间..."/>
-              <NButton @click="datetimeToTimestamp">转换为时间戳</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="datetimeInput"
+                  placeholder="请输入日期时间..."
+                  style="width: 100%"
+                  button-text="转换为时间戳"
+                  button-type="primary"
+                  suffix-button
+                  @button-click="datetimeToTimestamp"
+              />
             </div>
           </div>
 
@@ -240,7 +311,7 @@ onUnmounted(() => {
 
         :deep(.n-input) {
           flex: 1;
-          
+
           .n-input__input-el {
             font-family: 'Fira Code', monospace;
           }

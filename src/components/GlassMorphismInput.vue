@@ -1699,24 +1699,11 @@ const showDropdown = () => {
   border-radius: 2px;
 }
 
-/* 下拉动画 */
-.dropdown-fade-enter-active,
-.dropdown-fade-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.dropdown-fade-enter-from,
-.dropdown-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
 /* 添加 readonly 特定样式 */
 .glass-morphism-input input[readonly],
 .glass-morphism-input textarea[readonly] {
   cursor: text;
   opacity: 0.9;
-  color: var(--input-text-color, #2c3e50);
 }
 
 /* 确保 readonly 不影响 disabled 的样式 */

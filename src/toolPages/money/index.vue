@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useMessage } from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const inputAmount = ref('')
@@ -41,9 +42,9 @@ function convertToChinese() {
 
     // 转换整数部分
     let intResult = convertIntegerPart(intPart)
-    
+
     // 转换小数部分
-    const decResult = decPart[0] === '0' && decPart[1] === '0' 
+    const decResult = decPart[0] === '0' && decPart[1] === '0'
       ? '整'
       : `${numMap[parseInt(decPart[0])]}角${decPart[1] === '0' ? '' : numMap[parseInt(decPart[1])] + '分'}`
 
@@ -59,20 +60,20 @@ function convertIntegerPart(intStr: string): string {
 
   let result = ''
   let sectionIndex = 0
-  
+
   // 从后向前每4位分段处理
   while (intStr.length > 0) {
     const section = intStr.slice(-4)
     intStr = intStr.slice(0, -4)
-    
+
     // 处理每一个段
     let sectionResult = convertSection(section)
-    
+
     // 添加单位（万、亿等）
     if (sectionResult && sectionIndex > 0) {
       sectionResult += sectionMap[sectionIndex]
     }
-    
+
     // 拼接结果
     result = sectionResult + result
     sectionIndex++
@@ -80,14 +81,14 @@ function convertIntegerPart(intStr: string): string {
 
   // 清理连续的零
   result = result.replace(/零+/g, '零').replace(/零+$/, '')
-  
+
   return result || '零'
 }
 
 function convertSection(section: string): string {
   let result = ''
   const len = section.length
-  
+
   for (let i = 0; i < len; i++) {
     const num = parseInt(section[i])
     if (num === 0) {
@@ -97,7 +98,7 @@ function convertSection(section: string): string {
       result += numMap[num] + unitMap[len - 1 - i]
     }
   }
-  
+
   return result
 }
 
@@ -106,7 +107,7 @@ function copyResult() {
     message.warning('没有可复制的内容')
     return
   }
-  
+
   navigator.clipboard.writeText(outputAmount.value)
     .then(() => message.success('复制成功'))
     .catch(() => message.error('复制失败'))
@@ -126,17 +127,16 @@ function clearInput() {
           <span class="section-title">输入金额:</span>
           <n-button size="small" @click="clearInput">清空</n-button>
         </div>
-        <n-input
-          v-model:value="inputAmount"
-          type="text"
+
+        <glass-morphism-input
+          v-model="inputAmount"
           placeholder="请输入数字金额（最多支持13位数）"
-          @keyup.enter="convertToChinese"
+          @button-click="convertToChinese"
+          button-text="转换"
+          suffix-button
         />
       </div>
 
-      <div class="action-buttons">
-        <n-button type="primary" @click="convertToChinese">转换</n-button>
-      </div>
 
       <div class="output-group">
         <div class="output-header">
@@ -215,4 +215,4 @@ function clearInput() {
     }
   }
 }
-</style> 
+</style>

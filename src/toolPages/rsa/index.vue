@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { NInput, NButton, NSpace, NTabs, NTabPane, NSelect, useMessage } from 'naive-ui'
 import { generateKeyPair, encrypt, decrypt } from './rsa'
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('generate')
@@ -48,7 +50,7 @@ function downloadKey(type: 'public' | 'private') {
     message.warning('请先生成密钥对')
     return
   }
-  
+
   const blob = new Blob([key], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -123,15 +125,15 @@ function copyResult() {
           <div class="key-header">
             <span class="section-title">密钥长度:</span>
             <NSpace>
-              <NSelect
-                  v-model:value="keySize"
+              <glass-morphism-select
+                  style="width: 120px;margin-right: 40px"
+                  v-model:modelValue="keySize"
                   :options="[
                     { label: '512 位', value: 512 },
                     { label: '1024 位', value: 1024 },
                     { label: '2048 位', value: 2048 },
                     { label: '4096 位', value: 4096 }
                   ]"
-                  style="width: 120px"
               />
               <NButton type="primary" @click="generateKeys">生成密钥对</NButton>
             </NSpace>
@@ -146,11 +148,11 @@ function copyResult() {
                   <NButton size="small" @click="downloadKey('public')">下载</NButton>
                 </div>
               </div>
-              <NInput
-                  type="textarea"
-                  v-model:value="publicKey"
+              <glass-morphism-input
+                  v-model:modelValue="publicKey"
+                  textarea
                   readonly
-                  :autosize="{ minRows: 3, maxRows: 5 }"
+                  rows="10"
               />
             </div>
 
@@ -162,11 +164,11 @@ function copyResult() {
                   <NButton size="small" @click="downloadKey('private')">下载</NButton>
                 </div>
               </div>
-              <NInput
-                  type="textarea"
-                  v-model:value="privateKey"
+              <glass-morphism-input
+                  v-model:modelValue="privateKey"
+                  textarea
                   readonly
-                  :autosize="{ minRows: 3, maxRows: 5 }"
+                  rows="10"
               />
             </div>
           </div>
@@ -179,11 +181,11 @@ function copyResult() {
             <div class="input-header">
               <span class="section-title">公钥:</span>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="currentPublicKey"
-                :autosize="{ minRows: 3, maxRows: 5 }"
+            <glass-morphism-input
+                v-model:modelValue="currentPublicKey"
+                textarea
                 placeholder="请输入公钥..."
+                rows="10"
             />
           </div>
 
@@ -195,11 +197,11 @@ function copyResult() {
                 <NButton type="error" @click="clearInput">清空</NButton>
               </NSpace>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="inputText"
-                :autosize="{ minRows: 3, maxRows: 5 }"
+            <glass-morphism-input
+                v-model:modelValue="inputText"
                 placeholder="请输入要加密的内容..."
+                textarea
+                rows="10"
             />
           </div>
 
@@ -208,11 +210,11 @@ function copyResult() {
               <span class="section-title">加密结果:</span>
               <NButton size="small" @click="copyResult">复制</NButton>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="outputText"
+            <glass-morphism-input
+                v-model:modelValue="outputText"
+                textarea
                 readonly
-                :autosize="{ minRows: 3, maxRows: 5 }"
+                rows="10"
             />
           </div>
         </div>
@@ -224,11 +226,11 @@ function copyResult() {
             <div class="input-header">
               <span class="section-title">私钥:</span>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="currentPrivateKey"
-                :autosize="{ minRows: 3, maxRows: 5 }"
-                placeholder="请输入私钥..."
+            <glass-morphism-input
+                v-model:modelValue="currentPrivateKey"
+                placeholder=""
+                textarea
+                rows="10"
             />
           </div>
 
@@ -240,11 +242,11 @@ function copyResult() {
                 <NButton type="error" @click="clearInput">清空</NButton>
               </NSpace>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="inputText"
-                :autosize="{ minRows: 3, maxRows: 5 }"
+            <glass-morphism-input
+                v-model:modelValue="inputText"
                 placeholder="请输入要解密的内容..."
+                textarea
+                rows="10"
             />
           </div>
 
@@ -253,11 +255,13 @@ function copyResult() {
               <span class="section-title">解密结果:</span>
               <NButton size="small" @click="copyResult">复制</NButton>
             </div>
-            <NInput
-                type="textarea"
-                v-model:value="outputText"
+
+            <glass-morphism-input
+                v-model:modelValue="outputText"
+                placeholder="解密结果"
+                textarea
                 readonly
-                :autosize="{ minRows: 3, maxRows: 5 }"
+                rows="10"
             />
           </div>
         </div>

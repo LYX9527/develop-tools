@@ -8,6 +8,7 @@ import '@kangc/v-md-editor/lib/style/preview.css'
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
 import '@kangc/v-md-editor/lib/theme/style/github.css'
 import hljs from 'highlight.js'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 // 配置 VMdEditor
 VMdPreview.use(githubTheme, {
@@ -90,20 +91,13 @@ function copySummary() {
   <div class="container">
     <div class="input-section">
       <div class="input-group">
-        <n-input
-            v-model:value="url"
-            type="text"
+        <glass-morphism-input
+            v-model:modelValue="url"
             placeholder="输入要总结的页面地址"
-            @keyup.enter="getSummary"
+            button-text="总结"
+            suffix-button
+            @button-click="getSummary"
         />
-        <n-button
-            type="primary"
-            :disabled="isLoading"
-            @click="getSummary"
-            :loading="isLoading"
-        >
-          总结
-        </n-button>
       </div>
     </div>
 

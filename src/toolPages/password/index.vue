@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {NInput, NButton, NInputNumber, NCheckbox, useMessage} from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 
@@ -50,13 +51,8 @@ function generatePasswords() {
     message.warning('请至少选择一种字符类型')
     return
   }
-
-  passwords.value = Array(settings.value.count).fill(null).map(() => {
-    let password = ''
-    for (let i = 0; i < settings.value.length; i++) {
-      const randomIndex = Math.floor(Math.random() * chars.length)
-      password += chars[randomIndex]
-    }
+  passwords.value = Array.from({length: settings.value.count}, () => {
+    const password = Array.from({length: settings.value.length}, () => chars[Math.floor(Math.random() * chars.length)]).join('')
     return {
       value: password,
       strength: calculateStrength(password)
@@ -115,21 +111,17 @@ const getStrengthClass = (strength: 'weak' | 'medium' | 'strong') => {
       <div class="setting-group">
         <div class="setting-item">
           <span class="setting-label">密码长度:</span>
-          <NInputNumber
-              v-model:value="settings.length"
-              :min="4"
-              :max="64"
-              class="setting-input"
+          <glass-morphism-input
+              v-model:modelValue="settings.length"
+              type="number"
           />
         </div>
 
         <div class="setting-item">
           <span class="setting-label">生成数量:</span>
-          <NInputNumber
-              v-model:value="settings.count"
-              :min="1"
-              :max="50"
-              class="setting-input"
+          <glass-morphism-input
+              v-model:modelValue="settings.count"
+              type="number"
           />
         </div>
       </div>
@@ -155,10 +147,9 @@ const getStrengthClass = (strength: 'weak' | 'medium' | 'strong') => {
 
       <div class="setting-item">
         <span class="setting-label">排除字符:</span>
-        <NInput
-            v-model:value="settings.excludeChars"
+        <glass-morphism-input
+            v-model:modelValue="settings.excludeChars"
             placeholder="输入要排除的字符"
-            class="setting-input"
         />
       </div>
 

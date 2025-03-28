@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { NInput, NButton, NSpace, NSelect, useMessage, NSwitch } from 'naive-ui'
+import {ref, watch} from 'vue'
+import {NInput, NButton, NSpace, NSelect, useMessage, NSwitch} from 'naive-ui'
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 
 // 预设进制选项
 const baseOptions = [
-  { label: '二进制', value: 2 },
-  { label: '八进制', value: 8 },
-  { label: '十进制', value: 10 },
-  { label: '十六进制', value: 16 }
+  {label: '二进制', value: 2},
+  {label: '八进制', value: 8},
+  {label: '十进制', value: 10},
+  {label: '十六进制', value: 16}
 ]
 
 // 输出进制选项
 const outputBaseOptions = [
   ...baseOptions,
-  { label: '26进制(a-z)', value: 26 },
-  { label: '32进制(无易混淆字符)', value: 32 },
-  { label: '36进制(0-9,a-z)', value: 36 },
-  { label: '52进制(a-z,A-Z)', value: 52 },
-  { label: '58进制(无易混淆字符)', value: 58 },
-  { label: '62进制(0-9,a-z,A-Z)', value: 62 },
-  { label: '64进制(0-9,a-z,A-Z,-_)', value: 64 },
-  { label: '自定义', value: 'custom' }
+  {label: '26进制(a-z)', value: 26},
+  {label: '32进制(无易混淆字符)', value: 32},
+  {label: '36进制(0-9,a-z)', value: 36},
+  {label: '52进制(a-z,A-Z)', value: 52},
+  {label: '58进制(无易混淆字符)', value: 58},
+  {label: '62进制(0-9,a-z,A-Z)', value: 62},
+  {label: '64进制(0-9,a-z,A-Z,-_)', value: 64},
+  {label: '自定义', value: 'custom'}
 ]
 
 const selectedBase = ref(10)
@@ -59,10 +61,10 @@ function toDecimal(value: string, fromBase: number): number {
   if (fromBase <= 36) {
     return parseInt(value, fromBase)
   }
-  
+
   const charset = charsets[fromBase]
   if (!charset) return NaN
-  
+
   let result = 0
   for (let i = 0; i < value.length; i++) {
     result = result * fromBase + charset.indexOf(value[i])
@@ -75,10 +77,10 @@ function fromDecimal(value: number, toBase: number): string {
   if (toBase <= 36) {
     return value.toString(toBase).toUpperCase()
   }
-  
+
   const charset = charsets[toBase]
   if (!charset) return ''
-  
+
   let result = ''
   let num = value
   while (num > 0) {
@@ -99,9 +101,9 @@ function convert() {
   if (!validateInput(inputValue.value, base)) {
     // 不直接报错，而是清除非法字符
     inputValue.value = inputValue.value
-      .split('')
-      .filter(char => charsets[base].includes(char.toLowerCase()))
-      .join('')
+        .split('')
+        .filter(char => charsets[base].includes(char.toLowerCase()))
+        .join('')
     return
   }
 
@@ -120,12 +122,12 @@ function convert() {
 
     // 生成结果
     outputResults.value = targetBases
-      .filter((base, index, self) => self.indexOf(base) === index) // 去重
-      .sort((a, b) => a - b) // 排序
-      .map(base => ({
-        base,
-        value: fromDecimal(decimal, base)
-      }))
+        .filter((base, index, self) => self.indexOf(base) === index) // 去重
+        .sort((a, b) => a - b) // 排序
+        .map(base => ({
+          base,
+          value: fromDecimal(decimal, base)
+        }))
   } catch (error) {
     message.error('转换失败')
   }
@@ -140,15 +142,15 @@ watch([() => inputValue.value, () => selectedBase.value, () => customBase.value]
 watch(() => selectedBase.value, (newBase) => {
   if (newBase === 'custom') return
   if (!inputValue.value) return
-  
+
   const charset = charsets[newBase]
   if (!charset) return
 
   // 过滤掉不在当前进制字符集中的字符
   inputValue.value = inputValue.value
-    .split('')
-    .filter(char => charset.includes(char.toLowerCase()))
-    .join('')
+      .split('')
+      .filter(char => charset.includes(char.toLowerCase()))
+      .join('')
 })
 
 // 复制结果
@@ -158,8 +160,8 @@ function copyResult(value: string) {
     return
   }
   navigator.clipboard.writeText(value)
-    .then(() => message.success('复制成功'))
-    .catch(() => message.error('复制失败'))
+      .then(() => message.success('复制成功'))
+      .catch(() => message.error('复制失败'))
 }
 
 // 清空输入
@@ -180,30 +182,39 @@ function getBaseDescription(base: number | string): string {
     <div class="input-section">
       <div class="base-selector">
         <span class="section-label">输入进制:</span>
-        <NSelect v-model:value="selectedBase" :options="baseOptions" style="width: 200px"/>
-      </div>
-      
-      <div class="input-group">
-        <NInput
-            v-model:value="inputValue"
-            type="text"
-            :placeholder="`请输入${getBaseDescription(selectedBase)}数值...`"
+        <glass-morphism-select
+            v-model:modelValue="selectedBase"
+            :options="baseOptions"
+            style="width: 200px"
         />
-        <NButton type="error" @click="clearInput">清空</NButton>
+      </div>
+
+      <div class="input-group">
+
+        <glass-morphism-input
+            v-model:modelValue="inputValue"
+            type="number"
+            style="width: 100px"
+            :placeholder="`请输入${getBaseDescription(selectedBase)}数值...`"
+            button-text="清空"
+            button-type="danger"
+            suffix-button
+            @button-click="clearInput"
+        />
       </div>
 
       <div class="output-options">
         <span class="section-label">自定义输出进制:</span>
         <div class="custom-base-input">
           <NSwitch v-model:value="showCustomBase"/>
-          <NInput
+          <glass-morphism-input
+              v-model:modelValue="customBase"
               v-if="showCustomBase"
-              v-model:value="customBase"
               type="number"
+              style="width: 100px"
               :min="2"
               :max="64"
-              style="width: 100px"
-              placeholder="2-64"
+              :placeholder="`自定义进制(2-64)`"
           />
         </div>
       </div>
@@ -213,8 +224,15 @@ function getBaseDescription(base: number | string): string {
       <div v-for="result in outputResults" :key="result.base" class="format-item">
         <span class="format-label">{{ getBaseDescription(result.base) }}</span>
         <div class="format-content">
-          <NInput readonly :value="result.value"/>
-          <NButton size="small" @click="copyResult(result.value)">复制</NButton>
+          <glass-morphism-input
+              v-model:modelValue="result.value"
+              readonly
+              style="width: 100%"
+              button-text="复制"
+              button-type="primary"
+              suffix-button
+              @button-click="copyResult(result.value)"
+          />
         </div>
       </div>
     </div>
@@ -310,7 +328,7 @@ function getBaseDescription(base: number | string): string {
 
         :deep(.n-input) {
           flex: 1;
-          
+
           .n-input__input-el {
             font-family: 'Fira Code', monospace;
           }
@@ -319,4 +337,4 @@ function getBaseDescription(base: number | string): string {
     }
   }
 }
-</style> 
+</style>

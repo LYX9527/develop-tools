@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { NInput, NButton, NSelect, NTabs, NTabPane, useMessage } from 'naive-ui'
+import {ref, reactive} from 'vue'
+import {NInput, NButton, NSelect, NTabs, NTabPane, useMessage} from 'naive-ui'
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 
@@ -10,10 +12,10 @@ const url = ref('')
 const activeTab = ref('params')
 
 // 请求参数
-const headers = reactive<Array<{ name: string; value: string }>>([{ name: '', value: '' }])
-const params = reactive<Array<{ name: string; value: string }>>([{ name: '', value: '' }])
-const formData = reactive<Array<{ name: string; value: string }>>([{ name: '', value: '' }])
-const urlEncodedData = reactive<Array<{ name: string; value: string }>>([{ name: '', value: '' }])
+const headers = reactive<Array<{ name: string; value: string }>>([{name: '', value: ''}])
+const params = reactive<Array<{ name: string; value: string }>>([{name: '', value: ''}])
+const formData = reactive<Array<{ name: string; value: string }>>([{name: '', value: ''}])
+const urlEncodedData = reactive<Array<{ name: string; value: string }>>([{name: '', value: ''}])
 const rawBody = ref('')
 const bodyType = ref('raw')
 
@@ -29,13 +31,13 @@ const responseStatusType = ref<'success' | 'error' | 'warning' | 'info'>('info')
 
 // HTTP方法选项
 const methodOptions = [
-  { label: 'GET', value: 'GET' },
-  { label: 'POST', value: 'POST' },
-  { label: 'PUT', value: 'PUT' },
-  { label: 'DELETE', value: 'DELETE' },
-  { label: 'PATCH', value: 'PATCH' },
-  { label: 'HEAD', value: 'HEAD' },
-  { label: 'OPTIONS', value: 'OPTIONS' }
+  {label: 'GET', value: 'GET'},
+  {label: 'POST', value: 'POST'},
+  {label: 'PUT', value: 'PUT'},
+  {label: 'DELETE', value: 'DELETE'},
+  {label: 'PATCH', value: 'PATCH'},
+  {label: 'HEAD', value: 'HEAD'},
+  {label: 'OPTIONS', value: 'OPTIONS'}
 ]
 
 // 获取状态码对应的类型
@@ -62,7 +64,7 @@ function addRow(type: 'headers' | 'params' | 'formData' | 'urlEncoded') {
     formData,
     urlEncoded: urlEncodedData
   }[type]
-  target.push({ name: '', value: '' })
+  target.push({name: '', value: ''})
 }
 
 // 删除行
@@ -114,8 +116,8 @@ function copyResponse() {
     return
   }
   navigator.clipboard.writeText(responseBody.value)
-    .then(() => message.success('已复制到剪贴板'))
-    .catch(() => message.error('复制失败，请手动复制'))
+      .then(() => message.success('已复制到剪贴板'))
+      .catch(() => message.error('复制失败，请手动复制'))
 }
 
 // 发送请求
@@ -218,14 +220,14 @@ const quickRequests = {
     method: 'GET',
     url: 'https://api.example.com/users',
     headers: [
-      { name: 'Accept', value: 'application/json' }
+      {name: 'Accept', value: 'application/json'}
     ]
   },
   'post-example': {
     method: 'POST',
     url: 'https://api.example.com/users',
     headers: [
-      { name: 'Content-Type', value: 'application/json' }
+      {name: 'Content-Type', value: 'application/json'}
     ],
     body: JSON.stringify({
       name: "John Doe",
@@ -259,23 +261,23 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
     <div class="request-section">
       <!-- URL行 -->
       <div class="url-line">
-        <NSelect
-            v-model:value="method"
-            :options="methodOptions"
-            class="method-select"
-        />
-        <NInput
-            v-model:value="url"
-            placeholder="请输入请求URL"
-            class="url-input"
-        />
-        <NButton
-            type="primary"
-            @click="sendRequest"
-            class="send-button"
-        >
-          发送请求
-        </NButton>
+        <div style="margin-right: 30px; width: 8%;">
+          <glass-morphism-select
+              :options="methodOptions"
+              v-model:modelValue="method"
+              placeholder="请选择请求方法"
+          />
+        </div>
+        <div style="flex: 1;">
+          <glass-morphism-input
+              v-model:model-value="url"
+              placeholder="请输入请求URL"
+              suffix-button
+              button-text="发送请求"
+              @button-click="sendRequest"
+          />
+        </div>
+
       </div>
 
       <!-- 请求配置标签页 -->
@@ -283,9 +285,17 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
         <NTabPane name="params" tab="Params">
           <div class="params-table">
             <div v-for="(param, index) in params" :key="index" class="table-row">
-              <NInput v-model:value="param.name" placeholder="参数名" />
-              <NInput v-model:value="param.value" placeholder="参数值" />
-              <NButton circle tertiary type="error" @click="removeRow('params', index)">×</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="param.name"
+                  placeholder="参数名"
+              />
+              <glass-morphism-input
+                  v-model:modelValue="param.value"
+                  placeholder="参数值"
+              />
+              <NButton circle tertiary type="error" @click="removeRow('params', index)"
+                       style="width: 48px; height: 48px; line-height: 48px;">×
+              </NButton>
             </div>
             <NButton dashed class="add-button" @click="addRow('params')">添加参数</NButton>
           </div>
@@ -294,9 +304,17 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
         <NTabPane name="headers" tab="Headers">
           <div class="headers-table">
             <div v-for="(header, index) in headers" :key="index" class="table-row">
-              <NInput v-model:value="header.name" placeholder="Header名" />
-              <NInput v-model:value="header.value" placeholder="Header值" />
-              <NButton circle tertiary type="error" @click="removeRow('headers', index)">×</NButton>
+              <glass-morphism-input
+                  v-model:modelValue="header.name"
+                  placeholder="Header名"
+              />
+              <glass-morphism-input
+                  v-model:modelValue="header.value"
+                  placeholder="Header值"
+              />
+              <NButton circle tertiary type="error" @click="removeRow('headers', index)"
+                       style="width: 48px; height: 48px; line-height: 48px;">×
+              </NButton>
             </div>
             <NButton dashed class="add-button" @click="addRow('headers')">添加Header</NButton>
           </div>
@@ -305,23 +323,24 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
         <NTabPane name="body" tab="Body">
           <div class="body-section">
             <div class="body-type">
-              <NSelect
-                  v-model:value="bodyType"
+              <glass-morphism-select
+                  width="99%"
                   :options="[
                     { label: 'raw', value: 'raw' },
-                    { label: 'form-data', value: 'form-data' },
-                    { label: 'x-www-form-urlencoded', value: 'x-www-form-urlencoded' }
+                  { label: 'form-data', value: 'form-data' },
+                  { label: 'x-www-form-urlencoded', value: 'x-www-form-urlencoded' }
                   ]"
-                  class="body-type-select"
+                  v-model:modelValue="bodyType"
+                  placeholder="请选择请求方法"
               />
             </div>
 
             <!-- Raw Body -->
             <div v-if="bodyType === 'raw'" class="raw-body">
-              <NInput
-                  v-model:value="rawBody"
-                  type="textarea"
-                  :autosize="{ minRows: 5, maxRows: 15 }"
+              <glass-morphism-input
+                  v-model:modelValue="rawBody"
+                  textarea
+                  rows="10"
                   placeholder="请输入请求体"
               />
             </div>
@@ -329,9 +348,17 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
             <!-- Form Data -->
             <div v-if="bodyType === 'form-data'" class="form-data">
               <div v-for="(item, index) in formData" :key="index" class="table-row">
-                <NInput v-model:value="item.name" placeholder="Key" />
-                <NInput v-model:value="item.value" placeholder="Value" />
-                <NButton circle tertiary type="error" @click="removeRow('formData', index)">×</NButton>
+                <glass-morphism-input
+                    v-model:modelValue="item.name"
+                    placeholder="Key"
+                />
+                <glass-morphism-input
+                    v-model:modelValue="item.value"
+                    placeholder="Value"
+                />
+                <NButton circle tertiary type="error" @click="removeRow('formData', index)"
+                         style="width: 48px; height: 48px; line-height: 48px;">×
+                </NButton>
               </div>
               <NButton dashed class="add-button" @click="addRow('formData')">添加字段</NButton>
             </div>
@@ -339,9 +366,17 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
             <!-- URL Encoded -->
             <div v-if="bodyType === 'x-www-form-urlencoded'" class="url-encoded">
               <div v-for="(item, index) in urlEncodedData" :key="index" class="table-row">
-                <NInput v-model:value="item.name" placeholder="Key" />
-                <NInput v-model:value="item.value" placeholder="Value" />
-                <NButton circle tertiary type="error" @click="removeRow('urlEncoded', index)">×</NButton>
+                <glass-morphism-input
+                    v-model:modelValue="item.name"
+                    placeholder="Key"
+                />
+                <glass-morphism-input
+                    v-model:modelValue="item.value"
+                    placeholder="Value"
+                />
+                <NButton circle tertiary type="error" @click="removeRow('urlEncoded', index)"
+                         style="width: 48px; height: 48px; line-height: 48px;">×
+                </NButton>
               </div>
               <NButton dashed class="add-button" @click="addRow('urlEncoded')">添加字段</NButton>
             </div>
@@ -362,7 +397,7 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
               {{ responseStatusCode }}
             </span>
           </div>
-          <span 
+          <span
               class="latency-tag"
               :class="responseLatencyType"
           >
