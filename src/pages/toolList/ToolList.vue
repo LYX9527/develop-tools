@@ -48,22 +48,13 @@ const handleDragOver = (e, tool) => {
   }
 }
 
-const handleDrop = (e, tool) => {
+const handleDrop = (e, _) => {
   e.preventDefault()
   if (!draggedItem.value || !dragOverItem.value) return
 
   // 更新排序
   toolsStore.updateSortOrder(draggedItem.value, dragOverItem.value)
   handleDragEnd()
-}
-
-// 跳转到工具详情页
-const navigateToTool = (tool) => {
-  toolsStore.recordToolUsage(tool)
-  router.push({
-    name: 'tool',
-    params: {tool: tool.route}
-  })
 }
 
 function selectTool(item: ToolLoadedInfo) {

@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.726.1",
     "@kangc/v-md-editor": "^2.3.18",
     "@types/crypto-js": "^4.2.2",
     "cronstrue": "^2.55.0",
