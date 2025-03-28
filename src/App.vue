@@ -43,7 +43,7 @@ function contentScroll(e: any) {
 // 添加CSS变量设置
 const bgStyle = computed(() => ({
   '--bg-image': `url(/${appStatus.getThemeMode == ThemeMode.Light ? "bg-light.png" : "bg-dark.png"})`
-  // '--bg-image': `url(${appStatus.getThemeMode == ThemeMode.Light ? "https://cdn.yltf.xyz/bg.png" : "https://cdn.yltf.xyz/bg2.png"})`
+  // '--bg-image': `url(${appStatus.getThemeMode == ThemeMode.Light ? "https://cdn.yltf.xyz/bg-light.png" : "https://cdn.yltf.xyz/bg-dark.png"})`
 }))
 </script>
 

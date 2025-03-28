@@ -5,6 +5,7 @@ import {loadScript} from '@/utils/scriptLoader'
 import moment from "moment/moment";
 import cronstrue from 'cronstrue'
 import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
+import GlassMorphismSelect from "@/components/GlassMorphismSelect.vue";
 
 declare const later: any
 
@@ -203,60 +204,84 @@ onMounted(() => {
       <div class="field-group">
         <div class="field-label">秒</div>
         <div class="field-description">0-59</div>
-        <n-select
-            v-model:value="seconds"
+        <glass-morphism-select
+            v-model="seconds"
             :options="fieldOptions.seconds"
-            @update:value="updateExpression"
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
         />
       </div>
 
       <div class="field-group">
         <div class="field-label">分钟</div>
         <div class="field-description">0-59</div>
-        <n-select
-            v-model:value="minutes"
+        <glass-morphism-select
+            v-model="minutes"
             :options="fieldOptions.minutes"
-            @update:value="updateExpression"
-        />
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
+            />
       </div>
 
       <div class="field-group">
         <div class="field-label">小时</div>
         <div class="field-description">0-23</div>
-        <n-select
-            v-model:value="hours"
+        <glass-morphism-select
+            v-model="hours"
             :options="fieldOptions.hours"
-            @update:value="updateExpression"
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
         />
       </div>
 
       <div class="field-group">
         <div class="field-label">日期</div>
         <div class="field-description">1-31</div>
-        <n-select
-            v-model:value="day"
+        <glass-morphism-select
+            v-model="day"
             :options="fieldOptions.day"
-            @update:value="updateExpression"
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
         />
       </div>
 
       <div class="field-group">
         <div class="field-label">月份</div>
         <div class="field-description">1-12</div>
-        <n-select
-            v-model:value="month"
+        <GlassMorphismSelect
+            v-model="month"
             :options="fieldOptions.month"
-            @update:value="updateExpression"
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
         />
       </div>
 
       <div class="field-group">
         <div class="field-label">星期</div>
         <div class="field-description">1-7 或 SUN-SAT</div>
-        <n-select
-            v-model:value="week"
+        <glass-morphism-select
+            v-model="week"
             :options="fieldOptions.week"
-            @update:value="updateExpression"
+            placeholder="请选择一个选项"
+            :blur="10"
+            :opacity="0.25"
+            :radius="10"
+            @update:modelValue="updateExpression"
         />
       </div>
     </div>

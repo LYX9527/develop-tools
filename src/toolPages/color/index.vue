@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, reactive, computed, onMounted} from 'vue'
 import {NColorPicker, NSlider, NSpace, NButton, NTabs, NTabPane, useMessage} from 'naive-ui'
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
 
 const message = useMessage()
 const activeTab = ref('color')
@@ -260,37 +261,46 @@ onMounted(() => {
             <div class="format-item">
               <div class="format-label">HEX:</div>
               <div class="format-input-group">
-                <n-input
-                    type="text"
-                    readonly
-                    :value="colorFormats.hex"
-                    class="format-input"
+                <glass-morphism-input
+                    v-model="colorFormats.hex"
+                    placeholder="请输入搜索内容..."
+                    :blur="5"
+                    :opacity="0.2"
+                    suffixButton
+                    button-text="复制"
+                    @button-click="copyColor('hex')"
+                    buttonType="success"
                 />
-                <NButton type="primary" size="small" @click="copyColor('hex')">复制</NButton>
               </div>
             </div>
             <div class="format-item">
               <div class="format-label">RGB:</div>
               <div class="format-input-group">
-                <n-input
-                    type="text"
-                    readonly
-                    :value="colorFormats.rgb"
-                    class="format-input"
+                <glass-morphism-input
+                    v-model="colorFormats.rgb"
+                    placeholder="请输入搜索内容..."
+                    :blur="5"
+                    :opacity="0.2"
+                    suffixButton
+                    button-text="复制"
+                    @button-click="copyColor('rgb')"
+                    buttonType="success"
                 />
-                <NButton type="primary" size="small" @click="copyColor('rgb')">复制</NButton>
               </div>
             </div>
             <div class="format-item">
               <div class="format-label">RGBA:</div>
               <div class="format-input-group">
-                <n-input
-                    type="text"
-                    readonly
-                    :value="colorFormats.rgba"
-                    class="format-input"
+                <glass-morphism-input
+                    v-model="colorFormats.rgba"
+                    placeholder="请输入搜索内容..."
+                    :blur="5"
+                    :opacity="0.2"
+                    suffixButton
+                    button-text="复制"
+                    @button-click="copyColor('rgba')"
+                    buttonType="success"
                 />
-                <NButton type="primary" size="small" @click="copyColor('rgba')">复制</NButton>
               </div>
             </div>
           </div>

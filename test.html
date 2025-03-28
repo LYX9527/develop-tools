@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum=1.0,minimum=1.0,user-scalable=0" />
+    <title>BFW NEW PAGE</title>
+    <script type="text/javascript" src="//repo.bfw.wiki/bfwrepo/js/cronstrue.min.js"></script>
+    <script type="text/javascript" src="//repo.bfw.wiki/bfwrepo/js/cronstrue-i18n.min.js"></script>
+    <script type="text/javascript">
+    console.log( cronstrue.toString("* * * * *",{ locale: "zh_CN" }));
+
+
+    console.log( cronstrue.toString("0 23 ? * MON-FRI",{ locale: "zh_CN" }));
+
+
+    console.log( cronstrue.toString("0 23 * * *", { verbose: true,locale: "zh_CN" }));
+
+    console.log( cronstrue.toString("23 12 * * SUN#2",{ locale: "zh_CN" }));
+
+
+    console.log( cronstrue.toString("23 14 * * SUN#2", { use24HourTimeFormat: true ,locale: "zh_CN"}));
+
+
+    console.log( cronstrue.toString("* * * ? * 2-6/2", { dayOfWeekStartIndexZero: false, locale: "zh_CN"  }));
+
+
+    console.log( cronstrue.toString("* * * 6-8 *", { monthStartIndexZero: true ,locale: "zh_CN"}));
+
+</script>
+</head>
+<body>
+</body>
+</html>
