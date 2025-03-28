@@ -1,5 +1,5 @@
 import type {ToolBaseInfo} from "@/models/ToolInfo.ts";
-import Icon from "@/toolPages/img/Icon.vue";
+import Icon from './Icon.vue'
 const toolInfo: ToolBaseInfo = {
   icon: Icon,
   name: "S3 文件上传",
