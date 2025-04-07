@@ -51,13 +51,15 @@ const emit = defineEmits(['update:modelValue', 'change'])
 // 本地状态
 const isOpen = ref(false)
 const selectedLabel = ref('')
-const selectRef = ref<HTMLElement | null>(null) // 添加这一行，用于引用当前组件的DOM元素
-
+const selectRef = ref<HTMLElement | null>(null)
+const selectContainerRef = ref<HTMLElement | null>(null)
 
 // 计算属性
 const selectStyle = computed(() => {
+  const widthValue = typeof props.width === 'number' ? `${props.width}px` : props.width;
+  
   return {
-    width: typeof props.width === 'number' ? `${props.width}px` : props.width,
+    width: widthValue,
     backdropFilter: `blur(${props.blur}px)`,
     backgroundColor: `rgba(255, 255, 255, ${props.opacity})`,
     borderRadius: `${props.radius}px`
@@ -124,7 +126,6 @@ watch(() => props.options, updateSelectedLabel, {immediate: true})
 // 点击外部关闭下拉框
 function handleClickOutside(event: Event) {
   const target = event.target as HTMLElement
-  // 使用组件自身的ref引用而不是document.querySelector
   if (selectRef.value && !selectRef.value.contains(target)) {
     closeDropdown()
   }
@@ -142,7 +143,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="glass-select-container">
+  <div class="glass-select-container" ref="selectContainerRef">
     <div
         ref="selectRef"
         class="glass-select"
@@ -183,10 +184,12 @@ onUnmounted(() => {
 .glass-select-container {
   position: relative;
   width: 100%;
+  display: block;
+  box-sizing: border-box;
 }
 
 .glass-select {
-  width: 100%;
+  box-sizing: border-box;
   min-height: 40px;
   display: flex;
   align-items: center;
@@ -242,6 +245,7 @@ onUnmounted(() => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   max-height: 200px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .glass-select-options {

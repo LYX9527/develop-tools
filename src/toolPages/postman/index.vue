@@ -324,7 +324,6 @@ const responseLatencyType = ref<'success' | 'warning' | 'error'>('success')
           <div class="body-section">
             <div class="body-type">
               <glass-morphism-select
-                  width="99%"
                   :options="[
                     { label: 'raw', value: 'raw' },
                   { label: 'form-data', value: 'form-data' },
