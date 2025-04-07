@@ -26,12 +26,7 @@ const showSettingsModal = ref(false);
 const STORAGE_KEY = "wordcount_settings";
 
 // 用户输入的文本
-const inputText =
-  ref(`1、践行"八八战略"，《发挥浙江的块状特色产业优势》，加快创新平台建设。（多余）
-2、加强统筹规划：整合科技创新公共服务资源；加大资金投入；加强组织领导、顶层设计、统一规划和政策整合，形成强大工作合力；建立动态管理机制，通过考核等激发成长活力
-3、构建产业集群：补齐产业链、做强产业链、优化产业链
-4、构建创业创新生态系统:集聚整合产业创新要素，促进政企合作，建立创业创新生态系统
-5、优化营商环境：树立利民为本、法治为基、整体智治、高效协同的理念，运用数字赋能、改革破题、创新制胜的手段，大力提升公共服务的及时性、精准性、专业性，构建亲清新型政商关系，打造最优营商环境。`);
+const inputText = ref(``);
 
 // 方格纸配置
 const columns = ref(20); // 每行列数
@@ -395,10 +390,10 @@ const checkScrollPosition = () => {
 onMounted(() => {
   // 初始化canvasRefs数组
   canvasRefs.value = new Array(totalPages.value).fill(null);
-  
+
   // 加载保存的设置
   loadSettings();
-  
+
   nextTick(() => {
     renderCanvases();
 
@@ -440,7 +435,7 @@ const renderSingleCanvas = (pageIndex: number) => {
 
   // 清空画布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
   // 添加白色背景
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -714,11 +709,11 @@ const saveSettings = () => {
       gridGap: gridGap.value,
       showLineNumbers: showLineNumbers.value,
       pageGap: pageGap.value,
-      isPunSeparate: isPunSeparate.value
+      isPunSeparate: isPunSeparate.value,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch (error) {
-    console.error('保存配置失败:', error);
+    console.error("保存配置失败:", error);
   }
 };
 
@@ -728,20 +723,26 @@ const loadSettings = () => {
     const settings = localStorage.getItem(STORAGE_KEY);
     if (settings) {
       const parsedSettings = JSON.parse(settings);
-      
+
       // 应用保存的设置到当前状态
       columns.value = parsedSettings.columns || 20;
       rows.value = parsedSettings.rows || 20;
       cellSize.value = parsedSettings.cellSize || 30;
       gridGap.value = parsedSettings.gridGap || 14;
-      showLineNumbers.value = parsedSettings.showLineNumbers !== undefined ? parsedSettings.showLineNumbers : true;
+      showLineNumbers.value =
+        parsedSettings.showLineNumbers !== undefined
+          ? parsedSettings.showLineNumbers
+          : true;
       pageGap.value = parsedSettings.pageGap || 30;
-      isPunSeparate.value = parsedSettings.isPunSeparate !== undefined ? parsedSettings.isPunSeparate : true;
-      
-      message.success('已恢复您的方格纸设置');
+      isPunSeparate.value =
+        parsedSettings.isPunSeparate !== undefined
+          ? parsedSettings.isPunSeparate
+          : true;
+
+      message.success("已恢复您的方格纸设置");
     }
   } catch (error) {
-    console.error('读取配置失败:', error);
+    console.error("读取配置失败:", error);
   }
 };
 
