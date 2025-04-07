@@ -440,6 +440,10 @@ const renderSingleCanvas = (pageIndex: number) => {
 
   // 清空画布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // 添加白色背景
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // 绘制方格纸
   drawGridPaper(ctx, pageIndex);
