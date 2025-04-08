@@ -36,6 +36,7 @@ const gridGap = ref(14); // 行间距(px)，增加默认值以确保标记可见
 const showLineNumbers = ref(true); // 是否显示行号
 const pageGap = ref(30); // 页面之间的间距
 const isPunSeparate = ref(true); // 标点符号单独显示
+const paperMargin = ref(5); // 方格纸边距
 // 分页相关
 const canvasRefs = ref<Array<HTMLCanvasElement | null>>([]);
 const currentPage = ref(1); // 当前页码
@@ -49,9 +50,9 @@ const isAtEnd = ref(false);
 // Canvas相关
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const canvasCtx = ref<CanvasRenderingContext2D | null>(null);
-const canvasWidth = computed(() => columns.value * cellSize.value + 1); // 单页宽度
+const canvasWidth = computed(() => columns.value * cellSize.value + 2 * paperMargin.value); // 单页宽度
 const canvasHeight = computed(
-  () => rows.value * (cellSize.value + gridGap.value) - gridGap.value + 20
+  () => rows.value * (cellSize.value + gridGap.value) - gridGap.value + 20 + 2 * paperMargin.value
 ); // 单页高度
 
 //用于计算字符宽度的元素
@@ -481,16 +482,16 @@ const drawGridPaper = (ctx: CanvasRenderingContext2D, pageIndex: number) => {
   // 绘制行和列
   for (let row = 0; row < rows.value; row++) {
     // 每行都有空隙，空隙大小为gridGap
-    const topY = row * (cellSize.value + gridGap.value);
+    let topY = row * (cellSize.value + gridGap.value) + paperMargin.value;
     const bottomY = topY + cellSize.value;
 
     //画横线
-    drawLine(ctx, 0, topY, canvasWidth.value, topY, "red", 1);
-    drawLine(ctx, 0, bottomY, canvasWidth.value, bottomY, "red", 1);
+    drawLine(ctx, paperMargin.value, topY, canvasWidth.value - paperMargin.value, topY, "red", 1);
+    drawLine(ctx, paperMargin.value, bottomY, canvasWidth.value - paperMargin.value, bottomY, "red", 1);
 
     //画竖线
     for (let col = 0; col <= columns.value; col++) {
-      const leftX = col * cellSize.value;
+      let leftX = col * cellSize.value + paperMargin.value;
       // 确保绘制最右边的竖线
       drawLine(ctx, leftX, topY, leftX, bottomY, "red", 1);
     }
@@ -510,7 +511,7 @@ const drawGridPaper = (ctx: CanvasRenderingContext2D, pageIndex: number) => {
         const position = markPoint - previousCellCount;
 
         // 计算标记的坐标（放在当前行底部的空隙中）
-        const markX = position * cellSize.value - cellSize.value / 2;
+        const markX = position * cellSize.value - cellSize.value / 2 + paperMargin.value;
         const markY = bottomY + gridGap.value / 2;
 
         if (markX > 0 && markX < canvasWidth.value) {
@@ -565,9 +566,9 @@ const drawText = (ctx: CanvasRenderingContext2D, pageIndex: number) => {
     }
 
     // 计算字符坐标（考虑每行都有空隙）
-    const y =
-      currentRow * (cellSize.value + gridGap.value) + cellSize.value / 2;
-    const x = currentCol * cellSize.value + cellSize.value / 2; // 修正：加上cellSize/2使文字在格子中居中
+    let y =
+      currentRow * (cellSize.value + gridGap.value) + cellSize.value / 2 + paperMargin.value;
+    let x = currentCol * cellSize.value + cellSize.value / 2 + paperMargin.value; // 修正：加上cellSize/2使文字在格子中居中
     if (pageChars[i].length < 2) {
       // 绘制字符
       ctx.fillText(pageChars[i], x, y);
@@ -710,6 +711,7 @@ const saveSettings = () => {
       showLineNumbers: showLineNumbers.value,
       pageGap: pageGap.value,
       isPunSeparate: isPunSeparate.value,
+      paperMargin: paperMargin.value,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch (error) {
@@ -738,7 +740,7 @@ const loadSettings = () => {
         parsedSettings.isPunSeparate !== undefined
           ? parsedSettings.isPunSeparate
           : true;
-
+      paperMargin.value = parsedSettings.paperMargin || 5;
       message.success("已恢复您的方格纸设置");
     }
   } catch (error) {
@@ -751,6 +753,7 @@ const applySettings = () => {
   showSettingsModal.value = false;
   // 设置已经是响应式的，自动会触发重新渲染
   saveSettings(); // 保存设置到本地存储
+  renderCanvases();
   message.success("方格纸设置已更新");
 };
 
@@ -973,7 +976,18 @@ watch(totalPages, () => {
             />
             <span class="setting-value">{{ gridGap }}px</span>
           </div>
-
+          
+          <div class="setting-item">
+            <span class="setting-label">方格纸边距:</span>
+            <NSlider
+              v-model:value="paperMargin"
+              :min="0"
+              :max="30"
+              :step="2"
+              style="width: 200px"
+            />
+            <span class="setting-value">{{ paperMargin }}px</span>
+          </div>
           <div class="setting-item">
             <span class="setting-label">页间距:</span>
             <NSlider
@@ -991,7 +1005,7 @@ watch(totalPages, () => {
       <template #footer>
         <div class="modal-footer">
           <NButton @click="showSettingsModal = false">关闭</NButton>
-          <NButton type="primary" @click="applySettings">应用设置</NButton>
+          <NButton type="primary" @click="applySettings">保存设置</NButton>
         </div>
       </template>
     </NModal>
@@ -1110,7 +1124,7 @@ watch(totalPages, () => {
 .page-info {
   margin-bottom: 10px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--n-text-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
