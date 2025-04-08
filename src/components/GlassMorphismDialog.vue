@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import {computed, useSlots} from 'vue'
 
 // 属性定义
 const props = defineProps({
@@ -59,28 +59,32 @@ const slots = useSlots()
 
 <template>
   <transition name="dialog-fade">
-    <div v-if="show" class="glass-dialog-overlay" @click.self="closeModal">
-      <div class="glass-dialog" :style="modalStyle">
-        <div class="glass-dialog-content" :style="panelStyle">
-          <div class="glass-dialog-header">
-            <h3 v-if="title" class="glass-dialog-title">{{ title }}</h3>
-            <button class="glass-dialog-close" @click="closeModal">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          <div class="glass-dialog-body">
-            <slot></slot>
-          </div>
-          <div class="glass-dialog-footer" v-if="slots.footer">
-            <slot name="footer"></slot>
+    <Teleport to="body">
+      <div v-if="show" class="glass-dialog-overlay" @click.self="closeModal">
+        <div class="glass-dialog" :style="modalStyle">
+          <div class="glass-dialog-content" :style="panelStyle">
+            <div class="glass-dialog-header">
+              <h3 v-if="title" class="glass-dialog-title">{{ title }}</h3>
+              <button class="glass-dialog-close" @click="closeModal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="glass-dialog-body">
+              <slot></slot>
+            </div>
+            <div class="glass-dialog-footer" v-if="slots.footer">
+              <slot name="footer"></slot>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </transition>
+
 </template>
 
 <style scoped lang="scss">
@@ -108,7 +112,7 @@ const slots = useSlots()
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
