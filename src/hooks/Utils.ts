@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {unitOfTime} from "moment/moment";
+import type {unitOfTime} from "moment/moment";
 
 /**
  * 根据输入字符串生成确定性的 UUID
