@@ -1,0 +1,3 @@
+[submodule "develop-tools-server"]
+	path = server
+	url = https://github.com/LYX9527/develop-tools-server.git
