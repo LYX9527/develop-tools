@@ -19,6 +19,7 @@
     "cronstrue": "^2.55.0",
     "crypto-js": "^4.2.0",
     "file-saver": "^2.0.5",
+    "gridstack": "^11.5.1",
     "highlight.js": "^11.11.1",
     "js-yaml": "^4.1.0",
     "jsencrypt": "^3.3.2",

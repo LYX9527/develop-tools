@@ -32,3 +32,7 @@ coverage
 
 .logs/
 types/*.d.ts
+
+.env
+.env.local
+.env.*.local
