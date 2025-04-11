@@ -15,6 +15,9 @@ import {
 } from "naive-ui";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import GlassMorphismPanel from "@/components/GlassMorphismPanel.vue";
+import GlassMorphismInput from "@/components/GlassMorphismInput.vue";
+import GlassMorphismDialog from "@/components/GlassMorphismDialog.vue";
 
 // 消息提示
 const message = useMessage();
@@ -786,16 +789,18 @@ watch(totalPages, () => {
 </script>
 
 <template>
-  <div class="tool-page">
-    <NCard>
+  <glass-morphism-panel class="tool-page">
+    <glass-morphism-panel>
       <div class="input-area">
         <div class="section-title">请输入要统计的文本：</div>
-        <NInput
-          clearable
-          v-model:value="inputText"
-          type="textarea"
-          placeholder="请输入文本内容..."
-          :autosize="{ minRows: 6, maxRows: 10 }"
+        <glass-morphism-input
+            v-model="inputText"
+            placeholder="请输入文本内容..."
+            :blur="5"
+            :opacity="0.2"
+            textarea
+            showCount
+            rows="10"
         />
       </div>
 
@@ -814,44 +819,44 @@ watch(totalPages, () => {
         <div class="result-area">
           <NGrid :cols="8" :x-gap="8" :y-gap="8">
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card">
                 <NStatistic label="总字符数" :value="statistics.total" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="汉字数" :value="statistics.chinese" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="英文字母" :value="statistics.english" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="数字" :value="statistics.number" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="空格" :value="statistics.space" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="换行符" :value="statistics.lineBreak" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="标点符号" :value="statistics.punctuation" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
             <NGridItem>
-              <NCard size="small" class="stat-card">
+              <glass-morphism-panel size="small" class="stat-card" radius="8px">
                 <NStatistic label="其他字符" :value="statistics.other" />
-              </NCard>
+              </glass-morphism-panel>
             </NGridItem>
           </NGrid>
         </div>
@@ -906,15 +911,13 @@ watch(totalPages, () => {
           </div>
         </div>
       </div>
-    </NCard>
+    </glass-morphism-panel>
 
     <!-- 方格纸设置弹窗 -->
-    <NModal
+    <glass-morphism-dialog
       v-model:show="showSettingsModal"
       title="方格纸设置"
       preset="card"
-      style="width: 500px"
-      :mask-closable="true"
     >
       <div class="grid-settings">
         <NSpace vertical>
@@ -976,7 +979,7 @@ watch(totalPages, () => {
             />
             <span class="setting-value">{{ gridGap }}px</span>
           </div>
-          
+
           <div class="setting-item">
             <span class="setting-label">方格纸边距:</span>
             <NSlider
@@ -1008,9 +1011,9 @@ watch(totalPages, () => {
           <NButton type="primary" @click="applySettings">保存设置</NButton>
         </div>
       </template>
-    </NModal>
+    </glass-morphism-dialog>
     <span id="calc" ref="calcRef" class="hide"></span>
-  </div>
+  </glass-morphism-panel>
 </template>
 
 <style scoped lang="scss">
@@ -1085,7 +1088,7 @@ watch(totalPages, () => {
     }
   }
 
-  .n-card {
+  .stat-card {
     transition: all 0.2s ease;
 
     &:hover {

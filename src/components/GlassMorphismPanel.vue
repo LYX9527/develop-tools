@@ -50,8 +50,8 @@ const panelStyle = computed(() => {
   return {
     backdropFilter: `blur(${typeof props.blur === 'number' ? `${props.blur}px` : props.blur})`,
     WebkitBackdropFilter: `blur(${typeof props.blur === 'number' ? `${props.blur}px` : props.blur})`,
-    backgroundColor: props.backgroundColor.includes('rgba') 
-      ? props.backgroundColor 
+    backgroundColor: props.backgroundColor.includes('rgba')
+      ? props.backgroundColor
       : `${props.backgroundColor}${typeof props.opacity === 'number' ? props.opacity : parseFloat(props.opacity as string)}`,
     borderRadius: typeof props.radius === 'number' ? `${props.radius}px` : props.radius,
     boxShadow: props.shadow ? '0 8px 32px 0 rgba(31, 38, 135, 0.37)' : 'none',
@@ -70,8 +70,7 @@ const panelStyle = computed(() => {
 <style scoped>
 .glass-panel {
   position: relative;
-  overflow: hidden;
-  
+
   /* 确保在不支持backdrop-filter的浏览器上也有一定效果 */
   @supports not (backdrop-filter: blur(10px)) {
     background-color: var(--n-card-color, rgba(255, 255, 255, 0.8)) !important;
@@ -86,9 +85,9 @@ const panelStyle = computed(() => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.5) 50%, 
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   pointer-events: none;
@@ -102,11 +101,11 @@ const panelStyle = computed(() => {
   left: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(180deg, 
-    rgba(255, 255, 255, 0.5) 0%, 
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.5) 0%,
     rgba(255, 255, 255, 0.2) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   pointer-events: none;
 }
-</style> 
+</style>
