@@ -585,14 +585,6 @@ onMounted(() => {
 
 <template>
   <div class="news-container">
-    <GlassMorphismPanel class="search-section" :blur="10" :opacity="0.2">
-      <GlassMorphismInput
-          v-model="searchQuery"
-          placeholder="搜索新闻..."
-          :search="true"
-      />
-    </GlassMorphismPanel>
-
     <div class="platforms-grid">
       <!-- 使用过渡组包装每个平台卡片 -->
       <TransitionGroup
@@ -684,7 +676,9 @@ onMounted(() => {
           <div v-else-if="platform.hasError" class="error-state">
             <div class="error-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4C7.584 4 4 7.584 4 12C4 16.416 7.584 20 12 20C16.416 20 20 16.416 20 12C20 7.584 16.416 4 12 4ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+                <path
+                    d="M12 4C7.584 4 4 7.584 4 12C4 16.416 7.584 20 12 20C16.416 20 20 16.416 20 12C20 7.584 16.416 4 12 4ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+                    fill="currentColor"/>
               </svg>
             </div>
             <div class="error-text">
@@ -693,7 +687,9 @@ onMounted(() => {
             </div>
             <button class="error-retry-button" @click="refreshPlatform(platform)">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="currentColor"/>
+                <path
+                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z"
+                    fill="currentColor"/>
               </svg>
               重试
             </button>
@@ -747,7 +743,8 @@ onMounted(() => {
                   'github-title': item.extra?.isGitHubStar
                 }">
                     <!-- 热搜排名标签 -->
-                    <span v-if="item.extra?.rank" class="rank-tag" :class="`rank-${item.extra.rank <= 3 ? item.extra.rank : 'normal'}`">
+                    <span v-if="item.extra?.rank" class="rank-tag"
+                          :class="`rank-${item.extra.rank <= 3 ? item.extra.rank : 'normal'}`">
                     {{ item.extra.rank }}
                   </span>
 
@@ -821,10 +818,12 @@ onMounted(() => {
 
 .platforms-transition-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr); // 固定为4列布局
   gap: 16px;
-  grid-auto-flow: row dense; // 确保按行排列
+  grid-auto-flow: row dense;
   align-items: start;
+  width: 100%;
+  position: relative;
 }
 
 // 平台卡片过渡效果
@@ -848,29 +847,24 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 800px; // 固定高度
-  overflow-y: auto; // 超出时使用滚动条
-  min-height: 100px;
-  // 增强过渡动画效果
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-  grid-column-end 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-  grid-column-start 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, grid-column-start, grid-column-end, opacity;
+  height: auto; // 改为自适应高度
+  min-height: 400px; // 设置最小高度
+  max-height: 800px; // 设置最大高度
+  overflow-y: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
   transform-origin: center center;
 
   &.size-1 {
     grid-column: span 1;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &.size-2 {
     grid-column: span 2;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &.size-4 {
     grid-column: span 4;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &.is-dragging {
@@ -884,15 +878,22 @@ onMounted(() => {
 
   &.is-resizing {
     animation: resize-pulse 0.3s ease-in-out;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    grid-column-end 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    grid-column-start 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   @keyframes resize-pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .platform-header {
@@ -1003,6 +1004,7 @@ onMounted(() => {
             display: flex;
             align-items: center;
             margin-bottom: 2px; // 添加一点额外的间距
+            justify-content: end;
           }
 
           .news-info {
@@ -1216,75 +1218,6 @@ onMounted(() => {
       }
     }
   }
-
-  // 错误状态样式
-  .error-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.8);
-
-    .error-icon {
-      width: 48px;
-      height: 48px;
-      color: rgba(255, 82, 82, 0.8);
-      margin-bottom: 16px;
-
-      svg {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    .error-text {
-      margin-bottom: 20px;
-
-      .error-title {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-
-      .error-message {
-        font-size: 14px;
-        opacity: 0.8;
-        max-width: 280px;
-        margin: 0 auto;
-      }
-    }
-
-    .error-retry-button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.9);
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(3px);
-
-      svg {
-        width: 16px;
-        height: 16px;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(1px);
-      }
-    }
-  }
 }
 
 @keyframes shimmer {
@@ -1303,8 +1236,8 @@ onMounted(() => {
   z-index: 5;
   opacity: 0.7;
   transition: opacity 0.2s ease;
-  height: 48px;
   justify-content: end;
+  margin-bottom: 16px;
 }
 
 .platform-card:hover .tool-actions {
@@ -1459,17 +1392,37 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 768px) {
-  .news-container {
-    padding: 16px;
-  }
-
-  .platforms-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 1200px) {
+  .platforms-transition-wrapper {
+    grid-template-columns: repeat(3, 1fr); // 3列布局
   }
 
   .platform-card {
-    &.size-2, &.size-3, &.size-4 {
+    &.size-4 {
+      grid-column: span 3;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .platforms-transition-wrapper {
+    grid-template-columns: repeat(2, 1fr); // 2列布局
+  }
+
+  .platform-card {
+    &.size-2, &.size-4 {
+      grid-column: span 2;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .platforms-transition-wrapper {
+    grid-template-columns: 1fr; // 单列布局
+  }
+
+  .platform-card {
+    &.size-1, &.size-2, &.size-4 {
       grid-column: span 1;
     }
   }
