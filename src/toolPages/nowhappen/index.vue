@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
 import GlassMorphismPanel from '@/components/GlassMorphismPanel.vue'
-import GlassMorphismInput from '@/components/GlassMorphismInput.vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -234,7 +233,7 @@ const filterNews = (news: NewsItem[]) => {
   return news.filter(item =>
       item.title.toLowerCase().includes(query) ||
       item.extra?.hover?.toLowerCase().includes(query) ||
-      (item.extra?.info as string).toLowerCase().includes(query)
+      (typeof item.extra?.info === 'string' && item.extra.info.toLowerCase().includes(query))
   )
 }
 
