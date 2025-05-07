@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "build:prod": "vite build --mode production",
+    "build:prod": "vite build --mode production"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.726.1",

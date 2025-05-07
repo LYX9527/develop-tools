@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, watch, onMounted, onUnmounted} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 
 // 属性定义
 const props = defineProps({
@@ -57,7 +57,7 @@ const selectContainerRef = ref<HTMLElement | null>(null)
 // 计算属性
 const selectStyle = computed(() => {
   const widthValue = typeof props.width === 'number' ? `${props.width}px` : props.width;
-  
+
   return {
     width: widthValue,
     backdropFilter: `blur(${props.blur}px)`,
@@ -134,7 +134,10 @@ function handleClickOutside(event: Event) {
 // 添加和移除事件监听器
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  selectedLabel.value = props.modelValue
+  // @ts-ignore
+  selectedLabel.value = props.options.find(option =>
+      getOptionValue(option) === props.modelValue
+  )?.[props.labelField] || '';
 })
 
 onUnmounted(() => {
