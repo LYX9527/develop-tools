@@ -293,19 +293,9 @@ const columns = [
                 : 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z'
             })
           ])
-        ])
-      ]);
-    }
-  },
-  {
-    title: '操作',
-    key: 'actions',
-    width: '15%',
-    align: 'center',
-    render: (row) => {
-      return h('div', { class: 'action-buttons' }, [
+        ]),
         row.hasPassword && h('span', {
-          class: 'copy-password-btn',
+          class: 'copy-button-inline',
           onClick: (e) => {
             e.stopPropagation();
             copyAccessCode(row.accessCode);
@@ -319,9 +309,18 @@ const columns = [
             fill: '#2080f0'
           }, [
             h('path', { d: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z' })
-          ]),
-          '复制密码'
-        ]),
+          ])
+        ])
+      ]);
+    }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: '10%',
+    align: 'center',
+    render: (row) => {
+      return h('div', { class: 'action-buttons' }, [
         h('span', {
           class: 'delete-btn',
           onClick: (e) => {
@@ -737,41 +736,7 @@ onMounted(() => {
 }
 
 /* 表格相关样式 */
-.url-cell {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
 
-.url-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  text-align: center;
-  height: 22px;
-  line-height: 1;
-}
-
-.tag-info {
-  background-color: rgba(32, 128, 240, 0.1);
-  color: #2080f0;
-  border: 1px solid rgba(32, 128, 240, 0.2);
-}
-
-.tag-success {
-  background-color: rgba(24, 160, 88, 0.1);
-  color: #18a058;
-  border: 1px solid rgba(24, 160, 88, 0.2);
-}
 
 .password-field {
   position: relative;
@@ -817,28 +782,6 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.delete-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background-color: rgba(255, 77, 79, 0.2);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 77, 79, 0.3);
-  color: #ff4d4f;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.delete-btn:hover {
-  background-color: rgba(255, 77, 79, 0.3);
-  transform: translateY(-2px);
-}
-
 .password-popup {
   position: absolute;
   right: -20px;
@@ -876,11 +819,6 @@ onMounted(() => {
   margin-right: 10px;
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
 
 .password-field-inline {
   display: flex;
@@ -892,78 +830,6 @@ onMounted(() => {
   line-height: 1;
 }
 
-.eye-button-inline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  min-height: 22px;
-  border-radius: 50%;
-  background-color: rgba(32, 128, 240, 0.15);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(32, 128, 240, 0.25);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-  line-height: 1;
-}
-
-.eye-button-inline:hover {
-  background-color: rgba(32, 128, 240, 0.2);
-  transform: scale(1.05);
-}
-
-.password-text-inline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: monospace;
-  font-size: 13px;
-  color: #2080f0;
-  background-color: rgba(32, 128, 240, 0.1);
-  border: 1px solid rgba(32, 128, 240, 0.2);
-  border-radius: 12px;
-  padding: 0 8px;
-  height: 22px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 32px);
-}
-
-.inline-flex-center {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.copy-password-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background-color: rgba(32, 128, 240, 0.2);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(32, 128, 240, 0.3);
-  color: #2080f0;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.copy-password-btn:hover {
-  background-color: rgba(32, 128, 240, 0.3);
-  transform: translateY(-2px);
-}
 
 // 添加确认对话框的样式
 .delete-confirm-content {
@@ -1009,6 +875,148 @@ onMounted(() => {
 
   &:hover {
     background-color: rgba(255, 77, 79, 0.3);
+  }
+}
+</style>
+<style lang="scss">
+.short-url-container {
+  .url-cell {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .url-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-align: center;
+    height: 22px;
+    line-height: 1;
+  }
+
+  .tag-info {
+    background-color: rgba(32, 128, 240, 0.1);
+    color: #2080f0;
+    border: 1px solid rgba(32, 128, 240, 0.2);
+  }
+
+  .tag-success {
+    background-color: rgba(24, 160, 88, 0.1);
+    color: #18a058;
+    border: 1px solid rgba(24, 160, 88, 0.2);
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background-color: rgba(255, 77, 79, 0.2);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 77, 79, 0.3);
+    color: #ff4d4f;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: rgba(255, 77, 79, 0.3);
+      transform: translateY(-2px);
+    }
+  }
+
+  .password-text-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-size: 13px;
+    color: #2080f0;
+    background-color: rgba(32, 128, 240, 0.1);
+    border: 1px solid rgba(32, 128, 240, 0.2);
+    border-radius: 12px;
+    padding: 0 8px;
+    height: 22px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 32px);
+  }
+
+  .inline-flex-center {
+    display: inline-flex !important;
+    align-items: center;
+    width: 100%;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .eye-button-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 50%;
+    background-color: rgba(32, 128, 240, 0.15);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(32, 128, 240, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .eye-button-inline:hover {
+    background-color: rgba(32, 128, 240, 0.2);
+    transform: scale(1.05);
+  }
+  .copy-button-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 50%;
+    background-color: rgba(32, 128, 240, 0.15);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(32, 128, 240, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    line-height: 1;
+    margin-left: 4px;
+
+    &:hover {
+      background-color: rgba(32, 128, 240, 0.2);
+      transform: scale(1.05);
+    }
   }
 }
 </style>
