@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /*主要定义 primary*/
+    --color-primary-50: #f0f9ff;
+    --color-primary-100: #f0f9ff;
+    --color-primary-200: #e0f2fe;
+    --color-primary-300: #bae6fd;
+    --color-primary-400: #7dd3fc;
+    --color-primary-500: #38bdf8;
+    --color-primary-600: #0ea5e9;
+    --color-primary-700: #0284c7;
+    --color-primary-800: #0369a1;
+    --color-primary-900: #075985;
+    --color-primary-950: #0c4a6e;
+    /*次要定义 secondary*/
+    --color-secondary-50: #f5f3ff;
+    --color-secondary-100: #ede9fe;
+    --color-secondary-200: #ddd6fe;
+    --color-secondary-300: #c4b5fd;
+    --color-secondary-400: #a78bfa;
+    --color-secondary-500: #8b5cf6;
+    --color-secondary-600: #7c3aed;
+    --color-secondary-700: #6d28d9;
+    --color-secondary-800: #5b21b6;
+    --color-secondary-900: #4c1d95;
+    --color-secondary-950: #2e1065;
+}
