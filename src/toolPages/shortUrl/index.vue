@@ -406,7 +406,8 @@ const generateShortUrl = async () => {
         expiryType: formState.expiryType === 'forever' ? null : formState.expiryType,
         accessCode: usePassword.value ? formState.accessCode : null,
         customSuffix: useCustomSuffix.value ? formState.customSuffix : null,
-        clientId: clientId
+        clientId: clientId,
+        frontendHost: window.location.origin
       })
     });
 
