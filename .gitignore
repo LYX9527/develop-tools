@@ -36,3 +36,4 @@ types/*.d.ts
 .env
 .env.local
 .env.*.local
+*.-lock.*
