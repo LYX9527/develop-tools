@@ -223,7 +223,7 @@ function clearVerify() {
 
 // 动画
 onMounted(() => {
-  gsap.fromTo('.tool-container',
+  gsap.fromTo('.tool-container', 
     { opacity: 0, y: 30 },
     { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
   )
@@ -242,7 +242,7 @@ onMounted(() => {
           UUID生成、哈希计算和文件校验工具集合
         </p>
       </div>
-
+      
       <!-- 标签页内容 -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-6">
         <div class="p-6">
@@ -507,7 +507,7 @@ onMounted(() => {
       </div>
     </div>
   </div>
-</template>
+</template> 
 
 <style scoped>
 /* 自定义样式 */

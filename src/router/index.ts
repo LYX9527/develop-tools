@@ -19,6 +19,7 @@ import TextCaseConverter from '@/views/tools/TextCaseConverter.vue'
 import CronGenerator from '@/views/tools/CronGenerator.vue'
 import IconGenerator from '@/views/tools/IconGenerator.vue'
 import AsciiArtGenerator from '@/views/tools/AsciiArtGenerator.vue'
+import ImageWatermark from '@/views/tools/ImageWatermark.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -173,6 +174,16 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/tools/image-watermark',
+    name: 'ImageWatermark',
+    component: ImageWatermark,
+    meta: {
+      title: '图片水印',
+      category: 'image',
+      description: '为图片添加自定义水印，支持文字样式和位置调整，提供单文字和平铺模式'
+    }
+  },
+  {
     path: '/demo',
     name: 'ComponentDemo',
     component: ComponentDemo,
@@ -205,4 +216,4 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-export default router
+export default router 

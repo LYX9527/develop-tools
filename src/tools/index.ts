@@ -13,6 +13,7 @@ import {textCaseConverterInfo} from './text-case-converter/info'
 import {cronGeneratorInfo} from './cron-generator/info'
 import {iconGeneratorInfo} from './icon-generator/info'
 import {asciiArtGeneratorInfo} from './ascii-art-generator/info'
+import {imageWatermarkInfo} from './image-watermark/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -104,13 +105,19 @@ export const tools: Tool[] = [
     route: '/tools/ascii-art-generator',
     category: 'generator',
     color: 'from-gray-500 to-gray-600'
+  },
+  {
+    ...imageWatermarkInfo,
+    route: '/tools/image-watermark',
+    category: 'image',
+    color: 'from-pink-500 to-pink-600'
   }
 ]
 
 // 从GitHub URL提取用户名
 export const getGithubUsername = (githubUrl?: string): string | null => {
   if (!githubUrl) return null
-
+  
   try {
     const url = new URL(githubUrl)
     const pathname = url.pathname
@@ -119,4 +126,4 @@ export const getGithubUsername = (githubUrl?: string): string | null => {
   } catch {
     return null
   }
-}
+} 
