@@ -16,6 +16,7 @@ import {asciiArtGeneratorInfo} from './ascii-art-generator/info'
 import {imageWatermarkInfo} from './image-watermark/info'
 import {moneyConverterInfo} from './money-converter/info'
 import {navicatDecryptInfo} from './navicat-decrypt/info'
+import {s3UploadInfo} from './s3-upload/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -125,6 +126,12 @@ export const tools: Tool[] = [
     route: '/tools/navicat-decrypt',
     category: 'security',
     color: 'from-amber-500 to-orange-600'
+  },
+  {
+    ...s3UploadInfo,
+    route: '/tools/s3-upload',
+    category: 'upload',
+    color: 'from-blue-500 to-purple-600'
   }
 ]
 

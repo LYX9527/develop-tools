@@ -22,6 +22,7 @@ import AsciiArtGenerator from '@/views/tools/AsciiArtGenerator.vue'
 import ImageWatermark from '@/views/tools/ImageWatermark.vue'
 import MoneyConverter from '@/views/tools/MoneyConverter.vue'
 import NavicatDecrypt from '@/views/tools/NavicatDecrypt.vue'
+import S3UploadTool from '@/views/tools/S3UploadTool.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -203,6 +204,16 @@ const routes: RouteRecordRaw[] = [
       title: 'Navicat密码解密',
       category: 'security',
       description: '解密Navicat存储的数据库连接密码，支持密码解密和NCX文件解析'
+    }
+  },
+  {
+    path: '/tools/s3-upload',
+    name: 'S3UploadTool',
+    component: S3UploadTool,
+    meta: {
+      title: 'S3 文件上传',
+      category: 'upload',
+      description: '兼容 S3 API 的文件拖拽上传工具，支持 R2、MinIO 等兼容 S3 的存储服务'
     }
   },
   {

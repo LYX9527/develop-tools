@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.850.0",
     "@tailwindcss/vite": "^4.1.8",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.1.0",
