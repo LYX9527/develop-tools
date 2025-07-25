@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { gsap } from 'gsap'
+import {computed, onMounted, ref} from 'vue'
+import {gsap} from 'gsap'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
 import Checkbox from '@/components/ui/Checkbox.vue'
 import NumberInput from '@/components/ui/NumberInput.vue'
-import { useToast } from '@/composables/useToast'
+import {useToast} from '@/composables/useToast'
 
 const toast = useToast()
 
@@ -18,9 +18,10 @@ const includeSymbols = ref(true)
 const excludeSimilar = ref(false)
 const excludeAmbiguous = ref(false)
 const customChars = ref('')
+const excludeChars = ref('')
 
 // 生成的密码
-const generatedPasswords = ref<string[]>([])
+const generatedPasswords = ref<Array<{value: string, strength: {level: string, color: string}}>>([])
 const batchCount = ref(1)
 
 // 字符集定义
@@ -36,36 +37,57 @@ const charsets = {
 // 计算可用字符集
 const availableChars = computed(() => {
   let chars = ''
-  
+
   if (includeUppercase.value) chars += charsets.uppercase
   if (includeLowercase.value) chars += charsets.lowercase
   if (includeNumbers.value) chars += charsets.numbers
   if (includeSymbols.value) chars += charsets.symbols
   if (customChars.value) chars += customChars.value
-  
-  // 排除相似字符
-  if (excludeSimilar.value) {
-    chars = chars.split('').filter(char => !charsets.similar.includes(char)).join('')
+
+  // 收集所有要排除的字符
+  let excludeSet = ''
+  if (excludeSimilar.value) excludeSet += charsets.similar
+  if (excludeAmbiguous.value) excludeSet += charsets.ambiguous
+  if (excludeChars.value) excludeSet += excludeChars.value
+
+  // 排除指定字符
+  if (excludeSet) {
+    chars = chars.split('').filter(char => !excludeSet.includes(char)).join('')
   }
-  
-  // 排除模糊字符
-  if (excludeAmbiguous.value) {
-    chars = chars.split('').filter(char => !charsets.ambiguous.includes(char)).join('')
-  }
-  
+
   return [...new Set(chars.split(''))].join('')
 })
 
 // 计算密码强度
 const passwordStrength = computed(() => {
   const charCount = availableChars.value.length
-  const entropy = length.value * Math.log2(charCount)
-  
-  if (entropy < 28) return { level: '弱', color: 'text-red-500', percentage: 25 }
-  if (entropy < 36) return { level: '一般', color: 'text-yellow-500', percentage: 50 }
-  if (entropy < 60) return { level: '强', color: 'text-blue-500', percentage: 75 }
-  return { level: '很强', color: 'text-green-500', percentage: 100 }
+  const lengthScore = Math.min(length.value / 12, 2) // 长度评分
+  const charsetScore = Math.min(charCount / 50, 2) // 字符集评分
+  const typeScore = [includeUppercase.value, includeLowercase.value, includeNumbers.value, includeSymbols.value].filter(Boolean).length / 4 // 类型评分
+
+  const totalScore = (lengthScore + charsetScore + typeScore) / 3
+  const percentage = Math.min(totalScore * 100, 100)
+
+  if (totalScore < 0.5) return { level: '弱', color: 'text-red-500', percentage: Math.max(percentage, 20) }
+  if (totalScore < 0.75) return { level: '中等', color: 'text-yellow-500', percentage }
+  if (totalScore < 1.0) return { level: '强', color: 'text-blue-500', percentage }
+  return { level: '很强', color: 'text-green-500', percentage }
 })
+
+// 计算单个密码的强度
+const calculatePasswordStrength = (password: string): { level: string, color: string } => {
+  const hasUpper = /[A-Z]/.test(password)
+  const hasLower = /[a-z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+  const hasSymbol = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
+  const isLongEnough = password.length >= 12
+
+  const criteria = [hasUpper, hasLower, hasNumber, hasSymbol, isLongEnough].filter(Boolean).length
+
+  if (criteria >= 4) return { level: '强', color: 'text-green-500' }
+  if (criteria >= 3) return { level: '中等', color: 'text-yellow-500' }
+  return { level: '弱', color: 'text-red-500' }
+}
 
 // 生成随机密码
 const generatePassword = (targetLength: number = length.value): string => {
@@ -73,36 +95,49 @@ const generatePassword = (targetLength: number = length.value): string => {
     toast.error('请至少选择一种字符类型')
     return ''
   }
-  
+
   let password = ''
   const chars = availableChars.value
-  
+
   // 确保包含每种选中的字符类型至少一个
-  if (includeUppercase.value && charsets.uppercase.split('').some(c => chars.includes(c))) {
+  const guaranteedChars = []
+
+  if (includeUppercase.value) {
     const upperChars = charsets.uppercase.split('').filter(c => chars.includes(c))
-    password += upperChars[Math.floor(Math.random() * upperChars.length)]
+    if (upperChars.length > 0) {
+      guaranteedChars.push(upperChars[Math.floor(Math.random() * upperChars.length)])
+    }
   }
-  
-  if (includeLowercase.value && charsets.lowercase.split('').some(c => chars.includes(c))) {
+
+  if (includeLowercase.value) {
     const lowerChars = charsets.lowercase.split('').filter(c => chars.includes(c))
-    password += lowerChars[Math.floor(Math.random() * lowerChars.length)]
+    if (lowerChars.length > 0) {
+      guaranteedChars.push(lowerChars[Math.floor(Math.random() * lowerChars.length)])
+    }
   }
-  
-  if (includeNumbers.value && charsets.numbers.split('').some(c => chars.includes(c))) {
+
+  if (includeNumbers.value) {
     const numberChars = charsets.numbers.split('').filter(c => chars.includes(c))
-    password += numberChars[Math.floor(Math.random() * numberChars.length)]
+    if (numberChars.length > 0) {
+      guaranteedChars.push(numberChars[Math.floor(Math.random() * numberChars.length)])
+    }
   }
-  
-  if (includeSymbols.value && charsets.symbols.split('').some(c => chars.includes(c))) {
+
+  if (includeSymbols.value) {
     const symbolChars = charsets.symbols.split('').filter(c => chars.includes(c))
-    password += symbolChars[Math.floor(Math.random() * symbolChars.length)]
+    if (symbolChars.length > 0) {
+      guaranteedChars.push(symbolChars[Math.floor(Math.random() * symbolChars.length)])
+    }
   }
-  
+
+  // 先添加保证的字符
+  password = guaranteedChars.join('')
+
   // 填充剩余长度
   while (password.length < targetLength) {
     password += chars[Math.floor(Math.random() * chars.length)]
   }
-  
+
   // 打乱密码字符顺序
   return password.split('').sort(() => Math.random() - 0.5).join('')
 }
@@ -111,7 +146,13 @@ const generatePassword = (targetLength: number = length.value): string => {
 const generate = () => {
   const passwords = []
   for (let i = 0; i < batchCount.value; i++) {
-    passwords.push(generatePassword())
+    const password = generatePassword()
+    if (password) {
+      passwords.push({
+        value: password,
+        strength: calculatePasswordStrength(password)
+      })
+    }
   }
   generatedPasswords.value = passwords
   toast.success(`已生成 ${passwords.length} 个密码！`)
@@ -130,7 +171,7 @@ const copyPassword = async (password: string) => {
 // 复制所有密码
 const copyAllPasswords = async () => {
   try {
-    const allPasswords = generatedPasswords.value.join('\n')
+    const allPasswords = generatedPasswords.value.map(p => p.value).join('\n')
     await navigator.clipboard.writeText(allPasswords)
     toast.success('所有密码已复制到剪贴板！')
   } catch (error) {
@@ -154,7 +195,8 @@ const presets = [
       includeNumbers: true,
       includeSymbols: false,
       excludeSimilar: false,
-      excludeAmbiguous: false
+      excludeAmbiguous: false,
+      excludeChars: ''
     }
   },
   {
@@ -166,7 +208,8 @@ const presets = [
       includeNumbers: true,
       includeSymbols: true,
       excludeSimilar: true,
-      excludeAmbiguous: false
+      excludeAmbiguous: false,
+      excludeChars: ''
     }
   },
   {
@@ -178,7 +221,8 @@ const presets = [
       includeNumbers: true,
       includeSymbols: true,
       excludeSimilar: true,
-      excludeAmbiguous: true
+      excludeAmbiguous: true,
+      excludeChars: ''
     }
   },
   {
@@ -190,7 +234,21 @@ const presets = [
       includeNumbers: true,
       includeSymbols: false,
       excludeSimilar: false,
-      excludeAmbiguous: false
+      excludeAmbiguous: false,
+      excludeChars: ''
+    }
+  },
+  {
+    name: '无歧义密码',
+    config: {
+      length: 16,
+      includeUppercase: true,
+      includeLowercase: true,
+      includeNumbers: true,
+      includeSymbols: false,
+      excludeSimilar: true,
+      excludeAmbiguous: true,
+      excludeChars: '`~'
     }
   }
 ]
@@ -204,16 +262,17 @@ const applyPreset = (preset: typeof presets[0]) => {
   includeSymbols.value = preset.config.includeSymbols
   excludeSimilar.value = preset.config.excludeSimilar
   excludeAmbiguous.value = preset.config.excludeAmbiguous
+  excludeChars.value = preset.config.excludeChars || ''
   toast.success(`已应用${preset.name}配置`)
 }
 
 // 动画
 onMounted(() => {
-  gsap.fromTo('.tool-container', 
+  gsap.fromTo('.tool-container',
     { opacity: 0, y: 30 },
     { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
   )
-  
+
   // 自动生成一个密码
   generate()
 })
@@ -249,14 +308,14 @@ onMounted(() => {
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 快速配置
               </label>
-              <div class="grid grid-cols-2 gap-2">
-                <Button 
+              <div class="grid grid-cols-1 gap-2">
+                <Button
                   v-for="preset in presets"
                   :key="preset.name"
                   @click="applyPreset(preset)"
                   variant="ghost"
                   size="sm"
-                  class="text-xs"
+                  class="text-xs justify-start"
                 >
                   {{ preset.name }}
                 </Button>
@@ -277,22 +336,22 @@ onMounted(() => {
             <!-- 字符类型选择 -->
             <div class="space-y-4 mb-6">
               <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">包含字符类型</h4>
-              
+
               <Checkbox
                 v-model="includeUppercase"
                 label="大写字母 (A-Z)"
               />
-              
+
               <Checkbox
                 v-model="includeLowercase"
                 label="小写字母 (a-z)"
               />
-              
+
               <Checkbox
                 v-model="includeNumbers"
                 label="数字 (0-9)"
               />
-              
+
               <Checkbox
                 v-model="includeSymbols"
                 label="特殊符号 (!@#$%^&*)"
@@ -302,12 +361,12 @@ onMounted(() => {
             <!-- 排除选项 -->
             <div class="space-y-4 mb-6">
               <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">排除选项</h4>
-              
+
               <Checkbox
                 v-model="excludeSimilar"
                 label="排除相似字符 (il1Lo0O)"
               />
-              
+
               <Checkbox
                 v-model="excludeAmbiguous"
                 label="排除模糊字符 ({}[]())"
@@ -321,6 +380,18 @@ onMounted(() => {
                 label="自定义字符"
                 placeholder="添加额外字符..."
               />
+            </div>
+
+            <!-- 排除字符 -->
+            <div class="mb-6">
+              <Input
+                v-model="excludeChars"
+                label="排除字符"
+                placeholder="输入要排除的字符..."
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                指定不希望在密码中出现的字符
+              </p>
             </div>
 
             <!-- 批量生成数量 -->
@@ -341,11 +412,11 @@ onMounted(() => {
               </label>
               <div class="flex items-center space-x-3">
                 <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
+                  <div
                     class="h-2 rounded-full transition-all duration-300"
                     :class="{
                       'bg-red-500': passwordStrength.level === '弱',
-                      'bg-yellow-500': passwordStrength.level === '一般',
+                      'bg-yellow-500': passwordStrength.level === '中等',
                       'bg-blue-500': passwordStrength.level === '强',
                       'bg-green-500': passwordStrength.level === '很强'
                     }"
@@ -382,7 +453,7 @@ onMounted(() => {
                 生成结果 ({{ generatedPasswords.length }})
               </h3>
               <div class="flex space-x-2">
-                <Button 
+                <Button
                   v-if="generatedPasswords.length > 1"
                   @click="copyAllPasswords"
                   size="sm"
@@ -393,7 +464,7 @@ onMounted(() => {
                   </svg>
                   全部复制
                 </Button>
-                <Button 
+                <Button
                   v-if="generatedPasswords.length > 0"
                   @click="clearResults"
                   size="sm"
@@ -406,7 +477,7 @@ onMounted(() => {
                 </Button>
               </div>
             </div>
-            
+
             <div class="p-6">
               <div v-if="generatedPasswords.length === 0" class="text-center py-12">
                 <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,18 +485,29 @@ onMounted(() => {
                 </svg>
                 <p class="text-gray-500 dark:text-gray-400">点击"生成密码"按钮创建安全密码</p>
               </div>
-              
+
               <div v-else class="space-y-3">
-                <div 
+                <div
                   v-for="(password, index) in generatedPasswords"
                   :key="index"
-                  class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  class="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <div class="flex-1">
-                    <code class="text-lg font-mono break-all select-all">{{ password }}</code>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs text-gray-500 dark:text-gray-400">#{{ index + 1 }}</span>
+                      <span :class="[
+                        password.strength.color,
+                        password.strength.level === '强' ? 'bg-green-100 dark:bg-green-900' : '',
+                        password.strength.level === '中等' ? 'bg-yellow-100 dark:bg-yellow-900' : '',
+                        password.strength.level === '弱' ? 'bg-red-100 dark:bg-red-900' : ''
+                      ]" class="text-xs font-medium px-2 py-1 rounded-full">
+                        强度: {{ password.strength.level }}
+                      </span>
+                    </div>
+                    <code class="text-lg font-mono break-all select-all block">{{ password.value }}</code>
                   </div>
-                  <Button 
-                    @click="copyPassword(password)"
+                  <Button
+                    @click="copyPassword(password.value)"
                     size="sm"
                     variant="ghost"
                   >
@@ -446,7 +528,7 @@ onMounted(() => {
               </svg>
               安全建议
             </h3>
-            <div class="grid md:grid-cols-2 gap-6 text-sm text-gray-600 dark:text-gray-300">
+            <div class="grid md:grid-cols-3 gap-6 text-sm text-gray-600 dark:text-gray-300">
               <div>
                 <h4 class="font-semibold mb-2">密码强度建议：</h4>
                 <ul class="space-y-1">
@@ -457,7 +539,16 @@ onMounted(() => {
                 </ul>
               </div>
               <div>
-                <h4 class="font-semibold mb-2">使用注意事项：</h4>
+                <h4 class="font-semibold mb-2">功能说明：</h4>
+                <ul class="space-y-1">
+                  <li>• 快速预设：一键应用常用配置</li>
+                  <li>• 排除字符：避免特定字符出现</li>
+                  <li>• 批量生成：一次生成多个密码</li>
+                  <li>• 强度评估：实时显示密码强度</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">安全提醒：</h4>
                 <ul class="space-y-1">
                   <li>• 不同账户使用不同密码</li>
                   <li>• 使用密码管理器保存</li>
@@ -494,4 +585,4 @@ onMounted(() => {
 code {
   letter-spacing: 0.5px;
 }
-</style> 
+</style>
