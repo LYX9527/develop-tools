@@ -6,6 +6,6 @@ export const qrCodeGeneratorInfo: ToolBaseInfo = {
     description: '生成各种类型的二维码，支持文本、URL、WiFi等',
     tags: [ToolTags.GENERATOR, ToolTags.UTILITY],
     icon: '📱',
-    author: 'QRCodePro',
-    github: 'https://github.com/qrcode-pro'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

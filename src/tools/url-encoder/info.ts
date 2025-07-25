@@ -6,6 +6,6 @@ export const urlEncoderInfo: ToolBaseInfo = {
     description: 'URL编码和解码工具，处理URL中的特殊字符',
     tags: [ToolTags.ENCODING, ToolTags.UTILITY],
     icon: '🔗',
-    author: 'WebDevTools',
-    github: 'https://github.com/webdev-tools'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

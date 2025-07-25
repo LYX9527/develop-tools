@@ -6,6 +6,6 @@ export const timestampConverterInfo: ToolBaseInfo = {
     description: '时间戳和日期格式转换，支持多种时间格式',
     tags: [ToolTags.CONVERTER, ToolTags.UTILITY],
     icon: '⏰',
-    author: 'TimeUtils',
-    github: 'https://github.com/time-utils'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

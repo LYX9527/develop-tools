@@ -6,6 +6,6 @@ export const hashGeneratorInfo: ToolBaseInfo = {
     description: '生成MD5、SHA等哈希值，支持多种哈希算法',
     tags: [ToolTags.SECURITY, ToolTags.GENERATOR],
     icon: '#️⃣',
-    author: 'CryptoTools',
-    github: 'https://github.com/crypto-tools'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

@@ -6,6 +6,6 @@ export const colorPickerInfo: ToolBaseInfo = {
     description: '颜色选择和转换工具，支持多种颜色格式',
     tags: [ToolTags.DESIGN, ToolTags.UTILITY],
     icon: '🎨',
-    author: 'ColorStudio',
-    github: 'https://github.com/color-studio'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

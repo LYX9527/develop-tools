@@ -6,6 +6,6 @@ export const passwordGeneratorInfo: ToolBaseInfo = {
     description: '生成安全随机密码，支持自定义长度和字符类型',
     tags: [ToolTags.GENERATOR, ToolTags.SECURITY],
     icon: '🔒',
-    author: 'SecurityTools',
-    github: 'https://github.com/security-tools'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

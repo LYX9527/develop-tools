@@ -6,6 +6,6 @@ export const imageOptimizerInfo: ToolBaseInfo = {
     description: '压缩和优化图片，支持多种图片格式',
     tags: [ToolTags.IMAGE, ToolTags.UTILITY],
     icon: '🖼️',
-    author: 'ImagePro',
-    github: 'https://github.com/image-pro'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}

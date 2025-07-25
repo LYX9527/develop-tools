@@ -6,6 +6,6 @@ export const base64ConverterInfo: ToolBaseInfo = {
     description: 'Base64编码和解码工具，支持文本和文件转换',
     tags: [ToolTags.ENCODING, ToolTags.CONVERTER],
     icon: '🔤',
-    author: 'EncodingMaster',
-    github: 'https://github.com/encoding-master'
-} 
+    author: 'LYX9527',
+    github: 'https://github.com/LYX9527'
+}
