@@ -14,6 +14,7 @@ import {cronGeneratorInfo} from './cron-generator/info'
 import {iconGeneratorInfo} from './icon-generator/info'
 import {asciiArtGeneratorInfo} from './ascii-art-generator/info'
 import {imageWatermarkInfo} from './image-watermark/info'
+import {moneyConverterInfo} from './money-converter/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -111,6 +112,12 @@ export const tools: Tool[] = [
     route: '/tools/image-watermark',
     category: 'image',
     color: 'from-pink-500 to-pink-600'
+  },
+  {
+    ...moneyConverterInfo,
+    route: '/tools/money-converter',
+    category: 'converter',
+    color: 'from-green-500 to-emerald-600'
   }
 ]
 

@@ -20,6 +20,7 @@ import CronGenerator from '@/views/tools/CronGenerator.vue'
 import IconGenerator from '@/views/tools/IconGenerator.vue'
 import AsciiArtGenerator from '@/views/tools/AsciiArtGenerator.vue'
 import ImageWatermark from '@/views/tools/ImageWatermark.vue'
+import MoneyConverter from '@/views/tools/MoneyConverter.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -181,6 +182,16 @@ const routes: RouteRecordRaw[] = [
       title: '图片水印',
       category: 'image',
       description: '为图片添加自定义水印，支持文字样式和位置调整，提供单文字和平铺模式'
+    }
+  },
+  {
+    path: '/tools/money-converter',
+    name: 'MoneyConverter',
+    component: MoneyConverter,
+    meta: {
+      title: '人民币大写转换',
+      category: 'converter',
+      description: '将数字金额转换为人民币大写形式，支持最大13位数金额'
     }
   },
   {
