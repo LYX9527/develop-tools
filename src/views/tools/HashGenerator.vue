@@ -10,6 +10,7 @@ import NumberInput from '@/components/ui/NumberInput.vue'
 import Select from '@/components/ui/Select.vue'
 import Toggle from '@/components/ui/Toggle.vue'
 import {useToast} from '@/composables/useToast'
+import {decrypt, encrypt, generateKeyPair} from '@/utils/rsa'
 
 const toast = useToast()
 const activeTab = ref(0)
@@ -42,6 +43,26 @@ const hashOptions = [
   { label: 'SHA-256', value: 'SHA-256' },
   { label: 'SHA-384', value: 'SHA-384' },
   { label: 'SHA-512', value: 'SHA-512' }
+]
+
+// RSA 相关
+const rsaActiveTab = ref('generate')
+// 密钥生成
+const keySize = ref(2048)
+const publicKey = ref('')
+const privateKey = ref('')
+// 加密解密
+const inputText = ref('')
+const outputText = ref('')
+const currentPublicKey = ref('')
+const currentPrivateKey = ref('')
+
+// 密钥长度选项
+const keySizeOptions = [
+  { label: '512 位', value: 512 },
+  { label: '1024 位', value: 1024 },
+  { label: '2048 位', value: 2048 },
+  { label: '4096 位', value: 4096 }
 ]
 
 // 添加文件大小格式化函数
@@ -221,9 +242,107 @@ function clearVerify() {
   }
 }
 
+// RSA 相关函数
+// 生成密钥对
+async function generateKeys() {
+  try {
+    const { publicKey: pubKey, privateKey: privKey } = await generateKeyPair(keySize.value)
+    publicKey.value = pubKey
+    privateKey.value = privKey
+    toast.success('密钥对生成成功')
+  } catch (error) {
+    toast.error('密钥对生成失败')
+  }
+}
+
+// 复制密钥
+function copyKey(type: 'public' | 'private') {
+  const key = type === 'public' ? publicKey.value : privateKey.value
+  if (!key) {
+    toast.warning('请先生成密钥对')
+    return
+  }
+  navigator.clipboard.writeText(key)
+    .then(() => toast.success('复制成功'))
+    .catch(() => toast.error('复制失败'))
+}
+
+// 下载密钥文件
+function downloadKey(type: 'public' | 'private') {
+  const key = type === 'public' ? publicKey.value : privateKey.value
+  if (!key) {
+    toast.warning('请先生成密钥对')
+    return
+  }
+
+  const blob = new Blob([key], { type: 'text/plain' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = type === 'public' ? 'public.pem' : 'private.pem'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  toast.success('下载成功')
+}
+
+// 加密
+async function encryptText() {
+  if (!inputText.value) {
+    toast.warning('请输入要加密的内容')
+    return
+  }
+  if (!currentPublicKey.value) {
+    toast.warning('请输入公钥')
+    return
+  }
+  try {
+    outputText.value = await encrypt(inputText.value, currentPublicKey.value)
+    toast.success('加密成功')
+  } catch (error) {
+    toast.error('加密失败')
+  }
+}
+
+// 解密
+async function decryptText() {
+  if (!inputText.value) {
+    toast.warning('请输入要解密的内容')
+    return
+  }
+  if (!currentPrivateKey.value) {
+    toast.warning('请输入私钥')
+    return
+  }
+  try {
+    outputText.value = await decrypt(inputText.value, currentPrivateKey.value)
+    toast.success('解密成功')
+  } catch (error) {
+    toast.error('解密失败')
+  }
+}
+
+// 清空RSA输入
+function clearRsaInput() {
+  inputText.value = ''
+  outputText.value = ''
+}
+
+// 复制RSA结果
+function copyRsaResult() {
+  if (!outputText.value) {
+    toast.warning('没有可复制的内容')
+    return
+  }
+  navigator.clipboard.writeText(outputText.value)
+    .then(() => toast.success('复制成功'))
+    .catch(() => toast.error('复制失败'))
+}
+
 // 动画
 onMounted(() => {
-  gsap.fromTo('.tool-container', 
+  gsap.fromTo('.tool-container',
     { opacity: 0, y: 30 },
     { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
   )
@@ -239,10 +358,10 @@ onMounted(() => {
           生成工具
         </h1>
         <p class="text-gray-600 dark:text-gray-300 text-lg">
-          UUID生成、哈希计算和文件校验工具集合
+          UUID生成、哈希计算、文件校验和RSA加密解密工具集合
         </p>
       </div>
-      
+
       <!-- 标签页内容 -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-6">
         <div class="p-6">
@@ -472,6 +591,209 @@ onMounted(() => {
                 </div>
               </div>
             </TabItem>
+
+            <!-- RSA 加密解密 -->
+            <TabItem label="RSA 加密解密">
+              <div class="space-y-6">
+                <!-- 内部标签页 -->
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-1">
+                  <div class="flex space-x-1">
+                    <button
+                      :class="{
+                        'bg-white dark:bg-gray-600 shadow-sm': rsaActiveTab === 'generate',
+                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200': rsaActiveTab !== 'generate'
+                      }"
+                      class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
+                      @click="rsaActiveTab = 'generate'"
+                    >
+                      密钥生成
+                    </button>
+                    <button
+                      :class="{
+                        'bg-white dark:bg-gray-600 shadow-sm': rsaActiveTab === 'encrypt',
+                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200': rsaActiveTab !== 'encrypt'
+                      }"
+                      class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
+                      @click="rsaActiveTab = 'encrypt'"
+                    >
+                      加密
+                    </button>
+                    <button
+                      :class="{
+                        'bg-white dark:bg-gray-600 shadow-sm': rsaActiveTab === 'decrypt',
+                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200': rsaActiveTab !== 'decrypt'
+                      }"
+                      class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors"
+                      @click="rsaActiveTab = 'decrypt'"
+                    >
+                      解密
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 密钥生成 -->
+                <div v-if="rsaActiveTab === 'generate'" class="space-y-6">
+                  <div class="flex items-center space-x-4">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">密钥长度:</label>
+                    <Select
+                      v-model:modelValue="keySize"
+                      :options="keySizeOptions"
+                      class="w-32"
+                    />
+                    <Button variant="primary" @click="generateKeys">
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                      </svg>
+                      生成密钥对
+                    </Button>
+                  </div>
+
+                  <div class="grid lg:grid-cols-2 gap-6">
+                    <!-- 公钥 -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">公钥:</label>
+                        <div class="flex space-x-2">
+                          <Button size="sm" variant="ghost" @click="copyKey('public')">复制</Button>
+                          <Button size="sm" variant="ghost" @click="downloadKey('public')">下载</Button>
+                        </div>
+                      </div>
+                      <TextArea
+                        v-model="publicKey"
+                        class="font-mono text-sm resize-none"
+                        placeholder="生成的公钥将显示在这里"
+                        readonly
+                        rows="12"
+                      />
+                    </div>
+
+                    <!-- 私钥 -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">私钥:</label>
+                        <div class="flex space-x-2">
+                          <Button size="sm" variant="ghost" @click="copyKey('private')">复制</Button>
+                          <Button size="sm" variant="ghost" @click="downloadKey('private')">下载</Button>
+                        </div>
+                      </div>
+                      <TextArea
+                        v-model="privateKey"
+                        class="font-mono text-sm resize-none"
+                        placeholder="生成的私钥将显示在这里"
+                        readonly
+                        rows="12"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 加密 -->
+                <div v-if="rsaActiveTab === 'encrypt'" class="space-y-6">
+                  <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- 输入区域 -->
+                    <div class="space-y-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">公钥:</label>
+                        <TextArea
+                          v-model="currentPublicKey"
+                          class="font-mono text-sm resize-none"
+                          placeholder="请输入公钥..."
+                          rows="10"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">待加密内容:</label>
+                        <TextArea
+                          v-model="inputText"
+                          class="resize-none"
+                          placeholder="请输入要加密的内容..."
+                          rows="8"
+                        />
+                      </div>
+
+                      <div class="flex space-x-3">
+                        <Button class="flex-1" variant="primary" @click="encryptText">
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                          </svg>
+                          加密
+                        </Button>
+                        <Button variant="ghost" @click="clearRsaInput">清空</Button>
+                      </div>
+                    </div>
+
+                    <!-- 结果区域 -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">加密结果:</label>
+                        <Button size="sm" variant="ghost" @click="copyRsaResult">复制</Button>
+                      </div>
+                      <TextArea
+                        v-model="outputText"
+                        class="font-mono text-sm resize-none"
+                        placeholder="加密结果将显示在这里"
+                        readonly
+                        rows="20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 解密 -->
+                <div v-if="rsaActiveTab === 'decrypt'" class="space-y-6">
+                  <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- 输入区域 -->
+                    <div class="space-y-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">私钥:</label>
+                        <TextArea
+                          v-model="currentPrivateKey"
+                          class="font-mono text-sm resize-none"
+                          placeholder="请输入私钥..."
+                          rows="10"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">待解密内容:</label>
+                        <TextArea
+                          v-model="inputText"
+                          class="font-mono text-sm resize-none"
+                          placeholder="请输入要解密的内容..."
+                          rows="8"
+                        />
+                      </div>
+
+                      <div class="flex space-x-3">
+                        <Button class="flex-1" variant="primary" @click="decryptText">
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                          </svg>
+                          解密
+                        </Button>
+                        <Button variant="ghost" @click="clearRsaInput">清空</Button>
+                      </div>
+                    </div>
+
+                    <!-- 结果区域 -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">解密结果:</label>
+                        <Button size="sm" variant="ghost" @click="copyRsaResult">复制</Button>
+                      </div>
+                      <TextArea
+                        v-model="outputText"
+                        class="resize-none"
+                        placeholder="解密结果将显示在这里"
+                        readonly
+                        rows="20"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabItem>
           </Tab>
         </div>
       </div>
@@ -484,7 +806,7 @@ onMounted(() => {
           </svg>
           使用说明
         </h3>
-        <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-600 dark:text-gray-300">
+        <div class="grid md:grid-cols-3 gap-8 text-sm text-gray-600 dark:text-gray-300">
           <div>
             <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">UUID生成</h4>
             <ul class="space-y-2">
@@ -503,11 +825,20 @@ onMounted(() => {
               <li>• 支持拖拽上传文件</li>
             </ul>
           </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">RSA 加密解密</h4>
+            <ul class="space-y-2">
+              <li>• 支持RSA密钥对生成</li>
+              <li>• 可选择密钥长度（512-4096位）</li>
+              <li>• 公钥加密、私钥解密</li>
+              <li>• 支持密钥文件下载</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</template> 
+</template>
 
 <style scoped>
 /* 自定义样式 */

@@ -122,7 +122,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '生成工具',
       category: 'generator',
-      description: 'UUID生成、哈希计算和文件校验工具集合'
+      description: 'UUID生成、哈希计算、文件校验和RSA加密解密工具集合'
     }
   },
   {
