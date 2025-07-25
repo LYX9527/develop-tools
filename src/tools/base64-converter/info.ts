@@ -1,5 +1,5 @@
-import type { ToolBaseInfo } from '@/types/tool'
-import { ToolTags } from '@/types/tool'
+import type {ToolBaseInfo} from '@/types/tool'
+import {ToolTags} from '@/types/tool'
 import Icon from '../encode-converter/Icon.vue'
 
 export const base64ConverterInfo: ToolBaseInfo = {

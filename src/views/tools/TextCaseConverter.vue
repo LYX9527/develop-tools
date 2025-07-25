@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { gsap } from 'gsap'
+import {onMounted, ref} from 'vue'
+import {gsap} from 'gsap'
 import TextArea from '@/components/ui/TextArea.vue'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
-import { useToast } from '@/composables/useToast'
+import {useToast} from '@/composables/useToast'
 
 const toast = useToast()
 

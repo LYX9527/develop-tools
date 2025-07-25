@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { gsap } from 'gsap'
+import {onMounted, ref} from 'vue'
+import {gsap} from 'gsap'
 import TextArea from '@/components/ui/TextArea.vue'
 import Button from '@/components/ui/Button.vue'
 import Tab from '@/components/ui/tabs/Tab.vue'
 import TabItem from '@/components/ui/tabs/TabItem.vue'
-import { useToast } from '@/composables/useToast'
+import {useToast} from '@/composables/useToast'
 
 const toast = useToast()
 
@@ -343,7 +343,7 @@ onMounted(() => {
                       disabled
                       class="font-mono text-sm"
                     />
-                    
+
                     <!-- JWT 组成部分说明 -->
                     <div v-if="jwtOutput" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                       <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">JWT 结构说明</h4>

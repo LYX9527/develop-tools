@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import type {RouteRecordRaw} from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 
 // 首页
 import Home from '@/views/Home.vue'
@@ -17,6 +17,8 @@ import HashGenerator from '@/views/tools/HashGenerator.vue'
 import ImageOptimizer from '@/views/tools/ImageOptimizer.vue'
 import TextCaseConverter from '@/views/tools/TextCaseConverter.vue'
 import CronGenerator from '@/views/tools/CronGenerator.vue'
+import IconGenerator from '@/views/tools/IconGenerator.vue'
+import AsciiArtGenerator from '@/views/tools/AsciiArtGenerator.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -115,9 +117,9 @@ const routes: RouteRecordRaw[] = [
     name: 'HashGenerator',
     component: HashGenerator,
     meta: {
-      title: '哈希生成器',
-      category: 'encode',
-      description: '生成MD5、SHA等哈希值'
+      title: '生成工具',
+      category: 'generator',
+      description: 'UUID生成、哈希计算和文件校验工具集合'
     }
   },
   {
@@ -148,6 +150,26 @@ const routes: RouteRecordRaw[] = [
       title: 'Cron 表达式生成器',
       category: 'generator',
       description: '生成符合标准的Cron表达式'
+    }
+  },
+  {
+    path: '/tools/icon-generator',
+    name: 'IconGenerator',
+    component: IconGenerator,
+    meta: {
+      title: '图标生成器',
+      category: 'image',
+      description: '支持生成各种尺寸的圆角图标，一键导出多个规格'
+    }
+  },
+  {
+    path: '/tools/ascii-art-generator',
+    name: 'AsciiArtGenerator',
+    component: AsciiArtGenerator,
+    meta: {
+      title: 'ASCII字符画生成器',
+      category: 'generator',
+      description: '将图片转换为ASCII字符画，支持艺术字符生成'
     }
   },
   {
@@ -183,4 +205,4 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-export default router 
+export default router

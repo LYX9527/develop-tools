@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import {computed, nextTick, onMounted, onUnmounted, ref, Teleport, watch} from 'vue';
 
 interface Option {
   value: string | number;
@@ -30,6 +30,18 @@ const searchQuery = ref('');
 const dropdownRef = ref<HTMLElement | null>(null);
 const triggerRef = ref<HTMLElement | null>(null);
 
+// 下拉菜单位置状态
+const dropdownPosition = ref({
+  top: 0,
+  left: 0,
+  width: 0
+});
+
+// 防抖标识
+let positionUpdateRAF: number | null = null;
+let scrollTimeout: number | null = null;
+let positionCheckInterval: number | null = null;
+
 // Find the index of the currently selected option
 watch(() => props.modelValue, (newValue) => {
   if (newValue !== undefined) {
@@ -40,6 +52,24 @@ watch(() => props.modelValue, (newValue) => {
   }
 }, { immediate: true });
 
+// 监听下拉菜单开关状态
+watch(isOpen, (newValue) => {
+  if (newValue) {
+    // 打开时启动位置检查间隔
+    positionCheckInterval = window.setInterval(() => {
+      if (isOpen.value && triggerRef.value) {
+        calculateDropdownPosition();
+      }
+    }, 16); // ~60fps 的更新频率
+  } else {
+    // 关闭时清理间隔
+    if (positionCheckInterval) {
+      clearInterval(positionCheckInterval);
+      positionCheckInterval = null;
+    }
+  }
+});
+
 // Get the selected option label
 const selectedLabel = computed(() => {
   if (selectedIndex.value >= 0 && selectedIndex.value < props.options.length) {
@@ -47,6 +77,67 @@ const selectedLabel = computed(() => {
   }
   return props.placeholder || 'Select an option';
 });
+
+// 计算下拉菜单位置
+const calculateDropdownPosition = () => {
+  if (!triggerRef.value) return;
+
+  const rect = triggerRef.value.getBoundingClientRect();
+
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const dropdownMaxHeight = 240; // max-h-60 = 15rem = 240px
+  const spacing = 4;
+
+  // 检查是否有足够的空间在下方显示
+  const spaceBelow = viewportHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  let top = rect.bottom + spacing;
+
+  // 如果下方空间不足且上方空间更多，则显示在上方
+  if (spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow) {
+    top = rect.top - Math.min(dropdownMaxHeight, spaceAbove) - spacing;
+  }
+
+  // 确保不超出视窗边界
+  let left = rect.left;
+  const dropdownWidth = rect.width;
+
+  // 如果右侧超出视窗，调整到左侧
+  if (left + dropdownWidth > viewportWidth) {
+    left = viewportWidth - dropdownWidth - 8; // 8px 边距
+  }
+
+  // 确保不超出左侧边界
+  if (left < 8) {
+    left = 8;
+  }
+
+  dropdownPosition.value = {
+    top: Math.max(8, Math.min(top, viewportHeight - 8)), // 确保在视窗内
+    left,
+    width: rect.width
+  };
+};
+
+// 清理所有定时器的辅助函数
+const cleanupTimers = () => {
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = null;
+  }
+
+  if (positionUpdateRAF) {
+    cancelAnimationFrame(positionUpdateRAF);
+    positionUpdateRAF = null;
+  }
+
+  if (positionCheckInterval) {
+    clearInterval(positionCheckInterval);
+    positionCheckInterval = null;
+  }
+};
 
 // Toggle dropdown
 const toggleDropdown = () => {
@@ -59,6 +150,13 @@ const toggleDropdown = () => {
     if (selectedIndex.value === -1 && props.options.length > 0) {
       selectedIndex.value = 0;
     }
+    // 计算位置
+    nextTick(() => {
+      calculateDropdownPosition();
+    });
+  } else {
+    // 关闭时清理定时器
+    cleanupTimers();
   }
 };
 
@@ -70,6 +168,9 @@ const selectOption = (index: number) => {
     emit('update:modelValue', selectedValue);
     emit('change', selectedValue);
     isOpen.value = false;
+
+    // 关闭时清理定时器
+    cleanupTimers();
   }
 };
 
@@ -87,6 +188,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
     case 'Escape':
       event.preventDefault();
       isOpen.value = false;
+      // 关闭时清理定时器
+      cleanupTimers();
       break;
     case 'ArrowDown':
       event.preventDefault();
@@ -139,17 +242,72 @@ const handleClickOutside = (event: MouseEvent) => {
     !triggerRef.value.contains(event.target as Node)
   ) {
     isOpen.value = false;
+    // 关闭时清理定时器
+    cleanupTimers();
+  }
+};
+
+// 检查触发元素是否仍然可见
+const isElementVisible = () => {
+  if (!triggerRef.value) return false;
+
+  const rect = triggerRef.value.getBoundingClientRect();
+  return (
+    rect.bottom >= 0 &&
+    rect.right >= 0 &&
+    rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.left <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+};
+
+// 处理滚动和窗口大小变化
+const handleScroll = () => {
+  if (!isOpen.value) return;
+
+  // 清除之前的超时
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = null;
+  }
+
+  // 立即检查可见性和更新位置
+  if (!isElementVisible()) {
+    isOpen.value = false;
+    // 清理所有定时器
+    cleanupTimers();
+  } else {
+    // 直接更新位置，无延迟
+    calculateDropdownPosition();
+  }
+};
+
+const handleResize = () => {
+  if (isOpen.value) {
+    calculateDropdownPosition();
   }
 };
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside);
   document.addEventListener('keydown', handleKeyDown);
+  // 捕获所有可能的滚动事件
+  window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+  document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+  window.addEventListener('resize', handleResize);
+  // 添加更多可能影响位置的事件
+  window.addEventListener('orientationchange', handleResize);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside);
   document.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('scroll', handleScroll, { capture: true });
+  document.removeEventListener('scroll', handleScroll, { capture: true });
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('orientationchange', handleResize);
+
+  // 清理定时器和动画帧
+  cleanupTimers();
 });
 </script>
 
@@ -199,11 +357,25 @@ onUnmounted(() => {
         </span>
       </button>
 
-      <!-- Dropdown menu -->
+
+
+      <!-- Error message -->
+      <div v-if="error" class="mt-1 text-sm text-red-600 dark:text-red-400">
+        {{ error }}
+      </div>
+    </div>
+
+    <!-- Dropdown menu using Teleport -->
+    <Teleport to="body">
       <div
         v-if="isOpen"
         ref="dropdownRef"
-        class="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-auto focus:outline-none"
+        :style="{
+          top: dropdownPosition.top + 'px',
+          left: dropdownPosition.left + 'px',
+          width: dropdownPosition.width + 'px'
+        }"
+        class="fixed z-[9999] rounded-md bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-auto focus:outline-none border border-gray-200 dark:border-gray-700"
         tabindex="-1"
         role="listbox"
       >
@@ -238,11 +410,6 @@ onUnmounted(() => {
           </li>
         </ul>
       </div>
-
-      <!-- Error message -->
-      <div v-if="error" class="mt-1 text-sm text-red-600 dark:text-red-400">
-        {{ error }}
-      </div>
-    </div>
+    </Teleport>
   </div>
 </template>

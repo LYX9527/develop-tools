@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import {ref, onMounted, onUnmounted, watch, computed} from 'vue'
-import {useRouter, useRoute} from 'vue-router'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import {gsap} from 'gsap'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
+import {tools as toolsData} from '@/tools'
 
 const router = useRouter()
 const route = useRoute()
@@ -14,8 +15,6 @@ const mobileSearchInputRef = ref<HTMLInputElement>()
 const spotlightSearchInputRef = ref<HTMLInputElement>()
 const isSpotlightOpen = ref(false)
 const selectedResultIndex = ref(0)
-
-import {tools as toolsData} from '@/tools'
 
 // 搜索结果
 const searchResults = computed(() => {
@@ -569,13 +568,13 @@ onUnmounted(() => {
                       <div
                           class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg">
                         <!-- 支持Vue组件图标 -->
-                        <component 
+                        <component
                           v-if="typeof tool.icon === 'object' && tool.icon !== null"
                           :is="tool.icon"
                           class="w-6 h-6 text-white"
                         />
                         <!-- 支持字符串图标 -->
-                        <span 
+                        <span
                           v-else
                           class="text-white font-semibold"
                         >

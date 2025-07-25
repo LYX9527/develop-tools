@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount } from 'vue';
+import {computed, onBeforeUnmount, ref, watch} from 'vue';
 import Button from './Button.vue';
 
 interface FileItem {
@@ -234,10 +234,10 @@ onBeforeUnmount(cleanupPreviews);
             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           <div class="text-sm text-gray-600 dark:text-gray-400">
-            <span class="font-medium text-primary-600 dark:text-primary-400">Click to upload</span> or drag and drop
-            <p class="text-xs">{{ accept ? `Accepted file types: ${accept}` : 'All file types accepted' }}</p>
-            <p v-if="maxSize" class="text-xs">Maximum file size: {{ (maxSize / 1024 / 1024).toFixed(2) }} MB</p>
-            <p v-if="maxFiles" class="text-xs">Maximum files: {{ maxFiles }}</p>
+            <span class="font-medium text-primary-600 dark:text-primary-400">点击上传</span> 或拖放
+            <p class="text-xs">{{ accept ? `接受的文件类型: ${accept}` : '接受所有文件类型' }}</p>
+            <p v-if="maxSize" class="text-xs">最大文件大小: {{ (maxSize / 1024 / 1024).toFixed(2) }} MB</p>
+            <p v-if="maxFiles" class="text-xs">最大文件数: {{ maxFiles }}</p>
           </div>
         </div>
       </div>

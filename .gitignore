@@ -37,3 +37,4 @@ types/*.d.ts
 .env.local
 .env.*.local
 *.-lock.*
+package-lock.json

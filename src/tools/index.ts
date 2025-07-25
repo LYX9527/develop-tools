@@ -1,16 +1,18 @@
-import type { ToolBaseInfo } from '@/types/tool'
-import { jsonFormatterInfo } from './json-formatter/info'
-import { base64ConverterInfo } from './base64-converter/info'
-import { urlEncoderInfo } from './url-encoder/info'
-import { colorPickerInfo } from './color-picker/info'
-import { qrCodeGeneratorInfo } from './qr-code-generator/info'
-import { passwordGeneratorInfo } from './password-generator/info'
-import { regexTesterInfo } from './regex-tester/info'
-import { timestampConverterInfo } from './timestamp-converter/info'
-import { hashGeneratorInfo } from './hash-generator/info'
-import { imageOptimizerInfo } from './image-optimizer/info'
-import { textCaseConverterInfo } from './text-case-converter/info'
-import { cronGeneratorInfo } from './cron-generator/info'
+import type {ToolBaseInfo} from '@/types/tool'
+import {jsonFormatterInfo} from './json-formatter/info'
+import {base64ConverterInfo} from './base64-converter/info'
+import {urlEncoderInfo} from './url-encoder/info'
+import {colorPickerInfo} from './color-picker/info'
+import {qrCodeGeneratorInfo} from './qr-code-generator/info'
+import {passwordGeneratorInfo} from './password-generator/info'
+import {regexTesterInfo} from './regex-tester/info'
+import {timestampConverterInfo} from './timestamp-converter/info'
+import {hashGeneratorInfo} from './hash-generator/info'
+import {imageOptimizerInfo} from './image-optimizer/info'
+import {textCaseConverterInfo} from './text-case-converter/info'
+import {cronGeneratorInfo} from './cron-generator/info'
+import {iconGeneratorInfo} from './icon-generator/info'
+import {asciiArtGeneratorInfo} from './ascii-art-generator/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -90,13 +92,25 @@ export const tools: Tool[] = [
     route: '/tools/cron-generator',
     category: 'generator',
     color: 'from-green-500 to-green-600'
+  },
+  {
+    ...iconGeneratorInfo,
+    route: '/tools/icon-generator',
+    category: 'image',
+    color: 'from-cyan-500 to-cyan-600'
+  },
+  {
+    ...asciiArtGeneratorInfo,
+    route: '/tools/ascii-art-generator',
+    category: 'generator',
+    color: 'from-gray-500 to-gray-600'
   }
 ]
 
 // 从GitHub URL提取用户名
 export const getGithubUsername = (githubUrl?: string): string | null => {
   if (!githubUrl) return null
-  
+
   try {
     const url = new URL(githubUrl)
     const pathname = url.pathname
@@ -105,4 +119,4 @@ export const getGithubUsername = (githubUrl?: string): string | null => {
   } catch {
     return null
   }
-} 
+}
