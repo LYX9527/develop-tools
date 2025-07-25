@@ -210,7 +210,6 @@ onMounted(() => {
             'border-r-2 -mr-px': variant === 'bordered' && vertical,
             'border-primary-600 dark:border-primary-400': variant === 'bordered' && (activeTab === index || activeTab === tab.id),
             'border-transparent': variant === 'bordered' && activeTab !== index && activeTab !== tab.id,
-            'text-primary-600 dark:text-primary-400': variant === 'bordered' && (activeTab === index || activeTab === tab.id),
             'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300': variant === 'bordered' && activeTab !== index && activeTab !== tab.id,
           }
         ]"

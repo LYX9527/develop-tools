@@ -253,7 +253,7 @@ onUnmounted(() => {
           class="tool-card group relative cursor-pointer transform transition-all duration-700 hover:scale-105 hover:-translate-y-4"
         >
           <!-- 卡片容器 -->
-          <div class="relative bg-white/80 dark:bg-white/10 backdrop-blur-md border border-gray-200/50 dark:border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-blue-500/25 dark:hover:shadow-cyan-500/25 hover:border-gray-300/50 dark:hover:border-white/40 transition-all duration-500 overflow-hidden">
+          <div class="relative bg-white/80 dark:bg-white/10 backdrop-blur-md border border-gray-200/50 dark:border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-blue-500/25 dark:hover:shadow-cyan-500/25 hover:border-gray-300/50 dark:hover:border-white/40 transition-all duration-500 overflow-hidden h-80 flex flex-col">
             <!-- 动态光效背景 -->
             <div 
               class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-20 transition-opacity duration-700 rounded-3xl"
@@ -264,48 +264,53 @@ onUnmounted(() => {
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-gray-400/10 dark:via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             
             <!-- 内容 -->
-            <div class="relative z-10">
-              <!-- 图标容器 -->
-              <div class="flex items-center justify-center mb-6">
-                <div class="relative">
-                  <!-- 图标背景光环 -->
-                  <div 
-                    class="absolute inset-0 rounded-3xl bg-gradient-to-br opacity-20 group-hover:opacity-40 blur-lg transition-all duration-500 transform group-hover:scale-110"
-                    :class="tool.color"
-                  ></div>
-                  <div 
-                    class="relative w-20 h-20 rounded-3xl bg-gradient-to-br flex items-center justify-center text-3xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl"
-                    :class="tool.color"
-                  >
-                    <!-- 支持Vue组件图标 -->
-                    <component 
-                      v-if="typeof tool.icon === 'object' && tool.icon !== null"
-                      :is="tool.icon"
-                      class="w-10 h-10 text-white"
-                    />
-                    <!-- 支持字符串图标 -->
-                    <span 
-                      v-else
-                      class="text-white font-bold"
+            <div class="relative z-10 flex flex-col h-full justify-between">
+              <!-- 上部分：图标和标题 -->
+              <div class="flex-shrink-0">
+                <!-- 图标容器 -->
+                <div class="flex items-center justify-center mb-6">
+                  <div class="relative">
+                    <!-- 图标背景光环 -->
+                    <div 
+                      class="absolute inset-0 rounded-3xl bg-gradient-to-br opacity-20 group-hover:opacity-40 blur-lg transition-all duration-500 transform group-hover:scale-110"
+                      :class="tool.color"
+                    ></div>
+                    <div 
+                      class="relative w-20 h-20 rounded-3xl bg-gradient-to-br flex items-center justify-center text-3xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl"
+                      :class="tool.color"
                     >
-                      {{ tool.icon }}
-                    </span>
+                      <!-- 支持Vue组件图标 -->
+                      <component 
+                        v-if="typeof tool.icon === 'object' && tool.icon !== null"
+                        :is="tool.icon"
+                        class="w-10 h-10 text-white"
+                      />
+                      <!-- 支持字符串图标 -->
+                      <span 
+                        v-else
+                        class="text-white font-bold"
+                      >
+                        {{ tool.icon }}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                
+                <!-- 标题 -->
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition-colors duration-300">
+                  {{ tool.name }}
+                </h3>
               </div>
               
-              <!-- 标题 -->
-              <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition-colors duration-300">
-                {{ tool.name }}
-              </h3>
-              
-              <!-- 描述 -->
-              <p class="text-gray-600 dark:text-white/70 text-center text-base leading-relaxed group-hover:text-gray-800 dark:group-hover:text-white/90 transition-colors duration-300 mb-4">
-                {{ tool.description }}
-              </p>
-              
-              <!-- Powered By GitHub -->
-              <div v-if="tool.github" class="text-center mb-6">
+              <!-- 下部分：描述和 Powered By -->
+              <div class="flex-grow flex flex-col justify-end">
+                <!-- 描述 -->
+                <p class="text-gray-600 dark:text-white/70 text-center text-sm leading-relaxed group-hover:text-gray-800 dark:group-hover:text-white/90 transition-colors duration-300 mb-4 line-clamp-3">
+                  {{ tool.description }}
+                </p>
+                
+                <!-- Powered By GitHub -->
+                <div v-if="tool.github" class="text-center">
                 <a 
                   :href="tool.github" 
                   target="_blank" 
@@ -327,6 +332,7 @@ onUnmounted(() => {
                   class="w-16 h-1 bg-gradient-to-r rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"
                   :class="tool.color"
                 ></div>
+              </div>
               </div>
             </div>
           </div>
@@ -477,6 +483,15 @@ onUnmounted(() => {
 
 .shadow-cyan-500\/25 {
   box-shadow: 0 25px 50px -12px rgba(6, 182, 212, 0.25);
+}
+
+/* 文本截断 */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 响应式优化 */
