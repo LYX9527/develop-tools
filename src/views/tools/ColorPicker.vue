@@ -7,6 +7,8 @@ import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import NumberInput from '@/components/ui/NumberInput.vue'
 import Toggle from '@/components/ui/Toggle.vue'
+import Modal from '@/components/ui/modal/Modal.vue'
+import Select from '@/components/ui/Select.vue'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()
@@ -78,6 +80,153 @@ const colorFormats = reactive({
 const cssCode = ref(`border-radius: 50px;
 background: #E0E0E0;
 box-shadow: -20px 20px 60px 0px rgba(0, 0, 0, 0.2);`)
+
+// === 色系调色板相关 ===
+const showGeneratorModal = ref(false)
+
+// 预设的色系方案
+const colorSchemes = ref([
+  {
+    name: '海洋系列',
+    colors: ['#001F3F', '#003366', '#004A8F', '#005B99', '#0088CC', '#00AAFF', '#33BBFF', '#66CCFF']
+  },
+  {
+    name: '森林系列',
+    colors: ['#0B2A1F', '#1B4D3E', '#2D6A4F', '#40916C', '#52B788', '#74C69D', '#95D5B2', '#B7E4C7']
+  },
+  {
+    name: '日落系列',
+    colors: ['#FF4D4D', '#FF6B6B', '#FF8787', '#FFA5A5', '#FFC3C3', '#FFE3E3', '#FFF1F1', '#FFF9F9']
+  },
+  {
+    name: '紫罗兰系列',
+    colors: ['#2E1052', '#4C1C8C', '#6833B9', '#845EC2', '#A178DF', '#B298DC', '#C5B3E6', '#D8CEF0']
+  },
+  {
+    name: '柑橘系列',
+    colors: ['#CC4A1B', '#FF6B35', '#FF8C42', '#FFA62B', '#FFC14D', '#FFD97D', '#FFE7A8', '#FFF3D4']
+  },
+  {
+    name: '薄荷系列',
+    colors: ['#004D40', '#00695C', '#00897B', '#009688', '#26A69A', '#4DB6AC', '#80CBC4', '#B2DFDB']
+  },
+  {
+    name: '樱花系列',
+    colors: ['#FFB7C5', '#FFC1CF', '#FFCBD9', '#FFD5E3', '#FFDFED', '#FFE9F7', '#FFF3FB', '#FFFBFF']
+  },
+  {
+    name: '咖啡系列',
+    colors: ['#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548', '#8D6E63', '#A1887F', '#BCAAA4']
+  },
+  {
+    name: '极光系列',
+    colors: ['#00FF87', '#28FFB3', '#50FFDF', '#78FFFB', '#A0F7FF', '#C8EEFF', '#F0E5FF', '#FFE6F7']
+  },
+  {
+    name: '宝石系列',
+    colors: ['#880E4F', '#AD1457', '#D81B60', '#E91E63', '#EC407A', '#F06292', '#F48FB1', '#F8BBD0']
+  },
+  {
+    name: '深邃系列',
+    colors: ['#000000', '#1A1A1A', '#333333', '#4D4D4D', '#666666', '#808080', '#999999', '#B3B3B3']
+  },
+  {
+    name: '草原系列',
+    colors: ['#1B5E20', '#2E7D32', '#388E3C', '#43A047', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7']
+  }
+])
+
+// 自定义色系生成
+const baseColor = ref('#000000')
+const colorCount = ref(8)
+const variationType = ref('tint') // tint, shade, tone
+
+const variationOptions = [
+  { label: '变浅', value: 'tint' },
+  { label: '变深', value: 'shade' },
+  { label: '变灰', value: 'tone' }
+]
+
+// 添加一个函数来处理钉住/取消钉住
+function togglePin(index: number) {
+  const scheme = colorSchemes.value[index]
+  if (scheme.name.startsWith('自定义色系 ')) {
+    // 已经是钉住状态，取消钉住
+    scheme.name = '自定义色系'
+  } else if (scheme.name === '自定义色系') {
+    // 钉住该色系
+    scheme.name = `自定义色系 ${new Date().toLocaleTimeString()}`
+  }
+}
+
+// 修改生成色系的函数
+function generateColorScheme() {
+  const hex = baseColor.value.replace('#', '')
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+
+  const colors = []
+  for (let i = 0; i < colorCount.value; i++) {
+    let factor = i / (colorCount.value - 1)
+    let newR, newG, newB
+
+    switch (variationType.value) {
+      case 'tint': // 添加白色
+        newR = Math.round(r + (255 - r) * factor)
+        newG = Math.round(g + (255 - g) * factor)
+        newB = Math.round(b + (255 - b) * factor)
+        break
+      case 'shade': // 添加黑色
+        newR = Math.round(r * (1 - factor))
+        newG = Math.round(g * (1 - factor))
+        newB = Math.round(b * (1 - factor))
+        break
+      case 'tone': // 添加灰色
+        newR = Math.round(r + (128 - r) * factor)
+        newG = Math.round(g + (128 - g) * factor)
+        newB = Math.round(b + (128 - b) * factor)
+        break
+    }
+
+    colors.push(`#${newR?.toString(16).padStart(2, '0')}${newG?.toString(16).padStart(2, '0')}${newB?.toString(16).padStart(2, '0')}`)
+  }
+
+  // 查找并替换未钉住的自定义色系
+  const customIndex = colorSchemes.value.findIndex(scheme => scheme.name === '自定义色系')
+  if (customIndex !== -1) {
+    colorSchemes.value[customIndex] = {
+      name: '自定义色系',
+      colors: colors
+    }
+  } else {
+    // 如果没有找到未钉住的自定义色系，则添加新的
+    colorSchemes.value.unshift({
+      name: '自定义色系',
+      colors: colors
+    })
+  }
+
+  showGeneratorModal.value = false
+  toast.success('色系生成成功')
+}
+
+// 复制颜色值
+function copyColorFromScheme(color: string) {
+  navigator.clipboard.writeText(color)
+    .then(() => toast.success('颜色代码已复制'))
+    .catch(() => toast.error('复制失败'))
+}
+
+// 复制整个色系
+function copyColorScheme(colors: string[]) {
+  const colorString = colors.join(', ')
+  navigator.clipboard.writeText(colorString)
+    .then(() => toast.success('色系代码已复制'))
+    .catch(() => toast.error('复制失败'))
+}
+
+// === 原有功能函数 ===
 
 // 更新阴影效果
 function updateShadow() {
@@ -486,6 +635,78 @@ onMounted(() => {
                 </div>
               </div>
             </TabItem>
+
+            <!-- 色系调色板 -->
+            <TabItem label="色系调色板">
+              <div class="space-y-6">
+                <!-- 头部操作 -->
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">预设色系</h3>
+                  <Button @click="showGeneratorModal = true" variant="primary" size="sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    自定义色系
+                  </Button>
+                </div>
+
+                <!-- 色系列表 -->
+                <div class="space-y-4">
+                  <div
+                    v-for="(scheme, index) in colorSchemes"
+                    :key="scheme.name"
+                    class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 color-scheme-card"
+                  >
+                    <!-- 色系头部 -->
+                    <div class="flex justify-between items-center mb-3 color-scheme-header">
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ scheme.name }}</span>
+                      <div class="flex items-center space-x-2 color-scheme-actions">
+                        <!-- 只对自定义色系显示钉住按钮 -->
+                        <Button
+                          v-if="scheme.name.startsWith('自定义色系')"
+                          @click="togglePin(index)"
+                          variant="ghost"
+                          size="sm"
+                          class="text-xs"
+                        >
+                          <svg v-if="scheme.name === '自定义色系'" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                          </svg>
+                          <svg v-else class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                          </svg>
+                          {{ scheme.name === '自定义色系' ? '钉住' : '已钉住' }}
+                        </Button>
+                        <Button @click="copyColorScheme(scheme.colors)" variant="ghost" size="sm" class="text-xs">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                          </svg>
+                          复制色系
+                        </Button>
+                      </div>
+                    </div>
+
+                    <!-- 颜色块列表 -->
+                    <div class="flex gap-2 h-16 color-block-grid">
+                      <div
+                        v-for="color in scheme.colors"
+                        :key="color"
+                        class="flex-1 rounded-md cursor-pointer relative overflow-hidden group transition-transform hover:scale-105"
+                        :style="{ backgroundColor: color }"
+                        @click="copyColorFromScheme(color)"
+                      >
+                        <!-- 颜色代码提示 -->
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span class="text-white text-xs font-mono bg-black/30 px-2 py-1 rounded color-block-tooltip">
+                            {{ color }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabItem>
           </Tab>
         </div>
       </div>
@@ -498,7 +719,7 @@ onMounted(() => {
           </svg>
           使用说明
         </h3>
-        <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-600 dark:text-gray-300">
+        <div class="grid md:grid-cols-3 gap-8 text-sm text-gray-600 dark:text-gray-300">
           <div>
             <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">颜色选择器</h4>
             <ul class="space-y-2">
@@ -517,10 +738,72 @@ onMounted(() => {
               <li>• 实时生成CSS代码</li>
             </ul>
           </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">色系调色板</h4>
+            <ul class="space-y-2">
+              <li>• 12套精美预设色系</li>
+              <li>• 自定义色系生成器</li>
+              <li>• 支持变浅、变深、变灰</li>
+              <li>• 一键复制单色或整套色系</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- 自定义色系生成模态框 -->
+  <Modal
+    v-model:modelValue="showGeneratorModal"
+    title="自定义色系生成器"
+    size="md"
+  >
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">基础颜色</label>
+        <div class="flex items-center space-x-3">
+          <input
+            type="color"
+            v-model="baseColor"
+            class="w-16 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 cursor-pointer"
+          />
+          <Input
+            v-model="baseColor"
+            class="font-mono flex-1"
+            placeholder="#000000"
+          />
+        </div>
+      </div>
+
+      <NumberInput
+        v-model="colorCount"
+        label="颜色数量"
+        :min="3"
+        :max="12"
+        placeholder="选择生成的颜色数量"
+      />
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">变化类型</label>
+                 <Select
+           v-model:modelValue="variationType"
+           :options="variationOptions"
+           placeholder="选择颜色变化类型"
+         />
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="flex space-x-3 justify-end">
+        <Button @click="showGeneratorModal = false" variant="ghost">
+          取消
+        </Button>
+        <Button @click="generateColorScheme" variant="primary">
+          生成色系
+        </Button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <style scoped>
@@ -568,4 +851,44 @@ onMounted(() => {
 .dark .slider::-moz-range-thumb {
   background: #60a5fa;
 }
-</style> 
+
+/* 色系调色板样式 */
+.color-scheme-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.color-scheme-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .color-scheme-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.color-block-tooltip {
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+  .color-scheme-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .color-scheme-actions {
+    align-self: flex-end;
+  }
+
+  .color-block-grid {
+    height: 3rem; /* 移动端较小的颜色块 */
+  }
+
+  .color-block-tooltip {
+    font-size: 0.625rem; /* 10px */
+  }
+}
+</style>

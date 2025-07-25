@@ -10,6 +10,7 @@ import { timestampConverterInfo } from './timestamp-converter/info'
 import { hashGeneratorInfo } from './hash-generator/info'
 import { imageOptimizerInfo } from './image-optimizer/info'
 import { textCaseConverterInfo } from './text-case-converter/info'
+import { cronGeneratorInfo } from './cron-generator/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -83,6 +84,12 @@ export const tools: Tool[] = [
     route: '/tools/text-case-converter',
     category: 'text',
     color: 'from-violet-500 to-violet-600'
+  },
+  {
+    ...cronGeneratorInfo,
+    route: '/tools/cron-generator',
+    category: 'generator',
+    color: 'from-green-500 to-green-600'
   }
 ]
 

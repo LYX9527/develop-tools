@@ -16,6 +16,7 @@ import TimestampConverter from '@/views/tools/TimestampConverter.vue'
 import HashGenerator from '@/views/tools/HashGenerator.vue'
 import ImageOptimizer from '@/views/tools/ImageOptimizer.vue'
 import TextCaseConverter from '@/views/tools/TextCaseConverter.vue'
+import CronGenerator from '@/views/tools/CronGenerator.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -137,6 +138,16 @@ const routes: RouteRecordRaw[] = [
       title: '文本命名转换',
       category: 'text',
       description: '支持多种命名格式转换'
+    }
+  },
+  {
+    path: '/tools/cron-generator',
+    name: 'CronGenerator',
+    component: CronGenerator,
+    meta: {
+      title: 'Cron 表达式生成器',
+      category: 'generator',
+      description: '生成符合标准的Cron表达式'
     }
   },
   {
