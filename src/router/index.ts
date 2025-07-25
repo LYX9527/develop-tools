@@ -21,6 +21,7 @@ import IconGenerator from '@/views/tools/IconGenerator.vue'
 import AsciiArtGenerator from '@/views/tools/AsciiArtGenerator.vue'
 import ImageWatermark from '@/views/tools/ImageWatermark.vue'
 import MoneyConverter from '@/views/tools/MoneyConverter.vue'
+import NavicatDecrypt from '@/views/tools/NavicatDecrypt.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -192,6 +193,16 @@ const routes: RouteRecordRaw[] = [
       title: '人民币大写转换',
       category: 'converter',
       description: '将数字金额转换为人民币大写形式，支持最大13位数金额'
+    }
+  },
+  {
+    path: '/tools/navicat-decrypt',
+    name: 'NavicatDecrypt',
+    component: NavicatDecrypt,
+    meta: {
+      title: 'Navicat密码解密',
+      category: 'security',
+      description: '解密Navicat存储的数据库连接密码，支持密码解密和NCX文件解析'
     }
   },
   {
