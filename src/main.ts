@@ -1,11 +1,15 @@
 import {createApp} from 'vue'
+import {createPinia} from 'pinia'
 import './style.css'
 import App from './App.vue'
-import ToastContainer from './components/ui/toast/ToastContainer.vue'
+import router from './router'
 
-const app = createApp(App);
+const app = createApp(App)
 
-// Add ToastContainer to the app
-app.component('ToastContainer', ToastContainer);
+// 状态管理
+const pinia = createPinia()
+app.use(pinia)
+// 路由
+app.use(router)
 
 app.mount('#app')
