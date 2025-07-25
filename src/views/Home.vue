@@ -277,7 +277,19 @@ onUnmounted(() => {
                     class="relative w-20 h-20 rounded-3xl bg-gradient-to-br flex items-center justify-center text-3xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl"
                     :class="tool.color"
                   >
-                    <span class="text-white font-bold">{{ tool.icon }}</span>
+                    <!-- 支持Vue组件图标 -->
+                    <component 
+                      v-if="typeof tool.icon === 'object' && tool.icon !== null"
+                      :is="tool.icon"
+                      class="w-10 h-10 text-white"
+                    />
+                    <!-- 支持字符串图标 -->
+                    <span 
+                      v-else
+                      class="text-white font-bold"
+                    >
+                      {{ tool.icon }}
+                    </span>
                   </div>
                 </div>
               </div>

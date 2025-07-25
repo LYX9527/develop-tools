@@ -568,7 +568,19 @@ onUnmounted(() => {
                       <!-- 工具图标 -->
                       <div
                           class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg">
-                        {{ tool.icon }}
+                        <!-- 支持Vue组件图标 -->
+                        <component 
+                          v-if="typeof tool.icon === 'object' && tool.icon !== null"
+                          :is="tool.icon"
+                          class="w-6 h-6 text-white"
+                        />
+                        <!-- 支持字符串图标 -->
+                        <span 
+                          v-else
+                          class="text-white font-semibold"
+                        >
+                          {{ tool.icon }}
+                        </span>
                       </div>
 
                       <!-- 工具信息 -->

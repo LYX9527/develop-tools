@@ -16,7 +16,7 @@ export interface ToolBaseInfo {
      * 建议使用 {@link ToolTags}内置的tag，以便类型统计收录，也可以自定义tag内容，但是统计收录不会识别
      */
     tags: string[];
-    // 工具的图标，提供直观的视觉标识，可以是字符串、组件或null，为Null时会自动生成默认图标
+    // 工具的图标，提供直观的视觉标识，可以是字符串、Vue组件或null，为Null时会自动生成默认图标
     icon: string | any | null;
     // 工具作者的姓名，是一个可选字段
     author?: string;
