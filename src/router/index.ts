@@ -23,6 +23,7 @@ import ImageWatermark from '@/views/tools/ImageWatermark.vue'
 import MoneyConverter from '@/views/tools/MoneyConverter.vue'
 import NavicatDecrypt from '@/views/tools/NavicatDecrypt.vue'
 import S3UploadTool from '@/views/tools/S3UploadTool.vue'
+import BaseConverter from '@/views/tools/BaseConverter.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -214,6 +215,16 @@ const routes: RouteRecordRaw[] = [
       title: 'S3 文件上传',
       category: 'upload',
       description: '兼容 S3 API 的文件拖拽上传工具，支持 R2、MinIO 等兼容 S3 的存储服务'
+    }
+  },
+  {
+    path: '/tools/base-converter',
+    name: 'BaseConverter',
+    component: BaseConverter,
+    meta: {
+      title: '进制转换',
+      category: 'converter',
+      description: '支持二进制、八进制、十进制、十六进制等数字进制转换'
     }
   },
   {

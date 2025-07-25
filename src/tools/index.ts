@@ -17,6 +17,7 @@ import {imageWatermarkInfo} from './image-watermark/info'
 import {moneyConverterInfo} from './money-converter/info'
 import {navicatDecryptInfo} from './navicat-decrypt/info'
 import {s3UploadInfo} from './s3-upload/info'
+import {baseConverterInfo} from './base-converter/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -132,6 +133,12 @@ export const tools: Tool[] = [
     route: '/tools/s3-upload',
     category: 'upload',
     color: 'from-blue-500 to-purple-600'
+  },
+  {
+    ...baseConverterInfo,
+    route: '/tools/base-converter',
+    category: 'converter',
+    color: 'from-purple-500 to-pink-600'
   }
 ]
 
