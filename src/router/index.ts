@@ -15,6 +15,7 @@ import RegexTester from '@/views/tools/RegexTester.vue'
 import TimestampConverter from '@/views/tools/TimestampConverter.vue'
 import HashGenerator from '@/views/tools/HashGenerator.vue'
 import ImageOptimizer from '@/views/tools/ImageOptimizer.vue'
+import TextCaseConverter from '@/views/tools/TextCaseConverter.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -126,6 +127,16 @@ const routes: RouteRecordRaw[] = [
       title: '图片优化',
       category: 'image',
       description: '压缩和优化图片'
+    }
+  },
+  {
+    path: '/tools/text-case-converter',
+    name: 'TextCaseConverter',
+    component: TextCaseConverter,
+    meta: {
+      title: '文本命名转换',
+      category: 'text',
+      description: '支持多种命名格式转换'
     }
   },
   {
