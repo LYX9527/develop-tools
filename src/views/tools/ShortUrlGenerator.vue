@@ -7,6 +7,7 @@ import Select from '@/components/ui/Select.vue'
 import Toggle from '@/components/ui/Toggle.vue'
 import Tab from '@/components/ui/tabs/Tab.vue'
 import TabItem from '@/components/ui/tabs/TabItem.vue'
+import Modal from '@/components/ui/modal/Modal.vue'
 import {useToast} from '@/composables/useToast'
 
 const toast = useToast()
@@ -410,7 +411,7 @@ onMounted(() => {
                         class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         <td class="py-3 px-4">
-                          <div class="url-cell">
+                          <div class="flex items-center space-x-2 dark:text-amber-50">
                             <span :title="url.shortUrl" class="url-text">{{ url.shortUrl }}</span>
                           </div>
                         </td>
@@ -492,18 +493,22 @@ onMounted(() => {
     </div>
 
     <!-- 删除确认对话框 -->
-    <div v-if="showDeleteDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDeleteDialog = false">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">确认删除</h3>
-          <p class="text-gray-600 dark:text-gray-300">删除后此短链接将无法访问，是否确认删除？</p>
+    <Modal v-model="showDeleteDialog" size="md" title="确认删除">
+      <p class="text-gray-600 dark:text-gray-300 mb-4">
+        删除后此短链接将无法访问，是否确认删除？
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end space-x-3">
+          <Button variant="ghost" @click="showDeleteDialog = false">
+            取消
+          </Button>
+          <Button variant="danger" @click="confirmDelete">
+            确认删除
+          </Button>
         </div>
-        <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <Button variant="ghost" @click="showDeleteDialog = false">取消</Button>
-          <Button variant="danger" @click="confirmDelete">确认删除</Button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -522,13 +527,6 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* 表格相关样式 */
-.url-cell {
-  display: flex;
-  align-items: center;
-  width: 100%;
 }
 
 .url-text {
