@@ -1,7 +1,6 @@
 import type {ToolBaseInfo} from '@/types/tool'
 import {jsonFormatterInfo} from './json-formatter/info'
 import {base64ConverterInfo} from './base64-converter/info'
-import {urlEncoderInfo} from './url-encoder/info'
 import {colorPickerInfo} from './color-picker/info'
 import {qrCodeGeneratorInfo} from './qr-code-generator/info'
 import {passwordGeneratorInfo} from './password-generator/info'
@@ -39,12 +38,6 @@ export const tools: Tool[] = [
     route: '/tools/base64-converter',
     category: 'encode',
     color: 'from-green-500 to-green-600'
-  },
-  {
-    ...urlEncoderInfo,
-    route: '/tools/url-encoder',
-    category: 'encode',
-    color: 'from-purple-500 to-purple-600'
   },
   {
     ...colorPickerInfo,

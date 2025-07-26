@@ -7,7 +7,6 @@ import Home from '@/views/Home.vue'
 // 开发工具
 import JsonFormatter from '@/views/tools/JsonFormatter.vue'
 import Base64Converter from '@/views/tools/Base64Converter.vue'
-import UrlEncoder from '@/views/tools/UrlEncoder.vue'
 import ColorPicker from '@/views/tools/ColorPicker.vue'
 import QrCodeGenerator from '@/views/tools/QrCodeGenerator.vue'
 import PasswordGenerator from '@/views/tools/PasswordGenerator.vue'
@@ -57,16 +56,6 @@ const routes: RouteRecordRaw[] = [
       title: 'Base64 转换',
       category: 'encode',
       description: 'Base64编码和解码工具'
-    }
-  },
-  {
-    path: '/tools/url-encoder',
-    name: 'UrlEncoder',
-    component: UrlEncoder,
-    meta: {
-      title: 'URL 编码',
-      category: 'encode',
-      description: 'URL编码和解码工具'
     }
   },
   {
