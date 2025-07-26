@@ -25,6 +25,7 @@ import NavicatDecrypt from '@/views/tools/NavicatDecrypt.vue'
 import S3UploadTool from '@/views/tools/S3UploadTool.vue'
 import BaseConverter from '@/views/tools/BaseConverter.vue'
 import ShortUrlGenerator from '@/views/tools/ShortUrlGenerator.vue'
+import TimeConverter from '@/views/tools/TimeConverter.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -236,6 +237,16 @@ const routes: RouteRecordRaw[] = [
       title: '短链接生成',
       category: 'utility',
       description: '生成短链接，支持访问密码保护、自定义后缀和过期时间设置'
+    }
+  },
+  {
+    path: '/tools/time-converter',
+    name: 'TimeConverter',
+    component: TimeConverter,
+    meta: {
+      title: '时间转换',
+      category: 'converter',
+      description: 'Unix时间戳与日期格式互转工具，支持毫秒/秒级时间戳转换'
     }
   },
   {

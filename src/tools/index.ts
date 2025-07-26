@@ -19,6 +19,7 @@ import {navicatDecryptInfo} from './navicat-decrypt/info'
 import {s3UploadInfo} from './s3-upload/info'
 import {baseConverterInfo} from './base-converter/info'
 import {shortUrlGeneratorInfo} from './short-url-generator/info'
+import {timeConverterInfo} from './time-converter/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -146,6 +147,12 @@ export const tools: Tool[] = [
     route: '/tools/short-url-generator',
     category: 'utility',
     color: 'from-blue-500 to-cyan-600'
+  },
+  {
+    ...timeConverterInfo,
+    route: '/tools/time-converter',
+    category: 'converter',
+    color: 'from-green-500 to-teal-600'
   }
 ]
 
