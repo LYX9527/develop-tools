@@ -504,7 +504,7 @@ onMounted(() => {
                         强度: {{ password.strength.level }}
                       </span>
                     </div>
-                    <code class="text-lg font-mono break-all select-all block">{{ password.value }}</code>
+                    <code class="text-lg font-mono break-all select-all block dark:text-amber-50">{{ password.value }}</code>
                   </div>
                   <Button
                     @click="copyPassword(password.value)"
