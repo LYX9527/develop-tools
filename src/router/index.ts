@@ -12,7 +12,6 @@ import ColorPicker from '@/views/tools/ColorPicker.vue'
 import QrCodeGenerator from '@/views/tools/QrCodeGenerator.vue'
 import PasswordGenerator from '@/views/tools/PasswordGenerator.vue'
 import RegexTester from '@/views/tools/RegexTester.vue'
-import TimestampConverter from '@/views/tools/TimestampConverter.vue'
 import HashGenerator from '@/views/tools/HashGenerator.vue'
 import ImageOptimizer from '@/views/tools/ImageOptimizer.vue'
 import TextCaseConverter from '@/views/tools/TextCaseConverter.vue'
@@ -107,16 +106,6 @@ const routes: RouteRecordRaw[] = [
       title: '正则表达式测试',
       category: 'text',
       description: '测试和验证正则表达式'
-    }
-  },
-  {
-    path: '/tools/timestamp-converter',
-    name: 'TimestampConverter',
-    component: TimestampConverter,
-    meta: {
-      title: '时间戳转换',
-      category: 'converter',
-      description: '时间戳和日期格式转换'
     }
   },
   {
@@ -282,4 +271,4 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-export default router 
+export default router

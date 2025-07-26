@@ -6,7 +6,6 @@ import {colorPickerInfo} from './color-picker/info'
 import {qrCodeGeneratorInfo} from './qr-code-generator/info'
 import {passwordGeneratorInfo} from './password-generator/info'
 import {regexTesterInfo} from './regex-tester/info'
-import {timestampConverterInfo} from './timestamp-converter/info'
 import {hashGeneratorInfo} from './hash-generator/info'
 import {imageOptimizerInfo} from './image-optimizer/info'
 import {textCaseConverterInfo} from './text-case-converter/info'
@@ -19,7 +18,7 @@ import {navicatDecryptInfo} from './navicat-decrypt/info'
 import {s3UploadInfo} from './s3-upload/info'
 import {baseConverterInfo} from './base-converter/info'
 import {shortUrlGeneratorInfo} from './short-url-generator/info'
-import {timeConverterInfo} from './time-converter/info'
+import {timeConverterInfo} from "@/tools/time-converter/info.ts";
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -69,12 +68,6 @@ export const tools: Tool[] = [
     route: '/tools/regex-tester',
     category: 'text',
     color: 'from-yellow-500 to-yellow-600'
-  },
-  {
-    ...timestampConverterInfo,
-    route: '/tools/timestamp-converter',
-    category: 'converter',
-    color: 'from-teal-500 to-teal-600'
   },
   {
     ...hashGeneratorInfo,
@@ -159,7 +152,7 @@ export const tools: Tool[] = [
 // 从GitHub URL提取用户名
 export const getGithubUsername = (githubUrl?: string): string | null => {
   if (!githubUrl) return null
-  
+
   try {
     const url = new URL(githubUrl)
     const pathname = url.pathname
@@ -168,4 +161,4 @@ export const getGithubUsername = (githubUrl?: string): string | null => {
   } catch {
     return null
   }
-} 
+}
