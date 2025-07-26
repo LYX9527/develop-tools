@@ -24,6 +24,7 @@ import MoneyConverter from '@/views/tools/MoneyConverter.vue'
 import NavicatDecrypt from '@/views/tools/NavicatDecrypt.vue'
 import S3UploadTool from '@/views/tools/S3UploadTool.vue'
 import BaseConverter from '@/views/tools/BaseConverter.vue'
+import ShortUrlGenerator from '@/views/tools/ShortUrlGenerator.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -225,6 +226,16 @@ const routes: RouteRecordRaw[] = [
       title: '进制转换',
       category: 'converter',
       description: '支持二进制、八进制、十进制、十六进制等数字进制转换'
+    }
+  },
+  {
+    path: '/tools/short-url-generator',
+    name: 'ShortUrlGenerator',
+    component: ShortUrlGenerator,
+    meta: {
+      title: '短链接生成',
+      category: 'utility',
+      description: '生成短链接，支持访问密码保护、自定义后缀和过期时间设置'
     }
   },
   {

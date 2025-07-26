@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, provide, onMounted, watch } from 'vue';
-import { gsap } from 'gsap';
+import {onMounted, provide, ref, watch} from 'vue';
+import {gsap} from 'gsap';
 
 export type TabVariant = 'underline' | 'pills' | 'bordered';
 
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>();
 
 // Default to first tab if no modelValue is provided
-const activeTab = ref(props.modelValue ?? 0);
+const activeTab = ref(props.modelValue ?? '');
 const tabItems = ref<any[]>([]);
 const tabsRef = ref<HTMLElement | null>(null);
 const indicatorRef = ref<HTMLElement | null>(null);
@@ -141,13 +141,22 @@ watch(() => props.modelValue, (newValue) => {
   }
 });
 
-// Watch for changes to tabItems
+// Watch for changes to tabItems and set first tab as active if no active tab
 watch(tabItems, () => {
   if (props.animated) {
     // Wait for DOM update
     setTimeout(updateIndicator, 0);
   }
+
+  // If no active tab is set and we have tabs, activate the first one
+  if (!activeTab.value && tabItems.value.length > 0) {
+    const firstTab = tabItems.value[0];
+    const firstTabId = firstTab.id !== undefined ? firstTab.id : 0;
+    activateTab(firstTabId);
+  }
 }, { deep: true });
+
+
 
 // Provide context to tab items
 provide('tabContext', {

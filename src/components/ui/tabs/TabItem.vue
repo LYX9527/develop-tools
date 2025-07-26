@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
-import { gsap } from 'gsap';
+import {computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+import {gsap} from 'gsap';
 
 const props = defineProps<{
   label: string;
@@ -82,7 +82,7 @@ watch(isActive, (newValue) => {
 
 <template>
   <div
-    v-if="isActive || (lazy && hasBeenActivated) || !lazy"
+    v-if="!lazy || isActive || hasBeenActivated"
     ref="contentRef"
     class="tab-item"
     :class="{ 'hidden': !isActive }"

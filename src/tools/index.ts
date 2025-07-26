@@ -18,6 +18,7 @@ import {moneyConverterInfo} from './money-converter/info'
 import {navicatDecryptInfo} from './navicat-decrypt/info'
 import {s3UploadInfo} from './s3-upload/info'
 import {baseConverterInfo} from './base-converter/info'
+import {shortUrlGeneratorInfo} from './short-url-generator/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -139,6 +140,12 @@ export const tools: Tool[] = [
     route: '/tools/base-converter',
     category: 'converter',
     color: 'from-purple-500 to-pink-600'
+  },
+  {
+    ...shortUrlGeneratorInfo,
+    route: '/tools/short-url-generator',
+    category: 'utility',
+    color: 'from-blue-500 to-cyan-600'
   }
 ]
 
