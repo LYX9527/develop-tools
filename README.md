@@ -13,6 +13,13 @@
 
 *A comprehensive collection of essential development tools built with Vue 3, TypeScript, and Tailwind CSS*
 
+<div align="center">
+
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
+[![中文](https://img.shields.io/badge/Language-中文-red.svg)](README_zh_CN.md)
+
+</div>
+
 </div>
 
 Streamline your development workflow with these powerful utilities.

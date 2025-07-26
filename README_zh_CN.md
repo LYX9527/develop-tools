@@ -9,9 +9,16 @@
 ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝         ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
 ```
 
-#  开发者工具箱 V2
+# 🛠️ 开发者工具箱 V2
 
 *基于 Vue 3、TypeScript 和 Tailwind CSS 构建的综合性开发工具集合*
+
+<div align="center">
+
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
+[![中文](https://img.shields.io/badge/Language-中文-red.svg)](README_zh_CN.md)
+
+</div>
 
 </div>
 
