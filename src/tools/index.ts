@@ -19,6 +19,7 @@ import {s3UploadInfo} from './s3-upload/info'
 import {baseConverterInfo} from './base-converter/info'
 import {shortUrlGeneratorInfo} from './short-url-generator/info'
 import {timeConverterInfo} from "@/tools/time-converter/info.ts";
+import {jsonYamlConverterInfo} from './json-yaml-converter/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -146,6 +147,12 @@ export const tools: Tool[] = [
     route: '/tools/time-converter',
     category: 'converter',
     color: 'from-green-500 to-teal-600'
+  },
+  {
+    ...jsonYamlConverterInfo,
+    route: '/tools/json-yaml-converter',
+    category: 'converter',
+    color: 'from-blue-500 to-purple-600'
   }
 ]
 

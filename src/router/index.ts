@@ -25,6 +25,7 @@ import S3UploadTool from '@/views/tools/S3UploadTool.vue'
 import BaseConverter from '@/views/tools/BaseConverter.vue'
 import ShortUrlGenerator from '@/views/tools/ShortUrlGenerator.vue'
 import TimeConverter from '@/views/tools/TimeConverter.vue'
+import JsonYamlConverter from '@/views/tools/JsonYamlConverter.vue'
 
 // 组件库demo
 import ComponentDemo from '@/demo/ComponentDemo.vue'
@@ -236,6 +237,16 @@ const routes: RouteRecordRaw[] = [
       title: '时间转换',
       category: 'converter',
       description: 'Unix时间戳与日期格式互转工具，支持毫秒/秒级时间戳转换'
+    }
+  },
+  {
+    path: '/tools/json-yaml-converter',
+    name: 'JsonYamlConverter',
+    component: JsonYamlConverter,
+    meta: {
+      title: 'JSON/YAML转换',
+      category: 'converter',
+      description: '支持JSON和YAML格式互相转换，支持格式化'
     }
   },
   {
