@@ -1,13 +1,8 @@
 <template>
-  <svg class="tool-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
-    <!-- 数字符号 -->
-    <path d="M2 8h4l2-6h4l-2 6h4l-2 6h-4l2-6H6l2 6H4l2-6H2z" fill="currentColor" opacity="0.3"/>
-    <!-- 转换箭头 -->
-    <path d="M14 8l4-4 4 4"/>
-    <path d="M18 4v9a4 4 0 01-4 4H2"/>
-    <!-- 进制标识 -->
-    <circle cx="6" cy="16" fill="currentColor" r="1"/>
-    <circle cx="10" cy="16" fill="currentColor" r="1"/>
-    <circle cx="14" cy="16" fill="currentColor" r="1"/>
+  <svg class="icon" height="200" p-id="20828" t="1753512764057" version="1.1"
+       viewBox="0 0 1024 1024" width="200" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M192 448h64a64 64 0 0 0 64-64V192a64 64 0 0 0-64-64H192a64 64 0 0 0-64 64v192a64 64 0 0 0 64 64z m0-64V192h64v192H192z m576 64h64a64 64 0 0 0 64-64V192a64 64 0 0 0-64-64h-64a64 64 0 0 0-64 64v192a64 64 0 0 0 64 64z m0-64V192h64v192h-64z m-224 512h-64a64 64 0 0 1-64-64v-192a64 64 0 0 1 64-64h64a64 64 0 0 1 64 64v192a64 64 0 0 1-64 64z m-64-256v192h64v-192h-64z m64-496V384h48a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-160a16 16 0 0 1-16-16v-32A16 16 0 0 1 432 384h48V224h-48a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h48v-16A16 16 0 0 1 496 128h32a16 16 0 0 1 16 16zM256 832V592A16 16 0 0 0 240 576h-32a16 16 0 0 0-16 16v16h-48a16 16 0 0 0-16 16v32c0 8.832 7.168 16 16 16H192V832h-48a16 16 0 0 0-16 16v32c0 8.832 7.168 16 16 16h160a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16H256z m576-240V832h48a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-160a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16H768v-160h-48a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16H768v-16a16 16 0 0 1 16-16h32a16 16 0 0 1 16 16z"
+        fill="#ffffff" p-id="20829"></path>
   </svg>
 </template>
