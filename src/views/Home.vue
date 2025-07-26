@@ -28,6 +28,8 @@ const categories = [
 const searchQuery = ref('')
 const activeCategory = ref('all')
 const toolCards = ref<HTMLElement[]>([])
+const isPageLoaded = ref(false)
+const isAnimating = ref(false)
 
 // 搜索建议
 const searchSuggestions = [
@@ -38,6 +40,26 @@ const searchSuggestions = [
 // 获取随机搜索建议
 const getRandomSuggestion = () => {
   return searchSuggestions[Math.floor(Math.random() * searchSuggestions.length)]
+}
+
+// 优化的滚动处理
+const handleScroll = () => {
+  if (!isPageLoaded.value || isAnimating.value) {
+    return
+  }
+  // 这里可以添加滚动相关的逻辑
+}
+
+// 节流函数
+const throttle = (func: Function, limit: number) => {
+  let inThrottle: boolean
+  return function(this: any, ...args: any[]) {
+    if (!inThrottle) {
+      func.apply(this, args)
+      inThrottle = true
+      setTimeout(() => inThrottle = false, limit)
+    }
+  }
 }
 
 // 计算属性
@@ -78,20 +100,26 @@ const navigateToTool = (route: string) => {
 }
 
 const setCategory = (categoryId: string) => {
+  if (isAnimating.value) return
+
   activeCategory.value = categoryId
+  isAnimating.value = true
 
   // 为工具卡片添加重新进入动画
   nextTick(() => {
     gsap.fromTo(toolCards.value,
-        {opacity: 0, y: 20, scale: 0.9},
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "back.out(1.7)"
+      { opacity: 0, y: 20, scale: 0.9 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "back.out(1.7)",
+        onComplete: () => {
+          isAnimating.value = false
         }
+      }
     )
   })
 }
@@ -152,56 +180,75 @@ watch(filteredTools, () => {
 
 // 生命周期
 onMounted(() => {
+  // 添加滚动事件监听（节流处理）
+  const throttledScroll = throttle(handleScroll, 16) // 约60fps
+  document.addEventListener('scroll', throttledScroll, { passive: true })
+
+  // 延迟标记页面加载完成，确保DOM完全渲染
+  setTimeout(() => {
+    isPageLoaded.value = true
+  }, 100)
+
   // 标题动画
   gsap.fromTo('.hero-title',
-      {opacity: 0, y: -50},
-      {opacity: 1, y: 0, duration: 1, ease: "back.out(1.7)"}
+    {opacity: 0, y: -50},
+    {opacity: 1, y: 0, duration: 1, ease: "back.out(1.7)"}
   )
 
   // 副标题动画
   gsap.fromTo('.hero-subtitle',
-      {opacity: 0, y: 30},
-      {opacity: 1, y: 0, duration: 1, delay: 0.3, ease: "power3.out"}
+    {opacity: 0, y: 30},
+    {opacity: 1, y: 0, duration: 1, delay: 0.3, ease: "power3.out"}
   )
 
   // 搜索框动画
   gsap.fromTo('.search-section',
-      {opacity: 0, scale: 0.8},
-      {opacity: 1, scale: 1, duration: 0.8, delay: 0.6, ease: "back.out(1.7)"}
+    {opacity: 0, scale: 0.8},
+    {opacity: 1, scale: 1, duration: 0.8, delay: 0.6, ease: "back.out(1.7)"}
   )
 
   // 分类标签动画
   gsap.fromTo('.category-tags .tag-item',
-      {opacity: 0, x: -20},
-      {opacity: 1, x: 0, duration: 0.6, delay: 0.9, stagger: 0.1, ease: "power3.out"}
+    {opacity: 0, x: -20},
+    {opacity: 1, x: 0, duration: 0.6, delay: 0.9, stagger: 0.1, ease: "power3.out"}
   )
 
   // 工具卡片动画
   gsap.fromTo('.tool-card',
-      {opacity: 0, y: 50, scale: 0.8},
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.8,
-        delay: 1.2,
-        stagger: 0.1,
-        ease: "back.out(1.7)"
+    {opacity: 0, y: 50, scale: 0.8},
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.8,
+      delay: 1.2,
+      stagger: 0.1,
+      ease: "back.out(1.7)",
+      onComplete: () => {
+        // 所有动画完成后标记为非动画状态
+        isAnimating.value = false
       }
+    }
   )
 })
 
-// 清理定时器
+// 清理事件监听器
 onUnmounted(() => {
   if (animationTimeout) {
     clearTimeout(animationTimeout)
   }
+
+  // 移除滚动事件监听
+  const throttledScroll = throttle(handleScroll, 16)
+  document.removeEventListener('scroll', throttledScroll)
 })
 </script>
 
 <template>
   <div
-      class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 relative overflow-hidden transition-colors duration-500">
+      :class="{ 'loading': !isPageLoaded }"
+      class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 relative overflow-hidden transition-colors duration-500"
+  >
     <!-- 动态背景 -->
     <div class="absolute inset-0">
       <!-- 渐变网格 -->
@@ -580,6 +627,33 @@ onUnmounted(() => {
   .tool-card {
     margin-bottom: 1rem;
   }
+}
+
+/* 加载状态优化 */
+.loading {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loading * {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* 滚动性能优化 */
+.tool-card {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.elegant-button {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* 减少重绘重排 */
+.hero-title, .hero-subtitle {
+  will-change: transform, opacity;
 }
 
 /* 优雅按钮效果 */
