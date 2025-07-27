@@ -30,6 +30,26 @@ const activeCategory = ref('all')
 const toolCards = ref<HTMLElement[]>([])
 const isPageLoaded = ref(false)
 const isAnimating = ref(false)
+const isFirstVisit = ref(true)
+
+// 检查是否为首次访问（通过sessionStorage判断）
+const checkFirstVisit = () => {
+  const hasVisited = sessionStorage.getItem('home-visited')
+  if (hasVisited) {
+    isFirstVisit.value = false
+    isPageLoaded.value = true
+  } else {
+    sessionStorage.setItem('home-visited', 'true')
+    isFirstVisit.value = true
+  }
+}
+
+// 重置首次访问状态（开发调试用）
+const resetFirstVisit = () => {
+  sessionStorage.removeItem('home-visited')
+  isFirstVisit.value = true
+  isPageLoaded.value = false
+}
 
 // 搜索建议
 const searchSuggestions = [
@@ -124,33 +144,22 @@ const setCategory = (categoryId: string) => {
   })
 }
 
-// 监听路由查询参数
+// 监听路由变化，同步搜索框内容
 watch(() => route.query.search, (newSearch) => {
   if (newSearch && typeof newSearch === 'string') {
     searchQuery.value = newSearch
-  } else {
-    // 当搜索参数被清空时，重置搜索框和分类筛选
-    const wasSearching = searchQuery.value.trim() !== ''
+  } else if (!newSearch) {
     searchQuery.value = ''
-
-    // 如果之前有搜索内容，现在被清空了，重新触发动画
-    if (wasSearching) {
-      nextTick(() => {
-        gsap.fromTo(toolCards.value,
-            {opacity: 0, y: 20, scale: 0.9},
-            {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              duration: 0.6,
-              stagger: 0.1,
-              ease: "back.out(1.7)"
-            }
-        )
-      })
-    }
   }
 }, {immediate: true})
+
+// 监听路由变化，处理返回导航
+watch(() => route.path, (newPath) => {
+  if (newPath === '/') {
+    // 如果是返回首页，检查访问状态
+    checkFirstVisit()
+  }
+})
 
 // 监听搜索内容变化，为筛选结果添加动画
 let animationTimeout: NodeJS.Timeout
@@ -180,15 +189,25 @@ watch(filteredTools, () => {
 
 // 生命周期
 onMounted(() => {
+  // 检查是否首次访问
+  checkFirstVisit()
+  
   // 添加滚动事件监听（节流处理）
   const throttledScroll = throttle(handleScroll, 16) // 约60fps
   document.addEventListener('scroll', throttledScroll, { passive: true })
-
+  
+  // 如果不是首次访问，跳过动画
+  if (!isFirstVisit.value) {
+    isAnimating.value = false
+    return
+  }
+  
   // 延迟标记页面加载完成，确保DOM完全渲染
   setTimeout(() => {
     isPageLoaded.value = true
   }, 100)
-
+  
+  // 只在首次访问时播放动画
   // 标题动画
   gsap.fromTo('.hero-title',
     {opacity: 0, y: -50},
@@ -246,8 +265,11 @@ onUnmounted(() => {
 
 <template>
   <div
-      :class="{ 'loading': !isPageLoaded }"
       class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 relative overflow-hidden transition-colors duration-500"
+      :class="{ 
+        'loading': !isPageLoaded,
+        'instant-show': !isFirstVisit
+      }"
   >
     <!-- 动态背景 -->
     <div class="absolute inset-0">
@@ -638,6 +660,21 @@ onUnmounted(() => {
 .loading * {
   animation-play-state: paused !important;
   transition: none !important;
+}
+
+/* 非首次访问即时显示 */
+.instant-show .hero-title,
+.instant-show .hero-subtitle,
+.instant-show .search-section,
+.instant-show .category-tags .tag-item,
+.instant-show .tool-card {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.instant-show * {
+  animation: none !important;
+  transition: all 0.3s ease !important;
 }
 
 /* 滚动性能优化 */
