@@ -2,7 +2,9 @@
 import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {gsap} from 'gsap'
 import lunisolar from 'lunisolar'
+import zhCn from 'lunisolar/locale/zh-cn'
 import festivals from 'lunisolar/markers/festivals.zh-cn'
+import {theGods} from '@lunisolar/plugin-thegods'
 import Tab from '@/components/ui/tabs/Tab.vue'
 import TabItem from '@/components/ui/tabs/TabItem.vue'
 import Button from '@/components/ui/Button.vue'
@@ -10,8 +12,11 @@ import Input from '@/components/ui/Input.vue'
 import Checkbox from '@/components/ui/Checkbox.vue'
 import NumberCounter from '@/components/ui/NumberCounter.vue'
 import {useToast} from '@/composables/useToast'
-// 全局加载节日列表
+
 lunisolar.Markers.add(festivals)
+lunisolar.extend(theGods)
+lunisolar.locale(zhCn)
+// 全局加载节日列表
 const toast = useToast()
 
 // 当前时间
@@ -19,10 +24,147 @@ const currentTime = ref(new Date())
 let timeInterval: NodeJS.Timeout | null = null
 
 // Tab控制
-const activeTab = ref('holidays')
+const activeTab = ref('lunar')
 
 // 工作设置面板控制
 const showWorkSettings = ref(false)
+
+// ==================== 农历信息功能 ====================
+// 获取宜做的事情（预留函数）
+const getSuitableActivities = (lunarDate: any) => {
+  try {
+    return lunarDate.theGods.getActs(0).good
+  } catch (e) {
+    return ['数据加载中...']
+  }
+}
+
+// 获取忌做的事情（预留函数）
+const getTabooActivities = (lunarDate: any) => {
+  try {
+    return lunarDate.theGods.getActs(0).bad
+  } catch (e) {
+    return ['数据加载中...']
+  }
+}
+
+// 获取今日农历信息
+const getTodayLunarInfo = () => {
+  try {
+    const today = lunisolar()
+
+    return {
+      // 农历日期
+      lunarYear: `${today.lunar.year}年`, // 农历年份
+      lunarMonth: today.lunar.getMonthName(), // 八月
+      lunarDay: today.lunar.getDayName(), // 初一
+
+      // 公历信息
+      solarDate: today.format('YYYY年MM月DD日'),
+      weekDay: today.format('dddd'),
+
+      // 节气信息
+      solarTerm: today.solarTerm?.name || '',
+
+      // 宜忌信息
+      suitable: getSuitableActivities(today), // 宜
+      taboo: getTabooActivities(today), // 忌
+
+      // 生肖
+      zodiac: today.format("cZ") || '未知', // 生肖
+
+      // 天干地支
+      ganzhi: {
+        year: today.char8.year?.toString() || '',
+        month: today.char8.month?.toString() || '',
+        day: today.char8.day?.toString() || ''
+      }
+    }
+  } catch (e) {
+    console.error('Failed to get lunar info:', e)
+    return {
+      lunarYear: '未知年',
+      lunarMonth: '未知月',
+      lunarDay: '未知日',
+      solarDate: new Date().toLocaleDateString('zh-CN'),
+      weekDay: '未知',
+      solarTerm: '',
+      suitable: [],
+      taboo: [],
+      zodiac: '未知',
+      ganzhi: {year: '', month: '', day: ''}
+    }
+  }
+}
+
+// 获取最近节假日倒计时
+const getNextHoliday = () => {
+  const currentYear = new Date().getFullYear()
+  const allHolidays = [...getHolidays(currentYear), ...getHolidays(currentYear + 1)]
+
+  const today = new Date()
+  const upcomingHolidays = allHolidays
+      .map(holiday => {
+        const [month, day] = holiday.date.split('-')
+        const year = currentYear
+        const holidayDate = new Date(`${year}-${month}-${day}`)
+
+        if (holidayDate < today) {
+          // 如果是今年已过的节假日，使用明年的日期
+          holidayDate.setFullYear(currentYear + 1)
+        }
+
+        return {
+          ...holiday,
+          fullDate: holidayDate,
+          countdown: calculateCountdown(holidayDate)
+        }
+      })
+      .filter(holiday => !holiday.countdown.expired)
+      .sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime())
+
+  return upcomingHolidays[0] || null
+}
+
+// 响应式农历信息
+const todayLunarInfo = computed(() => getTodayLunarInfo())
+const nextHoliday = computed(() => getNextHoliday())
+
+// 操作函数
+const refreshLunarInfo = () => {
+  // 强制重新计算农历信息
+  currentTime.value = new Date()
+  toast.success('农历信息已刷新')
+}
+
+const viewFullCalendar = () => {
+  // 预留函数：查看完整日历
+  toast.info('查看日历功能开发中...')
+  // TODO: 实现日历弹窗或跳转到日历页面
+}
+
+const shareToday = async () => {
+  // 预留函数：分享今日农历信息
+  const shareText = `今日黄历：${todayLunarInfo.value.lunarMonth}${todayLunarInfo.value.lunarDay} ${todayLunarInfo.value.lunarYear} ${todayLunarInfo.value.zodiac}年`
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: '今日黄历',
+        text: shareText,
+        url: window.location.href
+      })
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareText)
+      toast.success('今日农历信息已复制到剪贴板')
+    } else {
+      toast.info('分享功能暂不支持')
+    }
+  } catch (e) {
+    console.error('Share failed:', e)
+    toast.error('分享失败')
+  }
+}
 
 // ==================== 节假日倒计时功能 ====================
 const includeWeekends = ref(false)
@@ -388,6 +530,175 @@ onUnmounted(() => {
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-6">
         <div class="p-6">
           <Tab v-model="activeTab" :animated="true" variant="underline">
+            <!-- 农历信息 -->
+            <TabItem id="lunar" label="今日黄历">
+              <div class="p-6 min-h-[600px]">
+                <!-- 主要信息卡片 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                  <!-- 农历日期卡片 -->
+                  <div
+                      class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 text-center">
+                    <div class="mb-6">
+                      <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        {{ todayLunarInfo.lunarMonth }}&nbsp;&nbsp;{{ todayLunarInfo.lunarDay }}
+                      </h2>
+                      <p class="text-lg text-gray-600 dark:text-gray-300">
+                        {{ todayLunarInfo.lunarYear }} {{ todayLunarInfo.ganzhi.year }} {{ todayLunarInfo.zodiac }}年
+                      </p>
+                    </div>
+
+                    <div class="space-y-3">
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">公历</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            {{ todayLunarInfo.solarDate }} {{ todayLunarInfo.weekDay }}
+                          </span>
+                      </div>
+
+                      <div v-if="todayLunarInfo.solarTerm" class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">节气</span>
+                        <span class="text-sm font-medium text-green-600 dark:text-green-400">
+                            {{ todayLunarInfo.solarTerm }}
+                          </span>
+                      </div>
+
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">干支</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white font-mono">
+                            {{ todayLunarInfo.ganzhi.year }} {{
+                            todayLunarInfo.ganzhi.month
+                          }} {{ todayLunarInfo.ganzhi.day }}
+                          </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 宜忌信息卡片 -->
+                  <div
+                      class="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-8">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">今日宜忌</h3>
+
+                    <!-- 宜忌内容 -->
+                    <div class="space-y-6">
+                      <div>
+                        <div class="flex items-center mb-3">
+                          <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                          <span class="text-sm font-medium text-green-700 dark:text-green-400">宜</span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                          <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                            <div class="flex flex-wrap gap-2">
+                                 <span
+                                     v-for="item in todayLunarInfo.suitable"
+                                     :key="item"
+                                     class="inline-block bg-green-100 dark:bg-green-800/50 text-green-800 dark:text-green-200 px-2 py-1 rounded text-xs"
+                                 >
+                                   {{ item }}
+                                 </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="flex items-center mb-3">
+                          <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                          <span class="text-sm font-medium text-red-700 dark:text-red-400">忌</span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                          <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                            <div class="flex flex-wrap gap-2">
+                                 <span
+                                     v-for="item in todayLunarInfo.taboo"
+                                     :key="item"
+                                     class="inline-block bg-red-100 dark:bg-red-800/50 text-red-800 dark:text-red-200 px-2 py-1 rounded text-xs"
+                                 >
+                                   {{ item }}
+                                 </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 节假日倒计时卡片 -->
+                <div v-if="nextHoliday"
+                     class="bg-gradient-to-r from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-8">
+                  <div class="text-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">下个节假日</h3>
+                    <p class="text-lg text-purple-600 dark:text-purple-400 font-medium">
+                      {{ nextHoliday.name }}
+                    </p>
+                  </div>
+
+                  <div class="flex justify-center items-center">
+                    <div class="text-center">
+                      <div class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                        {{ nextHoliday.countdown.days }}
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">天后</p>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{
+                        nextHoliday.fullDate?.toLocaleDateString('zh-CN', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          weekday: 'long'
+                        })
+                      }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 操作按钮区域 -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                      class="w-full"
+                      variant="ghost"
+                      @click="refreshLunarInfo"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    刷新信息
+                  </Button>
+
+                  <Button
+                      class="w-full"
+                      variant="ghost"
+                      @click="viewFullCalendar"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    查看日历
+                  </Button>
+
+                  <Button
+                      class="w-full"
+                      variant="ghost"
+                      @click="shareToday"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    分享今日
+                  </Button>
+                </div>
+              </div>
+            </TabItem>
+
             <!-- 节假日倒计时 -->
             <TabItem id="holidays" label="节假日倒计时">
               <div class="p-6 bg-gray-50 dark:bg-gray-900 min-h-[600px]">
@@ -494,8 +805,10 @@ onUnmounted(() => {
                     @click="showWorkSettings = !showWorkSettings"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2"></path>
+                    <path
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2"></path>
                     <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"
                           stroke-width="2"></path>
                   </svg>
@@ -518,8 +831,10 @@ onUnmounted(() => {
                         <div class="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
                           <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor"
                                viewBox="0 0 24 24">
-                            <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" stroke-linecap="round" stroke-linejoin="round"
-                                  stroke-width="2"></path>
+                            <path
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2"></path>
                           </svg>
                         </div>
                       </div>
@@ -541,7 +856,8 @@ onUnmounted(() => {
                         <div class="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                           <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
                                viewBox="0 0 24 24">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                  stroke-linejoin="round"
                                   stroke-width="2"></path>
                           </svg>
                         </div>
@@ -564,8 +880,10 @@ onUnmounted(() => {
                         <div class="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
                           <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor"
                                viewBox="0 0 24 24">
-                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"
-                                  stroke-width="2"></path>
+                            <path
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2"></path>
                           </svg>
                         </div>
                       </div>
@@ -594,7 +912,8 @@ onUnmounted(() => {
                         <div class="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
                           <svg class="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor"
                                viewBox="0 0 24 24">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                  stroke-linejoin="round"
                                   stroke-width="2"></path>
                           </svg>
                         </div>
@@ -759,8 +1078,10 @@ onUnmounted(() => {
                 <div v-if="customCountdowns.length > 0">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2"></path>
+                      <path
+                          d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                          stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"></path>
                     </svg>
                     我的倒计时
                   </h3>
@@ -869,7 +1190,16 @@ onUnmounted(() => {
           </svg>
           使用说明
         </h3>
-        <div class="grid md:grid-cols-3 gap-8 text-sm text-gray-600 dark:text-gray-300">
+        <div class="grid md:grid-cols-4 gap-6 text-sm text-gray-600 dark:text-gray-300">
+          <div>
+            <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">📜 今日黄历</h4>
+            <ul class="space-y-2">
+              <li>• 显示农历日期和干支纪年</li>
+              <li>• 实时更新宜忌信息</li>
+              <li>• 展示节气和生肖信息</li>
+              <li>• 支持分享和刷新功能</li>
+            </ul>
+          </div>
           <div>
             <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">📅 节假日倒计时</h4>
             <ul class="space-y-2">

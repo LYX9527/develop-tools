@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.850.0",
+    "@lunisolar/plugin-thegods": "^0.1.4",
     "@tailwindcss/vite": "^4.1.8",
     "@types/crypto-js": "^4.2.2",
     "@types/js-yaml": "^4.0.9",
