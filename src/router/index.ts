@@ -221,6 +221,16 @@ const routes: RouteRecordRaw[] = [
         }
     },
     {
+        path: '/tools/countdown-timer',
+        name: 'CountdownTimer',
+        component: () => import('@/views/tools/CountdownTimer.vue'),
+        meta: {
+            title: '倒计时工具',
+            category: 'utility',
+            description: '生动可爱的倒计时器，支持生日、纪念日、节假日倒计时及工作摸鱼计算器'
+        }
+    },
+    {
         path: '/demo',
         name: 'ComponentDemo',
         component: () => import('@/demo/ComponentDemo.vue'),

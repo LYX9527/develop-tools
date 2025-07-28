@@ -20,6 +20,7 @@ import {shortUrlGeneratorInfo} from './short-url-generator/info'
 import {timeConverterInfo} from "@/tools/time-converter/info.ts";
 import {jsonYamlConverterInfo} from './json-yaml-converter/info'
 import {textDiffInfo} from './text-diff/info'
+import {countdownTimerInfo} from './countdown-timer/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -153,6 +154,12 @@ export const tools: Tool[] = [
     route: '/tools/text-diff',
     category: 'text',
     color: 'from-red-500 to-red-600'
+  },
+  {
+    ...countdownTimerInfo,
+    route: '/tools/countdown-timer',
+    category: 'utility',
+    color: 'from-purple-500 to-pink-600'
   }
 ]
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps<{
-  modelValue?: string;
+  modelValue?: string | number;
   label?: string;
   placeholder?: string;
   type?: string;
@@ -38,24 +38,16 @@ const handleBlur = (event: FocusEvent) => {
 <template>
   <div :class="{ 'w-full': fullWidth }">
     <label
-      v-if="label"
-      :for="inputId"
-      class="block text-sm font-medium mb-1 dark:text-gray-200"
+        v-if="label"
+        :for="inputId"
+        class="block text-sm font-medium mb-1 dark:text-gray-200"
     >
       {{ label }}
     </label>
     <div class="relative">
       <input
-        :id="inputId"
-        :type="type || 'text'"
-        :value="modelValue"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        @input="handleInput"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        class="block rounded-md border-0 py-1.5 px-3 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset focus:outline-none transition-colors w-full"
-        :class="[
+          :id="inputId"
+          :class="[
           {
             'w-full': fullWidth,
             'opacity-50 cursor-not-allowed': disabled,
@@ -69,6 +61,14 @@ const handleBlur = (event: FocusEvent) => {
             'dark:bg-green-900/10 dark:text-green-400 dark:ring-green-500 dark:placeholder:text-green-300 dark:focus:ring-green-500': !error && success,
           }
         ]"
+          :disabled="disabled"
+          :placeholder="placeholder"
+          :type="type || 'text'"
+          :value="modelValue"
+          class="block rounded-md border-0 py-1.5 px-3 shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset focus:outline-none transition-colors w-full"
+          @blur="handleBlur"
+          @focus="handleFocus"
+          @input="handleInput"
       />
       <div v-if="error" class="mt-1 text-sm text-red-600 dark:text-red-400">
         {{ error }}
