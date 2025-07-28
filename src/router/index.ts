@@ -211,6 +211,16 @@ const routes: RouteRecordRaw[] = [
         }
     },
     {
+        path: '/tools/text-diff',
+        name: 'TextDiff',
+        component: () => import('@/views/tools/TextDiff.vue'),
+        meta: {
+            title: '文本对比工具',
+            category: 'text',
+            description: '对比两段文本的差异，高亮显示新增、删除和修改的内容'
+        }
+    },
+    {
         path: '/demo',
         name: 'ComponentDemo',
         component: () => import('@/demo/ComponentDemo.vue'),

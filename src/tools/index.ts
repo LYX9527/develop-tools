@@ -19,6 +19,7 @@ import {baseConverterInfo} from './base-converter/info'
 import {shortUrlGeneratorInfo} from './short-url-generator/info'
 import {timeConverterInfo} from "@/tools/time-converter/info.ts";
 import {jsonYamlConverterInfo} from './json-yaml-converter/info'
+import {textDiffInfo} from './text-diff/info'
 
 export interface Tool extends ToolBaseInfo {
   route: string
@@ -146,6 +147,12 @@ export const tools: Tool[] = [
     route: '/tools/json-yaml-converter',
     category: 'converter',
     color: 'from-blue-500 to-purple-600'
+  },
+  {
+    ...textDiffInfo,
+    route: '/tools/text-diff',
+    category: 'text',
+    color: 'from-red-500 to-red-600'
   }
 ]
 
