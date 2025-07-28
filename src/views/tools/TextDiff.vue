@@ -32,45 +32,53 @@ interface DiffItem {
 
 // 处理文本差异的核心算法
 const computeTextDiff = (text1: string, text2: string): { left: DiffItem[], right: DiffItem[] } => {
-  let processedText1 = text1
-  let processedText2 = text2
-
-  // 处理配置选项
-  if (ignoreCase.value) {
-    processedText1 = text1.toLowerCase()
-    processedText2 = text2.toLowerCase()
+  // 首先按行分割原始文本
+  const originalLines1 = text1.split('\n')
+  const originalLines2 = text2.split('\n')
+  
+  // 根据配置选项处理每一行
+  const processLine = (line: string): string => {
+    let processed = line
+    
+    if (ignoreCase.value) {
+      processed = processed.toLowerCase()
+    }
+    
+    if (ignoreWhitespace.value) {
+      // 去掉首尾空白，并将连续的空白字符替换为单个空格
+      processed = processed.trim().replace(/\s+/g, ' ')
+    }
+    
+    return processed
   }
-
-  if (ignoreWhitespace.value) {
-    processedText1 = processedText1.replace(/\s+/g, ' ').trim()
-    processedText2 = processedText2.replace(/\s+/g, ' ').trim()
-  }
-
-  const lines1 = processedText1.split('\n')
-  const lines2 = processedText2.split('\n')
+  
+  const lines1 = originalLines1.map(processLine)
+  const lines2 = originalLines2.map(processLine)
 
   const leftDiff: DiffItem[] = []
   const rightDiff: DiffItem[] = []
 
   const maxLines = Math.max(lines1.length, lines2.length)
 
-  for (let i = 0; i < maxLines; i++) {
-    const line1 = lines1[i] || ''
-    const line2 = lines2[i] || ''
-
-    if (line1 === line2) {
+    for (let i = 0; i < maxLines; i++) {
+    const processedLine1 = lines1[i] || ''
+    const processedLine2 = lines2[i] || ''
+    const originalLine1 = originalLines1[i] || ''
+    const originalLine2 = originalLines2[i] || ''
+    
+    if (processedLine1 === processedLine2) {
       // 相同行
       leftDiff.push({
         type: DiffType.EQUAL,
-        content: text1.split('\n')[i] || '',
+        content: originalLine1,
         lineNumber: i + 1
       })
       rightDiff.push({
         type: DiffType.EQUAL,
-        content: text2.split('\n')[i] || '',
+        content: originalLine2,
         lineNumber: i + 1
       })
-    } else if (!line1 && line2) {
+    } else if (!processedLine1 && processedLine2) {
       // 右侧新增
       leftDiff.push({
         type: DiffType.EQUAL,
@@ -79,14 +87,14 @@ const computeTextDiff = (text1: string, text2: string): { left: DiffItem[], righ
       })
       rightDiff.push({
         type: DiffType.INSERT,
-        content: text2.split('\n')[i] || '',
+        content: originalLine2,
         lineNumber: i + 1
       })
-    } else if (line1 && !line2) {
+    } else if (processedLine1 && !processedLine2) {
       // 左侧删除
       leftDiff.push({
         type: DiffType.DELETE,
-        content: text1.split('\n')[i] || '',
+        content: originalLine1,
         lineNumber: i + 1
       })
       rightDiff.push({
@@ -98,12 +106,12 @@ const computeTextDiff = (text1: string, text2: string): { left: DiffItem[], righ
       // 修改行
       leftDiff.push({
         type: DiffType.DELETE,
-        content: text1.split('\n')[i] || '',
+        content: originalLine1,
         lineNumber: i + 1
       })
       rightDiff.push({
         type: DiffType.INSERT,
-        content: text2.split('\n')[i] || '',
+        content: originalLine2,
         lineNumber: i + 1
       })
     }
